@@ -35,6 +35,7 @@ app.get('/song/:songname', (req, res) => {
       if (error) {
 		res.status(500).json(error.message)
       } else {
+		  //console.log(req.params.songname+":"+JSON.stringify(results.rows));
 		res.status(200).json(results.rows)
 	  }
     })
