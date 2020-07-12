@@ -70,8 +70,11 @@ app.post('/submit', (req, res) => {
 		})
 		.then((data)=>{if(data.rows.length>0){songId=data.rows[0].id;var score=CalculateSongScore({cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score])}else{throw new Error("Could not find song.")}})
 		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows[0])}else{throw new Error("Could not submit song.")}})
-		.catch((err)=>{res.status(500).json(err.message);})
+		.catch((err)=>{
+			console.log(req.body);
+			res.status(500).json(err.message);})
 	} else {
+		console.log(req.body);
 		res.status(400).json("Missing required parameters!");
 	}
 })
@@ -105,7 +108,7 @@ app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
 	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;if(req.params.songname){return db.query('select id from songs where name=$1 or romanized_name=$1 or english_name=$1', [req.params.songname])}else{return db.query('select * from plays where userid=$1 order by score desc',[userId])}}else{throw new Error("Cannot find user!")}})
 	.then((data)=>{if(req.params.songname &&data.rows.length>0){songId=data.rows[0].id;if(req.params.difficulty){return db.query('select * from plays where userid=$1 and songid=$2 and difficulty=$3 order by score desc',[userId,songId,req.params.difficulty])}else{return db.query('select * from plays where userid=$1 and songid=$2 order by score desc limit 1',[userId,songId])}}else{res.status(400).json("Could not find song!")}})
 	.then((data)=>{if(data && data.rows.length>0){res.status(200).json(data.rows[0])}else{res.status(400).json("No data found!")}})
-	.catch((err)=>{res.status(500).json(err.message)})
+	.catch((err)=>{res.status(500).json(err.message+JSON.stringify(req.body))})
 })
 
 app.get('/playcount/:username/:songname/:difficulty',(req,res)=>{
