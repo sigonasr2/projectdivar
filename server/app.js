@@ -63,13 +63,18 @@ req.body.username.length>2 && req.body.email) {
 app.post('/submit', (req, res) => {
 	if (req.body &&
 	req.body.username!==undefined && req.body.authentication_token!==undefined && req.body.song!==undefined && req.body.difficulty!==undefined && req.body.cool!==undefined && req.body.fine!==undefined && req.body.safe!==undefined && req.body.sad!==undefined && req.body.worst!==undefined && req.body.percent!==undefined) {
+		var fail = false;
+		if (req.body.fail!==undefined) {
+			fail = req.body.fail;
+		}
+		
 		if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
 		{throw new Error("Invalid difficulty!")}
 		var userId = -1,songId=-1;
 		db.query("select id,authentication_token from users where username=$1",[req.body.username])
 		.then((data)=>{if(data.rows.length>0){if (data.rows[0].authentication_token===req.body.authentication_token){userId=data.rows[0].id;return db.query("select id from songs where name=$1 or romanized_name=$1 or english_name=$1",[req.body.song])}else{throw new Error("Could not authenticate!")}}else{throw new Error("Could not find user.")}
 		})
-		.then((data)=>{if(data.rows.length>0){songId=data.rows[0].id;var score=CalculateSongScore({cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score])}else{throw new Error("Could not find song.")}})
+		.then((data)=>{if(data.rows.length>0){songId=data.rows[0].id;var score=CalculateSongScore({cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score,fail])}else{throw new Error("Could not find song.")}})
 		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows[0])}else{throw new Error("Could not submit song.")}})
 		.catch((err)=>{
 			console.log(req.body);
@@ -81,13 +86,17 @@ app.post('/submit', (req, res) => {
 })
 
 CalculateSongScore=(song)=>{
+	if (song.fail){return 0;}
 	var noteCount=song.cool+song.fine+song.safe+song.sad+song.worst;
 	var comboBreaks=song.safe+song.sad+song.worst;
 	var scoreMult=1;
 	switch (song.difficulty){
-		case "H":{if(song.percent<60){scoreMult=0}else{if(comboBreaks===0){scoreMult=2}else if(song.percent>=90){scoreMult=1.5}}}break;
+		case "H":{if(song.percent<60){scoreMult=0}else{if(comboBreaks===0){scoreMult=5}else if(song.percent>=90){scoreMult=3}else{scoreMult=1.5}}}break;
 		case "EX":
 		case "EXEX":{if(song.percent<70){scoreMult=0}else{if(comboBreaks===0){scoreMult=10}else if(song.percent>=95){scoreMult=6}else{scoreMult=5}}}break;
+		default:{
+			if(song.percent<60){scoreMult=0}else{if(comboBreaks===0){scoreMult=3}else if(song.percent>=90){scoreMult=2}else{scoreMult=1}}
+		}
 	}
 	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/((noteCount)/(noteCount/1000)))*scoreMult
 	return Number(score);
