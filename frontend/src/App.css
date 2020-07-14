@@ -1,87 +1,41 @@
-body{
-	background-color: #0d194a;
-	background-image: url("http://45.33.13.215/stars.png");
-	font-family: Copperplate,Verdana;
-	  color: #fff;
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+background: rgb(251,251,251);
+background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 82%, rgba(185,255,255,1) 89%, rgba(64,185,183,1) 100%);
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	font-family: 'M PLUS 1p', sans-serif;
+	  color: #333;
 	  text-shadow:
 		0 0 1px #aaa,
 		0 0 2px #aaa,
 		0 0 4px #aaa,
-		0 0 8px #ccc,
-		0 0 16px #ccc,
-		0 0 18px #ccc,
-		0 0 20px #ccc,
-		0 0 30px #ccc;
+		0 0 8px #999
 }
 
-.starbox{
-	opacity:0.5;
-	background-color:#0d194a;
-	color:#fff;
+.homelink:hover{
+	background-color:#aaa;
+	cursor:pointer;
 }
 
-.starbox:hover{
-	border: 1px white solid;
-	opacity:0.8;
-	background-color:#0d194a;
-	color:#fff;
+.topbar{
+	background: rgb(251,251,251);
+	background: radial-gradient(circle, rgba(251,251,251,1) 0%, rgba(240,240,255,1) 100%);
 }
 
-.header{
-	font: 32px ACROTSRG;
-	font-weight: bold;
+.content{
+	background:#f0f0ff;
 }
 
-@font-face {
-  font-family: ACROTSRG;
-  src: local('ACROTSRG'), url(./fonts/ACROTSRG.TTF) format('truetype');
-}
-
-.glowHeavy {
-  color: #fff;
-  text-shadow:
-    0 0 5px #fff,
-    0 0 10px #fff,
-    0 0 20px #fff,
-    0 0 40px #0ff,
-    0 0 80px #0ff,
-    0 0 90px #0ff,
-    0 0 100px #0ff,
-    0 0 150px #0ff;
-}
-
-.glowLight {
-  color: #fff;
-  text-shadow:
-    0 0 1px #aaa,
-    0 0 2px #aaa,
-    0 0 4px #aaa,
-    0 0 8px #ccc,
-    0 0 16px #ccc,
-    0 0 18px #ccc,
-    0 0 20px #ccc,
-    0 0 30px #ccc;
-}
-
-.fadein {
-  animation-name: fadein;
-  animation-duration: 4s;
-}
-.fadein3 {
-  animation-name: fadein;
-  animation-duration: 4s;
-  animation-iteration-count: 3;
-}
-
-.slowblink{
-  animation-name: slowblink;
-  animation-duration: 2s;
-  animation-iteration-count: infinite;
-}
-
-.longfadein {
-  animation-name: fadein;
-  animation-duration: 8s;
+.title{
+	font-family: 'Open Sans Condensed', sans-serif;
+	font-size: 64px;
 }
 
 @keyframes fadein {

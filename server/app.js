@@ -63,9 +63,10 @@ req.body.username.length>2 && req.body.email) {
 app.post('/submit', (req, res) => {
 	if (req.body &&
 	req.body.username!==undefined && req.body.authentication_token!==undefined && req.body.song!==undefined && req.body.difficulty!==undefined && req.body.cool!==undefined && req.body.fine!==undefined && req.body.safe!==undefined && req.body.sad!==undefined && req.body.worst!==undefined && req.body.percent!==undefined) {
-		var fail = false;
+		var fail = true;
 		if (req.body.fail!==undefined) {
-			fail = req.body.fail;
+			fail = (req.body.fail=='true');
+			console.log("Fail is "+fail+" type:"+typeof(fail))
 		}
 		
 		if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
@@ -86,7 +87,7 @@ app.post('/submit', (req, res) => {
 })
 
 CalculateSongScore=(song)=>{
-	if (song.fail){return 0;}
+	if (song.fail==true){return 0;}
 	var noteCount=song.cool+song.fine+song.safe+song.sad+song.worst;
 	var comboBreaks=song.safe+song.sad+song.worst;
 	var scoreMult=1;
@@ -104,19 +105,32 @@ CalculateSongScore=(song)=>{
 
 CalculateRating=(username)=>{
 	var songs = [];
+	var debugScoreList = "";
 	var userId = -1;
+	/* //Old rating algorithm.
 	return db.query('select id from users where username=$1',[username])
 	.then((data)=>{if(data.rows.length>0){userId=data.rows[0].id;return db.query('select * from plays where userid=$1 order by score desc limit 100',[userId])}else{return 0}})
 	.then((data)=>{if(data.rows.length>0){return data.rows.reduce((sum,song,i)=>{
 		return sum+Number(CalculateSongScore(song)*(Math.pow(0.8,i)))},0)}else{return 0}})
-	.catch((err)=>{throw new Error(err.message)})
+	.catch((err)=>{throw new Error(err.message)})*/
+	return db.query('select id from users where username=$1',[username])
+	.then((data)=>{if(data.rows.length>0){userId=data.rows[0].id;return db.query('select * from songs order by id asc;')}else{return 0}})
+	.then((data)=>{if(data.rows.length>0){songs=data.rows;return Promise.all(data.rows.map((song)=>{return db.query('select * from plays where userId=$1 and songId=$2 order by score desc limit 100',[userId,song.id]).then((data)=>{if (data.rows.length>0){debugScoreList+=song.name+"\n"; songs[song.id-1].score=data.rows.reduce((sum,play,i)=>{debugScoreList+="  "+(play.score)+" -> "+(play.score*Math.pow(0.8,i))+"\n";/*console.log("Play score:"+play.score+". Sum:"+sum);*/return sum+play.score*Math.pow(0.8,i);},0);debugScoreList+=" "+songs[song.id-1].score+"\n";}})}))}})
+	.then(()=>{return songs.sort((a,b)=>{var scorea=(a.score)?a.score:0;var scoreb=(b.score)?b.score:0;return (scorea>scoreb)?-1:1;}).reduce((sum,song,i)=>{if(song.score){debugScoreList+=song.name+": "+song.score+" -> "+(song.score*Math.pow(0.8,i))+"\n";return sum+song.score*Math.pow(0.8,i)}else{return sum}},0);})
+	.then((data)=>{/*console.log(debugScoreList);*/return data})
 }
+
+app.get('/recalculatescore/:playid',(req,res)=>{
+	db.query('select * from plays where id=$1',[req.params.playid])
+	.then((data)=>{if (data.rows.length>0){var song=data.rows[0];console.log(song);var score=CalculateSongScore({cool:song.cool,fine:song.fine,safe:song.safe,sad:song.sad,worst:song.worst,percent:song.percent,difficulty:song.difficulty,fail:song.fail});return db.query('update plays set score=$1 where id=$2 returning *',[score,req.params.playid]);}else{throw new Error("This play does not exist!")}})
+	.then((data)=>{if (data.rows.length>0){res.status(200).json(data.rows[0])}else{throw new Error("Failed to update score!")}})	.catch((err)=>{res.status(500).json(err.message);})
+});
 
 app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
 	var songId=-1,userId=-1;
 	db.query('select id from users where username=$1',[req.params.username])
 	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;if(req.params.songname){return db.query('select id from songs where name=$1 or romanized_name=$1 or english_name=$1', [req.params.songname])}else{return db.query('select * from plays where userid=$1 order by score desc',[userId])}}else{throw new Error("Cannot find user!")}})
-	.then((data)=>{if(req.params.songname &&data.rows.length>0){songId=data.rows[0].id;if(req.params.difficulty){return db.query('select * from plays where userid=$1 and songid=$2 and difficulty=$3 order by score desc',[userId,songId,req.params.difficulty])}else{return db.query('select * from plays where userid=$1 and songid=$2 order by score desc limit 1',[userId,songId])}}else{res.status(400).json("Could not find song!")}})
+	.then((data)=>{if(req.params.songname &&data.rows.length>0){songId=data.rows[0].id;if(req.params.difficulty){return db.query('select * from plays where userid=$1 and songid=$2 and difficulty=$3 order by score desc,percent desc limit 1',[userId,songId,req.params.difficulty])}else{return db.query('select * from plays where userid=$1 and songid=$2 order by score desc,percent desc limit 1',[userId,songId])}}else{res.status(400).json("Could not find song!")}})
 	.then((data)=>{if(data && data.rows.length>0){res.status(200).json(data.rows[0])}else{res.status(400).json("No data found!")}})
 	.catch((err)=>{res.status(500).json(err.message+JSON.stringify(req.body))})
 })
