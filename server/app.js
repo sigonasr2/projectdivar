@@ -66,7 +66,7 @@ app.post('/submit', (req, res) => {
 		var fail = true;
 		if (req.body.fail!==undefined) {
 			fail = (req.body.fail=='true');
-			console.log("Fail is "+fail+" type:"+typeof(fail))
+			//console.log("Fail is "+fail+" type:"+typeof(fail))
 		}
 		
 		if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
@@ -76,7 +76,11 @@ app.post('/submit', (req, res) => {
 		.then((data)=>{if(data.rows.length>0){if (data.rows[0].authentication_token===req.body.authentication_token){userId=data.rows[0].id;return db.query("select id from songs where name=$1 or romanized_name=$1 or english_name=$1",[req.body.song])}else{throw new Error("Could not authenticate!")}}else{throw new Error("Could not find user.")}
 		})
 		.then((data)=>{if(data.rows.length>0){songId=data.rows[0].id;var score=CalculateSongScore({cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score,fail])}else{throw new Error("Could not find song.")}})
-		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows[0])}else{throw new Error("Could not submit song.")}})
+		.then((data)=>{if(data.rows.length>0){
+			var songsubmitdata = data.rows[0];
+			return CalculateRating(req.body.username).then((data)=>{db.query("update users set rating=$1 where username=$2",[data,req.body.username])})
+			.then(()=>{return songsubmitdata;})}else{throw new Error("Could not submit song.")}})
+		.then((data)=>{res.status(200).json(data);})
 		.catch((err)=>{
 			console.log(req.body);
 			res.status(500).json(err.message);})
@@ -121,9 +125,16 @@ CalculateRating=(username)=>{
 }
 
 app.get('/recalculatescore/:playid',(req,res)=>{
+	var userId=-1;
+	var username=null;
 	db.query('select * from plays where id=$1',[req.params.playid])
-	.then((data)=>{if (data.rows.length>0){var song=data.rows[0];console.log(song);var score=CalculateSongScore({cool:song.cool,fine:song.fine,safe:song.safe,sad:song.sad,worst:song.worst,percent:song.percent,difficulty:song.difficulty,fail:song.fail});return db.query('update plays set score=$1 where id=$2 returning *',[score,req.params.playid]);}else{throw new Error("This play does not exist!")}})
-	.then((data)=>{if (data.rows.length>0){res.status(200).json(data.rows[0])}else{throw new Error("Failed to update score!")}})	.catch((err)=>{res.status(500).json(err.message);})
+	.then((data)=>{if (data.rows.length>0){var song=data.rows[0];userId=song.userid;console.log(song);var score=CalculateSongScore({cool:song.cool,fine:song.fine,safe:song.safe,sad:song.sad,worst:song.worst,percent:song.percent,difficulty:song.difficulty,fail:song.fail});return db.query('update plays set score=$1 where id=$2 returning *',[score,req.params.playid]);}else{throw new Error("This play does not exist!")}})
+	.then((data)=>{if (data.rows.length>0){
+		var scoreData=data.rows[0];
+		return db.query('select username from users where id=$1',[userId]).then((data)=>{username=data.rows[0].username; return CalculateRating(username)}).then((data)=>{db.query("update users set rating=$1 where username=$2",[data,username])})
+		.then(()=>{return scoreData;})
+		}else{throw new Error("Failed to update score!")}})
+		.then((data)=>res.status(200).json(data)).catch((err)=>{res.status(500).json(err.message);})
 });
 
 app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
@@ -164,8 +175,8 @@ app.get('/songfccount/:username/:songname/:difficulty',(req,res)=>{
 
 app.get('/rating/:username',(req,res)=>{
 	if (req.params.username) {
-		CalculateRating(req.params.username).
-		then((data)=>res.status(200).json({rating:data}))
+		db.query('select rating from users where username=$1',[req.params.username])
+		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows[0])}else{res.status(200).json({rating:0})}})
 	} else {
 		res.status(400).json("Invalid username!")
 	}
