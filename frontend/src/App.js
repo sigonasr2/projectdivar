@@ -1,6 +1,14 @@
 import React, {useState,useEffect} from 'react';
 import logo from './logo.svg';
 import './App.css';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useRouteMatch,
+  useParams
+} from "react-router-dom";
 
 const REMOTE_ADDR = "http://45.33.13.215:4502";
 
@@ -133,29 +141,177 @@ function Logo(){
 	</>);
 }
 
-function App() {
-	return <div className="container content">
-		<div className="row">
-			<div className="topbar col-md-12 pt-1 overflow-hidden border rounded text-center">
-				<div>
-					<Logo/>
+function Sort(p){
+	let { sort,sortOrder } = useParams();
+	return (
+		<>
+			<Link to={"/rankings/"+p.order+"/"+((p.order===sort)?(sortOrder==="desc")?"asc":"desc":"desc")} onClick={()=>{p.setIsLoading(true);p.setUpdateUsers(!p.updateUsers)}}>{p.label}</Link>{(sort===p.order?<>{(sortOrder==="desc")?<>▼</>:<>▲</>}</>:<></>)}
+		</>
+	)
+}
+
+function ProfileDataContainer(p){
+	return (
+		<div className="col-md-3">
+			<div className="row">
+				<div className="label col-md-12">
+					{p.label}
+				</div>
+			</div>
+			<div className="row">
+				<div className="data col-md-12 text-center">
+					{p.data}
 				</div>
 			</div>
 		</div>
-		<div className="row">
-			<div className="col-md-2 pt-3 pb-3 overflow-hidden border rounded text-center">
-				<h3>Sidebar Contents</h3>
-					Item 1<br/>
-					Item 2<br/>
-					Item 3<br/>
-					Item 4<br/>
+	);
+}
+
+function StatisticsPanel(p) {
+	return (
+		<>
+			<div className="row">
+				<ProfileDataContainer label="Play Count" data={p.playcount}/>
+				<ProfileDataContainer label="FC Count" data={p.fccount}/>
+				<ProfileDataContainer label="Cleared" data={p.cleared}/>
+				<ProfileDataContainer label="Accuracy" data={p.accuracy}/>
 			</div>
-			<div className="col-md-10 pt-3 pb-3 border rounded">
-				<h1 className="title">Project DivaR</h1>
-				Under construction!
+		</>
+	)
+}
+
+function Panel() {
+	return (
+	<>
+	[Placeholder Panel]
+	</>
+	);
+}
+
+const CalculateAccuracy=(cool,fine,safe,sad,worst)=>{
+	var noteCount = cool+fine+safe+sad+worst;
+	var sum = cool+(fine*0.5)+(safe*0.1)+(sad*0.05);
+	return sum/noteCount;
+}
+
+function Profile(){
+	let { username } = useParams();
+	let match = useRouteMatch();
+	var [updateProfile,setProfile] = useState(false);
+	var [playcount,setPlayCount] = useState(0);
+	var [fccount,setFCCount] = useState(0);
+	var [cleared,setClear] = useState("");
+	var [accuracy,setAccuracy] = useState("-%");
+	var [rating,setRating] = useState(0);
+	var [lastPlayed,setLastPlayed] = useState(new Date());
+	var [update,setUpdate] = useState(false);
+	var [diffs,setDiffs] = useState({});
+	var [user,setUserData] = useState({});
+	
+	function CalculateClear(easy,normal,hard,ex,exex) {
+		return "E:"+easy+"/"+diffs.E+" N:"+normal+"/"+diffs.N+" H:"+hard+"/"+diffs.H+" EX:"+ex+"/"+diffs.EX+" EXEX:"+exex+"/"+diffs.EXEX;
+	}
+	
+	useEffect(()=>{
+		axios.get("http://projectdivar.com:4501/userdata/"+username)
+		.then((data)=>{setUserData(data.data);setPlayCount(data.data.playcount);setFCCount(data.data.fccount);setRating(data.data.rating);setLastPlayed(data.data.last_played);setAccuracy(CalculateAccuracy(data.data.cool,data.data.fine,data.data.safe,data.data.sad,data.data.worst));
+		return axios.get("http://projectdivar.com:4501/songdiffs")})
+		.then((data)=>{setDiffs(data.data)})
+	},[update])
+	
+	useEffect(()=>{
+		setClear(CalculateClear(user.eclear,user.nclear,user.hclear,user.exclear,user.exexclear))
+	},[diffs,user])
+	
+	return (
+		<>
+			<h2>{username+"'s Profile"}</h2>
+			<StatisticsPanel name="Statistics" username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
+			<Panel name="Best Plays" username={username}/>
+			<Panel name="Progress" username={username}/>
+			<Panel name="Activity" username={username}/>
+		</>
+	);
+}
+
+function Rankings(){
+	let { sort,sortOrder } = useParams();
+	let match = useRouteMatch();
+	var [users,setUsers] = useState([]);
+	var [updateUsers,setUpdateUsers] = useState(false);
+	var [isLoading,setIsLoading] = useState(true);
+	
+	useEffect(()=>{
+		axios.get("http://projectdivar.com:4501/users/"+sort+"/"+sortOrder+"?limit=100&offset=0")
+		.then((data)=>{setUsers(data.data)
+		setIsLoading(false);})
+		//.then(()=>{console.log(users)})
+	},[updateUsers])
+	
+	return (
+		<>
+			<table>
+				<thead>
+					<tr>
+						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Username" order="username"/></th>
+						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Last Played" order="last_played"/></th>
+						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} setUpdateUsers={setUpdateUsers} label="Rating" order="rating"/></th>
+						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Play Count" order="playcount"/></th>
+						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="FC Count" order="fccount"/></th>
+					</tr>
+				</thead>
+			{users.map((user)=><>
+				<tbody>
+					<tr>
+						<td className={(isLoading)?"loading":""}><Link to={"/user/"+user.username}>{user.username}</Link></td>
+						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{user.last_played}</td>
+						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{user.rating}</td>
+						<td className={(isLoading)?"loading":""}>{user.playcount}</td>
+						<td className={(isLoading)?"loading":""}>{user.fccount}</td>
+					</tr>
+				</tbody></>)}
+			</table>
+		</>
+	);
+}
+
+function App() {
+	return (<Router>
+		<div className="container content">
+			<div className="row">
+				<div className="topbar col-md-12 pt-1 overflow-hidden border rounded text-center">
+					<div>
+						<Link to="/">
+							<Logo/>
+						</Link>
+					</div>
+				</div>
+			</div>
+			<div className="row">
+				<div className="col-md-2 pt-3 pb-3 overflow-hidden border rounded text-center">
+					<h3>Sidebar Contents</h3>
+						<Link to="/rankings/rating/desc">Rankings</Link><br/>
+						Item 2<br/>
+						Item 3<br/>
+						Item 4<br/>
+				</div>
+				<div className="col-md-10 pt-3 pb-3 border rounded">
+					<Switch>
+						<Route path="/rankings/:sort/:sortOrder">
+							<Rankings/>
+						</Route>
+						<Route path="/user/:username">
+							<Profile/>
+						</Route>
+						<Route path="/">
+							<h1 className="title">Project DivaR</h1>
+							Under construction!
+						</Route>
+					</Switch>
+				</div>
 			</div>
 		</div>
-	</div>;
+	</Router>);
 }
 
 export default App;

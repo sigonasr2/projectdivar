@@ -24,6 +24,15 @@ background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 
 	cursor:pointer;
 }
 
+.loading{
+	opacity:0.4;
+}
+
+.header{
+	font-weight:bold;
+	text-decoration:underline;
+}
+
 .topbar{
 	background: rgb(251,251,251);
 	background: radial-gradient(circle, rgba(251,251,251,1) 0%, rgba(240,240,255,1) 100%);
