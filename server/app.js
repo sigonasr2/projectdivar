@@ -1,4 +1,5 @@
 const express = require('express') 
+const axios = require('axios') 
 const app = express() 
 const port = 4501
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`)) 
@@ -271,3 +272,49 @@ app.get('/users/:orderby/:sortorder',(req,res)=>{
 		res.status(400).json("Invalid query!")
 	}
 })
+
+app.get('/twitter/mentions', function(req, res) {
+	if (req.query.data) {
+		console.log(req.query.data)
+		res.status(200).json("OK!")
+	} else {
+		res.status(400).json("Empty input")
+	}
+})
+
+axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
+	headers: {
+		/*BEARER*/	Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
+	}
+})
+
+  /*
+const crypto = require('crypto')
+function ChallengeCRC(crc_token, consumer_secret) {
+
+  hmac = crypto.createHmac('sha256', consumer_secret).update(crc_token).digest('base64')
+
+  return hmac
+}
+
+app.get('/twitter/mentions', function(req, res) {
+
+  var crc_token = req.query.crc_token
+
+  if (crc_token) {
+    var hash = ChallengeCRC(crc_token, process.env.TWITTER_CONSUMER_SECRET)
+
+    res.status(200);
+    res.send({
+      res_token: 'sha256=' + hash
+    })
+  } else {
+    res.status(400);
+    res.send('Error: crc_token missing from req.')
+  }
+})
+
+console.log("Setting up webhook...")
+
+axios.post("https://api.twitter.com/1.1/account_activity/all/mentions/webhooks.json?url=http://projectdivar.com/twitter/mentions")
+*/

@@ -10,6 +10,8 @@ services:
     working_dir: /server
     volumes:
         - ./server:/server
+    env_file:
+        - ./server/.env.twitter
 
   postgres:
     image: postgres:10.4
