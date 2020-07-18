@@ -135,7 +135,9 @@ CalculateSongScore=(song)=>{
 		}
 	}
 	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/((noteCount)/(noteCount/1000)))*scoreMult
-	score += Math.pow(song.rating,3)/5
+	if (scoreMult>0) {
+		score += Math.pow(song.rating,3)/5
+	}
 	return Number(score);
 }
 
@@ -157,8 +159,8 @@ CalculateRating=(username)=>{
 	.catch((err)=>{throw new Error(err.message)})*/
 	return db.query('select id from users where username=$1 limit 1',[username])
 	.then((data)=>{if(data.rows.length>0){userId=data.rows[0].id;return db.query('select * from songs order by id asc')}else{return 0}})
-	.then((data)=>{if(data.rows.length>0){songs=data.rows;return Promise.all(data.rows.map((song)=>{return db.query('select * from plays where userId=$1 and songId=$2 order by score desc limit 100',[userId,song.id]).then((data)=>{if (data.rows.length>0){debugScoreList+=song.name+"\n"; songs[song.id-1].score=data.rows.reduce((sum,play,i)=>{debugScoreList+="  "+(play.score)+" -> "+(play.score*Math.pow(0.8,i))+"\n";/*console.log("Play score:"+play.score+". Sum:"+sum);*/return sum+play.score*Math.pow(0.8,i);},0);debugScoreList+=" "+songs[song.id-1].score+"\n";}})}))}})
-	.then(()=>{return songs.sort((a,b)=>{var scorea=(a.score)?a.score:0;var scoreb=(b.score)?b.score:0;return (scorea>scoreb)?-1:1;}).reduce((sum,song,i)=>{if(song.score){debugScoreList+=song.name+": "+song.score+" -> "+(song.score*Math.pow(0.8,i))+"\n";return sum+song.score*Math.pow(0.8,i)}else{return sum}},0);})
+	.then((data)=>{if(data.rows.length>0){songs=data.rows;return Promise.all(data.rows.map((song)=>{return db.query('select * from plays where userId=$1 and songId=$2 order by score desc limit 100',[userId,song.id]).then((data)=>{if (data.rows.length>0){debugScoreList+=song.name+"\n"; songs[song.id-1].score=data.rows.reduce((sum,play,i)=>{debugScoreList+="  "+(play.score)+" -> "+(play.score*Math.pow(0.2,i))+"\n";/*console.log("Play score:"+play.score+". Sum:"+sum);*/return sum+play.score*Math.pow(0.2,i);},0);debugScoreList+=" "+songs[song.id-1].score+"\n";}})}))}})
+	.then(()=>{return songs.sort((a,b)=>{var scorea=(a.score)?a.score:0;var scoreb=(b.score)?b.score:0;return (scorea>scoreb)?-1:1;}).reduce((sum,song,i)=>{if(song.score){debugScoreList+=song.name+": "+song.score+" -> "+(song.score*Math.pow(0.9,i))+"\n";return sum+song.score*Math.pow(0.9,i)}else{return sum}},0);})
 	.then((data)=>{/*console.log(debugScoreList);*/return data})
 }
 
@@ -272,7 +274,7 @@ app.get('/users/:orderby/:sortorder',(req,res)=>{
 		res.status(400).json("Invalid query!")
 	}
 })
-
+/*
 app.get('/twitter/mentions', function(req, res) {
 	if (req.query.data) {
 		console.log(req.query.data)
@@ -282,39 +284,46 @@ app.get('/twitter/mentions', function(req, res) {
 	}
 })
 
+const pixels = require("get-pixels");
+*/
+
+
+
+
+var process_images = []
+
+function Process(data){
+	for (var i in data.data.statuses) {
+		var tweet = data.data.statuses[i]
+		if (tweet.source && tweet.source.includes("Nintendo Switch Share")) {
+			if (tweet.extended_entities) {
+				//console.log(tweet.extended_entities.media)
+				for (var j=0;j<tweet.extended_entities.media.length;j++) {
+					var media = tweet.extended_entities.media[j]
+					process_images.push(media.media_url)
+				}
+			}
+		}
+	}
+	//console.log(process_images)
+	if (data.data.search_metadata.next_results) {
+		return axios.get('https://api.twitter.com/1.1/search/tweets.json'+data.data.search_metadata.next_results, {
+			headers: {
+			/*BEARER*/	Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
+		}})
+		.then((data)=>{return Process(data)})
+	}
+	return "Done!";
+}
+/*
 axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 	headers: {
-		/*BEARER*/	Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
+		Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
 	}
 })
-
-  /*
-const crypto = require('crypto')
-function ChallengeCRC(crc_token, consumer_secret) {
-
-  hmac = crypto.createHmac('sha256', consumer_secret).update(crc_token).digest('base64')
-
-  return hmac
-}
-
-app.get('/twitter/mentions', function(req, res) {
-
-  var crc_token = req.query.crc_token
-
-  if (crc_token) {
-    var hash = ChallengeCRC(crc_token, process.env.TWITTER_CONSUMER_SECRET)
-
-    res.status(200);
-    res.send({
-      res_token: 'sha256=' + hash
-    })
-  } else {
-    res.status(400);
-    res.send('Error: crc_token missing from req.')
-  }
+.then((data)=>{
+	//console.log(data.data.statuses)
+	//console.log(data.data)
+	return Process(data);
 })
-
-console.log("Setting up webhook...")
-
-axios.post("https://api.twitter.com/1.1/account_activity/all/mentions/webhooks.json?url=http://projectdivar.com/twitter/mentions")
-*/
+.then((data)=>{process_images.forEach((image)=>{console.log(image)})})*/

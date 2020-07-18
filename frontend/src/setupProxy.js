@@ -1,22 +1,13 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
-	var endpoints = [
-	"/song/:songname",
-	"/register",
-	"/remove",
-	"/submit",
-	"/songdiffs",
-	"/accuracy/:username",
-	"/recalculatescore/:playid",
-	"/bestplay/:username/:songname/:difficulty",
-	"/userdata/:username",
-	"/playcount/:username/:songname/:difficulty",
-	"/songpasscount/:username/:songname/:difficulty",
-	"/songfccount/:username/:songname/:difficulty",
-	"/rating/:username",
-	"/users/:orderby/:sortorder",
-	]
+  app.use(
+	"/image",
+	createProxyMiddleware({
+	  target: 'http://projectdivar.com:4503',
+	  changeOrigin: true,
+	})
+  );
   app.use(
 	"/song/:songname",
 	createProxyMiddleware({
