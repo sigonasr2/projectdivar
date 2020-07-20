@@ -9,6 +9,13 @@ module.exports = function(app) {
 	})
   );
   app.use(
+	"/upload",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+  );
+  app.use(
 	"/song/:songname",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
@@ -108,6 +115,13 @@ module.exports = function(app) {
   );
   app.use(
 	"/twitter/mentions",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+  );
+  app.use(
+	"/files",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
 	  changeOrigin: true,

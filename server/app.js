@@ -12,6 +12,12 @@ app.use(
     extended: true,
   })
 )
+const fileUpload = require('express-fileupload');
+app.use(
+	fileUpload({createParentPath:true,
+	safeFileNames: true, preserveExtension: true})
+)
+
 
   
 let allowCrossDomain = function(req, res, next) {
@@ -77,6 +83,29 @@ app.delete('/remove',(req,res)=>{
 	}
 })
 
+app.post('/upload', function(req, res) {
+  if (!req.files || Object.keys(req.files).length === 0 || req.body.username===undefined || req.body.authentication_token===undefined) {
+    return res.status(400).send('No files were uploaded. Invalid parameters.');
+  }
+
+  let file = req.files.file;
+
+	var uploads = 0;
+	var userId = -1;
+	var fileLoc = "";
+  db.query("select uploads,id from users where username=$1",[req.body.username])
+  .then((data)=>{uploads=data.rows[0].uploads;
+		userId=data.rows[0].id;
+		fileLoc = "files/plays/"+userId+"/"+uploads;
+	  return file.mv(fileLoc);
+  })
+  .then((data)=>{return db.query("update users set uploads=$1 where username=$2",[Number(uploads)+1,req.body.username])})
+  .then((data)=>{return axios.post("http://projectdivar.com/image",{url:"http://projectdivar.com/"+fileLoc,user:req.body.username,auth:req.body.authentication_token})})
+  .then((data)=>{res.status(200).send(data.data)})
+  .catch((err)=>{res.status(500).send(err.message)})
+  
+});
+
 app.post('/submit', (req, res) => {
 	if (req.body &&
 	req.body.username!==undefined && req.body.authentication_token!==undefined && req.body.song!==undefined && req.body.difficulty!==undefined && req.body.cool!==undefined && req.body.fine!==undefined && req.body.safe!==undefined && req.body.sad!==undefined && req.body.worst!==undefined && req.body.percent!==undefined) {
@@ -88,7 +117,18 @@ app.post('/submit', (req, res) => {
 		
 		if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
 		{throw new Error("Invalid difficulty!")}
-		var songsubmitdata={},isFC=false,songRating=-1,userId = -1,songId=-1,playcount=-1,fccount=-1,cool=-1,fine=-1,safe=-1,sad=-1,worst=-1,alreadyPassed=false,eclear=-1,nclear=-1,hclear=-1,exclear=-1,exexclear=-1;
+		var songsubmitdata={},mod="",combo=-1,gameScore=-1,isFC=false,songRating=-1,userId = -1,songId=-1,playcount=-1,fccount=-1,cool=-1,fine=-1,safe=-1,sad=-1,worst=-1,alreadyPassed=false,eclear=-1,nclear=-1,hclear=-1,exclear=-1,exexclear=-1;
+		
+		if (req.body.mod!==undefined) {
+			mod = req.body.mod;
+		}
+		if (req.body.combo!==undefined) {
+			combo = req.body.combo;
+		}
+		if (req.body.gameScore!==undefined) {
+			gameScore = req.body.gameScore;
+		}
+		
 		db.query("select id,authentication_token,playcount,fccount,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1",[req.body.username])
 		.then((data)=>{if(data && data.rows.length>0){if (data.rows[0].authentication_token===req.body.authentication_token){
 			var obj = data.rows[0];
@@ -98,11 +138,11 @@ app.post('/submit', (req, res) => {
 		})
 		.then((data)=>{if(data && data.rows.length>0){songId=data.rows[0].id; return db.query('select rating from songdata where songid=$1 and difficulty=$2 limit 1',[songId,req.body.difficulty])}else{throw new Error("Could not find song.")}})
 		.then((data)=>{songRating=data.rows[0].rating;return db.query("select id from plays where userid=$1 and score>0 and difficulty=$2 and songid=$3 limit 1",[userId,req.body.difficulty,songId])})
-		.then((data)=>{if(data && data.rows.length>0){alreadyPassed=true;/*console.log(data);*/};var score=CalculateSongScore({rating:songRating,cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score,fail])})
+		.then((data)=>{if(data && data.rows.length>0){alreadyPassed=true;/*console.log(data);*/};var score=CalculateSongScore({rating:songRating,cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail,mod,combo,gamescore) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score,fail,mod,combo,gameScore])})
 		.then((data)=>{if(data && data.rows.length>0){
 			songsubmitdata = data.rows[0];
 			//console.log(alreadyPassed+" / "+typeof(alreadyPassed))
-			if(alreadyPassed===false){switch(req.body.difficulty){case"E":{eclear++}break;case"N":{nclear++}break;case"H":{hclear++}break;case"EX":{exclear++}break;case"EXEX":{exexclear++}break;}}
+			if(alreadyPassed===false && songsubmitdata.score>0){switch(req.body.difficulty){case"E":{eclear++}break;case"N":{nclear++}break;case"H":{hclear++}break;case"EX":{exclear++}break;case"EXEX":{exexclear++}break;}}
 			isFC = songsubmitdata.safe===0 && songsubmitdata.sad===0 && songsubmitdata.worst===0;
 			return CalculateRating(req.body.username)}else{throw new Error("Could not submit song.")}})
 		.then((data)=>{return db.query("update users set rating=$1,last_played=$3,playcount=$4,fccount=$5,cool=$6,fine=$7,safe=$8,sad=$9,worst=$10,eclear=$11,nclear=$12,hclear=$13,exclear=$14,exexclear=$15 where username=$2",[data,req.body.username,new Date(),++playcount,fccount+((isFC)?1:0),cool+Number(req.body.cool),fine+Number(req.body.fine),safe+Number(req.body.safe),sad+Number(req.body.sad),worst+Number(req.body.worst),eclear,nclear,hclear,exclear,exexclear])})
@@ -315,6 +355,9 @@ function Process(data){
 	}
 	return "Done!";
 }
+
+app.use('/files',express.static('files'))
+
 /*
 axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 	headers: {

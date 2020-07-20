@@ -275,6 +275,35 @@ function Rankings(){
 	);
 }
 
+function Submit() {
+	var [file,setFile] = useState(null);
+	
+	var prepFile = (e)=>{
+		setFile(e.currentTarget.files[0])
+	}
+	var uploadFile = (e)=>{
+		const data = new FormData() 
+		data.append('file', file)
+		/*data.append("username","sigonasr2");
+		data.append("authentication_token","sig");*/
+		axios.post("http://projectdivar.com/upload", data, {})
+		  .then(res => {
+			console.log(res.statusText)
+		  })
+		  .catch((err)=>{console.log(err.message)})
+	}
+	
+	return (<form method="post" action="#" id="#">
+	<div className="form-group color files">
+		<h3>Submit your play</h3>
+		<i>Plays can be a single image or a bunch of images in a zip file!</i>
+		<hr/>
+		<input type="file" name="file" className="form-control" onChange={(e)=>{prepFile(e)}}/>
+		<button type="button" className="btn btn-primary btn-block" onClick={(e)=>{uploadFile(e)}}>Upload</button> 
+	  </div>
+	</form>);
+}
+
 function App() {
 	return (<Router>
 		<div className="container content">
@@ -302,6 +331,9 @@ function App() {
 						</Route>
 						<Route path="/user/:username">
 							<Profile/>
+						</Route>
+						<Route path="/submitplay">
+							<Submit/>
 						</Route>
 						<Route path="/">
 							<h1 className="title">Project DivaR</h1>
