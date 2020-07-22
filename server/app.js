@@ -2,7 +2,7 @@ const express = require('express')
 const axios = require('axios') 
 const app = express() 
 const port = 4501
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`)) 
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
 const bodyParser = require('body-parser')
 const { json } = require('body-parser')
 const Pool = require('pg').Pool 
@@ -13,9 +13,13 @@ app.use(
   })
 )
 const fileUpload = require('express-fileupload');
+const unzipper = require('unzipper');
+const fs = require('fs');
 app.use(
 	fileUpload({createParentPath:true,
-	safeFileNames: true, preserveExtension: true})
+	limits: { fileSize: 15 * 1024 * 1024, files: 1 },
+	safeFileNames: true, preserveExtension: true,
+	abortOnLimit:true, uploadTimeout:0})
 )
 
 
@@ -84,25 +88,89 @@ app.delete('/remove',(req,res)=>{
 })
 
 app.post('/upload', function(req, res) {
+	
   if (!req.files || Object.keys(req.files).length === 0 || req.body.username===undefined || req.body.authentication_token===undefined) {
-    return res.status(400).send('No files were uploaded. Invalid parameters.');
+	res.status(400).send('No files were uploaded. Invalid parameters.');
+	return;
   }
-
+  
   let file = req.files.file;
+	//console.log(file)
+	
+  if (file.size>15*1024*1024) {
+	  res.status(400).send("File is too large! Max is 15MB! Consider splitting your plays into chunks (Recommended 50 files per zip).")
+	  return;
+  }
+  
+  if (file.mimetype!=="application/x-zip-compressed" &&
+			file.mimetype!=="image/jpeg" && file.mimetype!=="image/png") {
+		res.status(400).send('File type is invalid!');
+		return;
+	}
 
 	var uploads = 0;
 	var userId = -1;
 	var fileLoc = "";
+	var count=0;
   db.query("select uploads,id from users where username=$1",[req.body.username])
   .then((data)=>{uploads=data.rows[0].uploads;
 		userId=data.rows[0].id;
 		fileLoc = "files/plays/"+userId+"/"+uploads;
 	  return file.mv(fileLoc);
   })
-  .then((data)=>{return db.query("update users set uploads=$1 where username=$2",[Number(uploads)+1,req.body.username])})
-  .then((data)=>{return axios.post("http://projectdivar.com/image",{url:"http://projectdivar.com/"+fileLoc,user:req.body.username,auth:req.body.authentication_token})})
-  .then((data)=>{res.status(200).send(data.data)})
-  .catch((err)=>{res.status(500).send(err.message)})
+  .then((data)=>{
+	  if (file.mimetype!=="application/x-zip-compressed") {
+		  return db.query("update users set uploads=$1 where username=$2",[Number(uploads)+1,req.body.username])
+	  } else {
+		  //console.log(uploads)
+		  uploads++;
+		  //console.log(uploads)
+		  return {}
+  }})
+  .then((data)=>{
+	  if (file.mimetype!=="application/x-zip-compressed") {
+		return axios.post("http://projectdivar.com/image",{url:"http://projectdivar.com/"+fileLoc,user:req.body.username,auth:req.body.authentication_token})
+	  } else {
+		//This is a zip file.
+		var promises = []  
+		promises.push(new Promise((resolve)=>{
+		var stream = fs.createReadStream(fileLoc)
+		  stream
+		  .pipe(unzipper.Parse())
+		  .on('entry', function (entry) {
+			const fileName = entry.path;
+			const type = entry.type; // 'Directory' or 'File'
+			const size = entry.vars.uncompressedSize; // There is also compressedSize;
+			if (type=="File" 
+			&& (fileName.includes(".jpg") || fileName.includes(".jpeg") || fileName.includes(".png"))) {
+			  promises.push(new Promise((resolve)=>{entry.pipe(fs.createWriteStream("files/plays/"+userId+"/"+uploads++)
+			  .on('finish',()=>{/*console.log("Promise finished!");*/resolve(count++)}))
+				}))
+			} else {
+			  entry.autodrain();
+			}
+		  })
+		  .on('finish',()=>{/*console.log("Read finished");*/resolve()})
+		 }))
+		 return Promise.all(promises)
+  }})
+  .then((data)=>{
+	  if (file.mimetype!=="application/x-zip-compressed") {
+		res.status(200).send("Your play has been submitted! Thank you.");
+	  } else {
+		 //console.log(data)
+		 //console.log(uploads))
+		 fs.unlink(fileLoc,(err)=>{})
+		return db.query("update users set uploads=$1 where username=$2",[Number(uploads)+1,req.body.username])
+	  }
+  })
+  .then((data)=>{
+	  if (file.mimetype!=="application/x-zip-compressed") {
+	  } else {
+		res.status(200).send("Submitted "+count+" plays to the submission system. They will be processed shortly! Thank you.")
+	  }
+  })
+  .catch((err)=>{console.log(err.message);res.status(500).send(err.message)})
   
 });
 
@@ -113,6 +181,10 @@ app.post('/submit', (req, res) => {
 		if (req.body.fail!==undefined) {
 			fail = (req.body.fail=='true');
 			//console.log("Fail is "+fail+" type:"+typeof(fail))
+		}
+		var submitDate = new Date();
+		if (req.body.submitDate!==undefined) {
+			submitDate=req.body.submitDate;
 		}
 		
 		if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
@@ -138,7 +210,7 @@ app.post('/submit', (req, res) => {
 		})
 		.then((data)=>{if(data && data.rows.length>0){songId=data.rows[0].id; return db.query('select rating from songdata where songid=$1 and difficulty=$2 limit 1',[songId,req.body.difficulty])}else{throw new Error("Could not find song.")}})
 		.then((data)=>{songRating=data.rows[0].rating;return db.query("select id from plays where userid=$1 and score>0 and difficulty=$2 and songid=$3 limit 1",[userId,req.body.difficulty,songId])})
-		.then((data)=>{if(data && data.rows.length>0){alreadyPassed=true;/*console.log(data);*/};var score=CalculateSongScore({rating:songRating,cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail,mod,combo,gamescore) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,new Date(),score,fail,mod,combo,gameScore])})
+		.then((data)=>{if(data && data.rows.length>0){alreadyPassed=true;/*console.log(data);*/};var score=CalculateSongScore({rating:songRating,cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail,mod,combo,gamescore) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,submitDate,score,fail,mod,combo,gameScore])})
 		.then((data)=>{if(data && data.rows.length>0){
 			songsubmitdata = data.rows[0];
 			//console.log(alreadyPassed+" / "+typeof(alreadyPassed))
@@ -163,7 +235,7 @@ CalculateSongScore=(song)=>{
 	var noteCount=song.cool+song.fine+song.safe+song.sad+song.worst;
 	var comboBreaks=song.safe+song.sad+song.worst;
 	var scoreMult=1;
-	if(comboBreaks===0){scoreMult=2}else if(song.percent>=95){scoreMult=1.2}else{scoreMult=1}
+	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=3}else if(comboBreaks===0){scoreMult=2}else if(song.percent>=95){scoreMult=1.2}else{scoreMult=1}
 	switch (song.difficulty){
 		case "E":{if(song.percent<30){scoreMult=0}}break;
 		case "N":{if(song.percent<50){scoreMult=0}}break;
@@ -174,7 +246,7 @@ CalculateSongScore=(song)=>{
 			if(song.percent<60){scoreMult=0}
 		}
 	}
-	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/((noteCount)/(noteCount/1000)))*scoreMult
+	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/1000.0)*scoreMult
 	if (scoreMult>0) {
 		score += Math.pow(song.rating,3)/5
 	}
@@ -199,9 +271,9 @@ CalculateRating=(username)=>{
 	.catch((err)=>{throw new Error(err.message)})*/
 	return db.query('select id from users where username=$1 limit 1',[username])
 	.then((data)=>{if(data.rows.length>0){userId=data.rows[0].id;return db.query('select * from songs order by id asc')}else{return 0}})
-	.then((data)=>{if(data.rows.length>0){songs=data.rows;return Promise.all(data.rows.map((song)=>{return db.query('select * from plays where userId=$1 and songId=$2 order by score desc limit 100',[userId,song.id]).then((data)=>{if (data.rows.length>0){debugScoreList+=song.name+"\n"; songs[song.id-1].score=data.rows.reduce((sum,play,i)=>{debugScoreList+="  "+(play.score)+" -> "+(play.score*Math.pow(0.2,i))+"\n";/*console.log("Play score:"+play.score+". Sum:"+sum);*/return sum+play.score*Math.pow(0.2,i);},0);debugScoreList+=" "+songs[song.id-1].score+"\n";}})}))}})
-	.then(()=>{return songs.sort((a,b)=>{var scorea=(a.score)?a.score:0;var scoreb=(b.score)?b.score:0;return (scorea>scoreb)?-1:1;}).reduce((sum,song,i)=>{if(song.score){debugScoreList+=song.name+": "+song.score+" -> "+(song.score*Math.pow(0.9,i))+"\n";return sum+song.score*Math.pow(0.9,i)}else{return sum}},0);})
-	.then((data)=>{/*console.log(debugScoreList);*/return data})
+	.then((data)=>{if(data.rows.length>0){songs=data.rows;return Promise.all(data.rows.map((song)=>{return db.query('select * from plays where userId=$1 and songId=$2 and score!=$3 order by score desc limit 100',[userId,song.id,"NaN"]).then((data)=>{if (data.rows.length>0){debugScoreList+=song.name+"\n"; songs[song.id-1].score=data.rows.reduce((sum,play,i)=>{debugScoreList+="  "+(play.score)+" -> "+(play.score*Math.pow(0.2,i))+"";if (i===0 && play.fine+play.safe+play.sad+play.worst===0){songs[play.songid-1].pfc=true;debugScoreList+="+"}else if (i===0 && play.safe+play.sad+play.worst===0){songs[play.songid-1].fc=true;debugScoreList+="*"}debugScoreList+="\n";/*console.log("Play score:"+play.score+". Sum:"+sum);*/return sum+play.score*Math.pow(0.2,i);},0);debugScoreList+=" "+songs[song.id-1].score+"\n";}})}))}})
+	.then(()=>{return songs.sort((a,b)=>{var scorea=(a.score)?a.score:0;var scoreb=(b.score)?b.score:0;return (scorea>scoreb)?-1:1;}).reduce((sum,song,i)=>{if(song.score && !isNaN(song.score)){debugScoreList+=song.name+": "+song.score+" -> "+(song.score*Math.pow(0.9,i))+((song.pfc)?("+"+2):(song.fc)?("+"+1):0)+"\n";return sum+song.score*Math.pow(0.9,i)+((song.pfc)?2:(song.fc)?+1:0)}else{return sum}},0);})
+	.then((data)=>{console.log(debugScoreList);return data})
 }
 
 app.get('/songdiffs',(req,res)=>{

@@ -13,6 +13,7 @@ import {
 const REMOTE_ADDR = "http://45.33.13.215:4502";
 
 const axios = require('axios');
+axios.defaults.timeout = 180000;
 
 function Logo(){
 	var note_arrow=new Image();
@@ -55,13 +56,7 @@ function Logo(){
 		draw.font="64px Open Sans Condensed";
 		var size=draw.measureText("Pr   ject")
 		logo.width=size.width
-	});
-	function drawImage(image, x, y, scale, rotation){
-		var draw = logo.getContext("2d");
-		draw.setTransform(scale, 0, 0, scale, x, y); // sets scale and origin
-		draw.rotate(rotation);
-		draw.drawImage(image, -image.width / 2, -image.height / 2);
-	} 
+		
 	setInterval(()=>{
 		if (hitrating==-1) {
 			pos[0]-=startpoint[0]/20;
@@ -135,7 +130,15 @@ function Logo(){
 		}
 		timer+=50;
 		timer2-=50;
+		//p.setSiteCounter(p.siteCounter+1);
 	},50)
+	},300);
+	function drawImage(image, x, y, scale, rotation){
+		var draw = logo.getContext("2d");
+		draw.setTransform(scale, 0, 0, scale, x, y); // sets scale and origin
+		draw.rotate(rotation);
+		draw.drawImage(image, -image.width / 2, -image.height / 2);
+	} 
 	return (<>
 		<canvas className="homelink" id="logo" width="0" height="84"/>
 	</>);
@@ -275,33 +278,76 @@ function Rankings(){
 	);
 }
 
-function Submit() {
+function Submit(p) {
 	var [file,setFile] = useState(null);
+	var [fileProcess,setFileProcess] = useState(0);
+	var [error,setError] = useState(null);
+	var [success,setSuccess] = useState(null);
+	var [fileProgress,setFileProgress] = useState(0);
 	
 	var prepFile = (e)=>{
 		setFile(e.currentTarget.files[0])
+		setError(null);
 	}
 	var uploadFile = (e)=>{
+		setError(null);
+		if (!file) {setError("No file selected!");return;}
+		if (file.type!=="application/x-zip-compressed" &&
+			file.type!=="image/jpeg" && file.type!=="image/png") {
+			setError("File type is invalid! Please provide a .zip/.jpg/.png file!")
+			setFileProcess(0)
+			return;
+		}
 		const data = new FormData() 
 		data.append('file', file)
 		/*data.append("username","sigonasr2");
 		data.append("authentication_token","sig");*/
-		axios.post("http://projectdivar.com/upload", data, {})
+		if (!data.has("username") || !data.has("authentication_token")) {setError("Authentication failed!");return;}
+		
+		if (file.size>15*1024*1024) {
+			setError("File size is too large! Max is 15MB! Consider splitting your plays into chunks (Recommended 50 files per zip).");return;
+		}
+		//console.log(file)
+		setFileProcess(1);
+		
+		axios.post("http://projectdivar.com/upload", data, {
+			onUploadProgress: function(progressEvent) {
+				//console.log(progressEvent)
+			  setFileProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total))
+			}})
 		  .then(res => {
-			console.log(res.statusText)
+			setSuccess(res.data);
+			setFileProgress(100)
+			setFileProcess(0)
 		  })
-		  .catch((err)=>{console.log(err.message)})
+		  .catch((err)=>{setError(err.message);setFileProgress(0);setFileProcess(0)})
 	}
-	
-	return (<form method="post" action="#" id="#">
-	<div className="form-group color files">
-		<h3>Submit your play</h3>
-		<i>Plays can be a single image or a bunch of images in a zip file!</i>
-		<hr/>
-		<input type="file" name="file" className="form-control" onChange={(e)=>{prepFile(e)}}/>
-		<button type="button" className="btn btn-primary btn-block" onClick={(e)=>{uploadFile(e)}}>Upload</button> 
-	  </div>
-	</form>);
+	switch (fileProcess) {
+		default:{
+			return (
+				<form method="post" action="#" id="#">
+				<div className="files form-group color">
+					<h3>Submit your play</h3>
+					<i>Plays can be a single image or a bunch of images in a zip file!</i>
+					<hr/>
+					{(success!=null)?<h4 className="success">{success}</h4>:<></>}
+					<div style={{position:"relative",top:"0px"}}>
+					<input type="file" name="file" className="form-control" onChange={(e)=>{prepFile(e)}} disabled={fileProcess===1}/>
+					<div className="uploadicon"/>
+					<div className="dragText">or drag it here</div>
+					</div>
+					{(error!==null)?<div className="error">{error}</div>:<></>}
+					<button type="button" className="btn btn-primary btn-block" onClick={(e)=>{uploadFile(e)}} disabled={fileProcess===1}>
+						{fileProcess===1?<>Uploading...<span className="spinner-border"/>
+						<div className="progress" style={{position:"relative"}}>
+						  <div className={"progress-bar"} style={{width:fileProgress+"%"}} role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+						  <div style={{position:"relative"}}>{fileProgress+"%"}</div>
+						</div>
+					</>:<>Upload</>}</button> 
+				  </div>
+				</form>);
+		}
+	}
 }
 
 function App() {

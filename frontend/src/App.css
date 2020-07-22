@@ -47,6 +47,14 @@ background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 
 	font-size: 64px;
 }
 
+.error{
+	color:rgb(170,0,0);
+}
+
+.success{
+	color:green;
+}
+
 @keyframes fadein {
   0%   {opacity:0;}
   100%   {opacity:1;}
@@ -113,33 +121,32 @@ background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 
     -webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
     transition: outline-offset .15s ease-in-out, background-color .15s linear; border:1px solid #92b0b3;
  }
-.files{ position:relative}
-.files:after {  pointer-events: none;
+.uploadicon {  pointer-events: none;
     position: absolute;
-    top: 140px;
+    top: 40px;
     left: 0;
     width: 50px;
     right: 0;
     height: 56px;
     content: "";
     background-image: url(https://image.flaticon.com/icons/png/128/109/109612.png);
-    display: block;
     margin: 0 auto;
     background-size: 100%;
     background-repeat: no-repeat;
+	z-index:100;
 }
 .color input{ background-color:#f0f0ff;}
-.files:before {
+.dragText {
     position: absolute;
-    bottom: 10px;
+    top: 160px;
     left: 0;  pointer-events: none;
     width: 100%;
     right: 0;
     height: 72px;
     content: " or drag it here. ";
-    display: block;
     margin: 0 auto;
     color: #000000;
     text-transform: capitalize;
     text-align: center;
+	z-index:100;
 }
