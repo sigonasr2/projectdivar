@@ -112,11 +112,16 @@ app.post('/upload', function(req, res) {
 	var userId = -1;
 	var fileLoc = "";
 	var count=0;
-  db.query("select uploads,id from users where username=$1",[req.body.username])
-  .then((data)=>{uploads=data.rows[0].uploads;
-		userId=data.rows[0].id;
-		fileLoc = "files/plays/"+userId+"/"+uploads;
-	  return file.mv(fileLoc);
+  db.query("select uploads,id from users where username=$1 and authentication_token=$2",[req.body.username,req.body.authentication_token])
+  .then((data)=>{
+	  if (data.rows.length>0) {
+		  uploads=data.rows[0].uploads;
+			userId=data.rows[0].id;
+			fileLoc = "files/plays/"+userId+"/"+uploads;
+		  return file.mv(fileLoc);
+	  } else {
+		  throw new Error("Could not find / authenticate user with name "+req.body.username+"!")
+	  }
   })
   .then((data)=>{
 	  if (file.mimetype!=="application/x-zip-compressed") {
@@ -143,15 +148,17 @@ app.post('/upload', function(req, res) {
 			const size = entry.vars.uncompressedSize; // There is also compressedSize;
 			if (type=="File" 
 			&& (fileName.includes(".jpg") || fileName.includes(".jpeg") || fileName.includes(".png"))) {
-			  promises.push(new Promise((resolve)=>{entry.pipe(fs.createWriteStream("files/plays/"+userId+"/"+uploads++)
-			  .on('finish',()=>{/*console.log("Promise finished!");*/resolve(count++)}))
-				}))
+			  promises.push(new Promise((resolve)=>{var file="files/plays/"+userId+"/"+uploads++;entry.pipe(fs.createWriteStream(file))
+			  .on('finish',()=>{/*console.log("Promise finished!");*/count++;resolve({file:"http://projectdivar.com/"+file})})
+				})
+				.then((data)=>{return db.query("insert into uploadedplays values($1,$2,$3)",[data.file,userId,new Date()]);}))
 			} else {
 			  entry.autodrain();
 			}
 		  })
 		  .on('finish',()=>{/*console.log("Read finished");*/resolve()})
 		 }))
+			setTimeout(()=>(console.dir(promises)),5000)
 		 return Promise.all(promises)
   }})
   .then((data)=>{
@@ -273,7 +280,7 @@ CalculateRating=(username)=>{
 	.then((data)=>{if(data.rows.length>0){userId=data.rows[0].id;return db.query('select * from songs order by id asc')}else{return 0}})
 	.then((data)=>{if(data.rows.length>0){songs=data.rows;return Promise.all(data.rows.map((song)=>{return db.query('select * from plays where userId=$1 and songId=$2 and score!=$3 order by score desc limit 100',[userId,song.id,"NaN"]).then((data)=>{if (data.rows.length>0){debugScoreList+=song.name+"\n"; songs[song.id-1].score=data.rows.reduce((sum,play,i)=>{debugScoreList+="  "+(play.score)+" -> "+(play.score*Math.pow(0.2,i))+"";if (i===0 && play.fine+play.safe+play.sad+play.worst===0){songs[play.songid-1].pfc=true;debugScoreList+="+"}else if (i===0 && play.safe+play.sad+play.worst===0){songs[play.songid-1].fc=true;debugScoreList+="*"}debugScoreList+="\n";/*console.log("Play score:"+play.score+". Sum:"+sum);*/return sum+play.score*Math.pow(0.2,i);},0);debugScoreList+=" "+songs[song.id-1].score+"\n";}})}))}})
 	.then(()=>{return songs.sort((a,b)=>{var scorea=(a.score)?a.score:0;var scoreb=(b.score)?b.score:0;return (scorea>scoreb)?-1:1;}).reduce((sum,song,i)=>{if(song.score && !isNaN(song.score)){debugScoreList+=song.name+": "+song.score+" -> "+(song.score*Math.pow(0.9,i))+((song.pfc)?("+"+2):(song.fc)?("+"+1):0)+"\n";return sum+song.score*Math.pow(0.9,i)+((song.pfc)?2:(song.fc)?+1:0)}else{return sum}},0);})
-	.then((data)=>{console.log(debugScoreList);return data})
+	.then((data)=>{/*console.log(debugScoreList);*/return data})
 }
 
 app.get('/songdiffs',(req,res)=>{
@@ -403,6 +410,9 @@ const pixels = require("get-pixels");
 
 
 var process_images = []
+var processPromises = []
+var largestId = 0
+var filterId = 0
 
 function Process(data){
 	for (var i in data.data.statuses) {
@@ -412,7 +422,7 @@ function Process(data){
 				//console.log(tweet.extended_entities.media)
 				for (var j=0;j<tweet.extended_entities.media.length;j++) {
 					var media = tweet.extended_entities.media[j]
-					process_images.push(media.media_url)
+					process_images.push({image:media.media_url,user:tweet.user.id,id:tweet.id})
 				}
 			}
 		}
@@ -442,3 +452,78 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 	return Process(data);
 })
 .then((data)=>{process_images.forEach((image)=>{console.log(image)})})*/
+
+setInterval(
+()=>{
+	var uploadData=undefined;
+	db.query("select * from uploadedplays order by submissiondate asc limit 1;")
+	.then((data)=>{
+		if (data.rows.length>0) {
+			uploadData=data.rows[0];
+			return db.query("select username,authentication_token from users where id=$1",[uploadData.userid])
+		}
+	})
+	.then((data)=>{
+		if (uploadData && data.rows.length>0) {
+			return axios.post("http://projectdivar.com/image",
+			{url:uploadData.filename,user:data.rows[0].username,auth:data.rows[0].authentication_token})
+		}
+	})
+	.then((data)=>{
+		if (uploadData) {
+			if (data.data==="Invalid parameters!") {
+				throw new Error("Invalid parameters while trying to submit play!")
+			} else {
+				return db.query("delete from uploadedplays where id=$1",[uploadData.id])
+			}
+		}
+	})
+	.catch((err)=>{console.log(err)})
+}
+,5000)
+
+setInterval(()=>{db.query("select * from twitter_bot limit 1")
+.then((data)=>{
+	largestId=filterId=data.rows[0].lastpost;
+	//console.log("Filter Id: "+filterId);
+	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
+		headers: {
+			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
+		}
+	})
+})
+.then((data)=>{
+	//console.log(data.data.statuses)
+	//console.log(data.data)
+	//data.data.s
+	return Process(data);
+})
+.then((data)=>{
+	//console.log(process_images)
+	var promisesDone=0;
+	process_images.forEach((obj)=>{
+	if (filterId<obj.id) {
+		if (largestId<obj.id) {largestId=obj.id}
+		processPromises.push(new Promise((resolve,reject)=>{
+		//console.log("Process Twitter Post: "+obj.id);	
+		return db.query("select id from users where twitter=$1",[obj.user])
+		.then((data)=>{
+			if (data.rows.length>0) {
+				return db.query("insert into uploadedplays values($1,$2,$3)",[obj.image,data.rows[0].id,new Date()])
+				.then(()=>{resolve("Done!")})
+			} else {
+				reject("Not associated with an Id!")
+			}
+		})
+		.catch((err)=>{console.log(err.message);reject("Failed!")})}))
+	}
+})
+//setTimeout(()=>{console.dir(processPromises, {'maxArrayLength': null})},2000)
+return Promise.allSettled(processPromises)
+})
+.then((data)=>{
+	//console.log(largestId)
+	return db.query("update twitter_bot set lastpost=$1 returning *",[largestId])
+})
+.catch((err)=>{console.log(err.message)})
+},60000)

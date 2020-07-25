@@ -300,8 +300,8 @@ function Submit(p) {
 		}
 		const data = new FormData() 
 		data.append('file', file)
-		/*data.append("username","sigonasr2");
-		data.append("authentication_token","sig");*/
+		data.append("username","sigonasr2");
+		data.append("authentication_token","sig");
 		if (!data.has("username") || !data.has("authentication_token")) {setError("Authentication failed!");return;}
 		
 		if (file.size>15*1024*1024) {
