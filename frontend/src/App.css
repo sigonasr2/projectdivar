@@ -5,11 +5,11 @@ body {
     height: 100%;
     margin: 0;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-background: rgb(251,251,251);
-background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 82%, rgba(185,255,255,1) 89%, rgba(64,185,183,1) 100%);
+	background: rgb(251,251,251);
+	background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 82%, rgba(185,255,255,1) 89%, rgba(64,185,183,1) 100%);
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
+    background-attachment: fixed;
 	font-family: 'M PLUS 1p', sans-serif;
 	  color: #333;
 	  text-shadow:
@@ -17,6 +17,15 @@ background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 
 		0 0 2px #aaa,
 		0 0 4px #aaa,
 		0 0 8px #999
+}
+
+.numbers{
+	font-size:18px;
+}
+
+.scaled-text{
+	font-size: 16px;
+    font-size: 1vw;
 }
 
 .homelink:hover{
@@ -39,7 +48,23 @@ background: linear-gradient(180deg, rgba(251,251,251,1) 0%, rgba(240,255,255,1) 
 }
 
 .content{
-	background:#f0f0ff;
+	/*background:#f0f0ff;*/
+}
+
+span.fc{
+	border: 0px;
+	background: #9cbf00;
+}
+
+span.pfc{
+	border: 0px;
+	color: #FFF;
+	background: #bf3900;
+}
+
+.fc{
+	/*border: 1px solid #0000ff;
+	background: #defabb;*/
 }
 
 .title{
