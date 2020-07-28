@@ -266,19 +266,20 @@ CalculateSongScore=(song)=>{
 	var noteCount=song.cool+song.fine+song.safe+song.sad+song.worst;
 	var comboBreaks=song.safe+song.sad+song.worst;
 	var scoreMult=1;
-	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=3}else if(comboBreaks===0){scoreMult=2}else if(song.percent>=95){scoreMult=1.2}else{scoreMult=1}
+	var percentMult=1;
+	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=3}else if(comboBreaks===0){scoreMult=2}else{scoreMult=1}
 	switch (song.difficulty){
-		case "E":{if(song.percent<30){scoreMult=0}}break;
-		case "N":{if(song.percent<50){scoreMult=0}}break;
-		case "H":{if(song.percent<60){scoreMult=0}}break;
+		case "E":{if(song.percent<30){percentMult=0;}else{percentMult=1+(0.4*((song.percent-30)/70.0))}}break;
+		case "N":{if(song.percent<50){percentMult=0}else{percentMult=1+(0.4*((song.percent-50)/50.0))}}break;
+		case "H":{if(song.percent<60){percentMult=0}else{percentMult=1+(0.4*((song.percent-60)/40.0))}}break;
 		case "EX":
-		case "EXEX":{if(song.percent<70){scoreMult=0}}break;
+		case "EXEX":{if(song.percent<70){percentMult=0}else{percentMult=1+(0.4*((song.percent-70)/30.0))}}break;
 		default:{
-			if(song.percent<60){scoreMult=0}
+			if(song.percent<60){percentMult=0}else{percentMult=1+(0.4*((song.percent-60)/40.0))}
 		}
 	}
-	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/1000.0)*scoreMult
-	if (scoreMult>0) {
+	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/1000.0)*percentMult*scoreMult
+	if (scoreMult>0 && percentMult>0) {
 		score += Math.pow(song.rating,3)/5
 	}
 	return Number(score);
@@ -344,11 +345,11 @@ app.get('/recalculatescore/:playid',(req,res)=>{
 	.then((data)=>res.status(200).json(data)).catch((err)=>{console.log(err);res.status(500).json(err.message);})
 });
 
-/*app.get('/playdata',(req,res)=>{
+app.get('/playdata',(req,res)=>{
 	db.query('select * from plays')
 	.then((data)=>{res.status(200).json(data.rows)})
 	.catch((err)=>res.status(500).json(err.message))
-})*/
+})
 
 app.get('/bestplays/:username',(req,res)=>{
 	var songId=-1,userId=-1,songPromises=[],plays=[];
