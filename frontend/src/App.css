@@ -1,3 +1,9 @@
+/*badge-primary {easy}
+badge-info {normal}
+badge-success {hard}
+badge-warning {ex}
+badge-danger {exex}*/
+
 html {
     height: 100%;
 }
@@ -17,6 +23,48 @@ body {
 		0 0 2px #aaa,
 		0 0 4px #aaa,
 		0 0 8px #999
+}
+
+table th {
+    position: -webkit-sticky; /* this is for all Safari (Desktop & iOS), not for Chrome*/
+    position: sticky;
+    top: 0;
+    z-index: 100000;
+    background: #fff;
+}
+#footer{
+    position: -webkit-sticky; /* this is for all Safari (Desktop & iOS), not for Chrome*/
+    position: sticky;
+    bottom: 0;
+    z-index: 100000;
+}
+
+.background-list-1{
+	background-color:#cee;
+}
+.background-list-1:hover{
+	background-color:#bdd;
+}
+.background-list-2{
+	background-color:#def;
+}
+.background-list-2:hover{
+	background-color:#cde;
+}
+
+.lighthover:hover{
+	background-color:rgba(160,160,255,0.5);
+}
+
+.tinytime{
+	font-size:10px;
+	position:absolute;
+	bottom:0px;
+	right:7px;
+	z-index:-10000;
+	color:#666;
+	font-style:italic;
+	/*background-color:rgba(240,240,255,0.8);*/
 }
 
 .numbers{

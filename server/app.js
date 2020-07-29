@@ -345,10 +345,69 @@ app.get('/recalculatescore/:playid',(req,res)=>{
 	.then((data)=>res.status(200).json(data)).catch((err)=>{console.log(err);res.status(500).json(err.message);})
 });
 
-app.get('/playdata',(req,res)=>{
+/*app.get('/playdata',(req,res)=>{
 	db.query('select * from plays')
 	.then((data)=>{res.status(200).json(data.rows)})
 	.catch((err)=>res.status(500).json(err.message))
+})*/
+
+app.get('/completionreport/:username',(req,res)=>{
+	//Number of passes,plays,fcs,pfcs, and the best play.
+	var userId=-1,songs,promises=[];
+	db.query('select id from users where username=$1 limit 1',[req.params.username])
+	.then ((data)=>{
+		if (data.rows.length>0) {
+			userId=data.rows[0].id;
+			return db.query('select * from songs')
+		} else {
+			throw new Error("Cannot find user!")
+		}
+	})
+	.then((data)=>{
+		songs = data.rows;
+		songs.forEach((song)=>{
+			promises.push(db.query("select * from (select userid,count(*) filter(where difficulty='E') as ECount,count(*) filter(where difficulty='N') as NCount,count(*) filter(where difficulty='H') as HCount,count(*) filter(where difficulty='EX') as EXCount,count(*) filter(where difficulty='EXEX') as EXEXCount,Count(*) filter(where safe=0 and sad=0 and worst=0 and difficulty='E') as EFCCount,Count(*) filter(where safe=0 and sad=0 and worst=0 and difficulty='N') as NFCCount,Count(*) filter(where safe=0 and sad=0 and worst=0 and difficulty='H') as HFCCount,Count(*) filter(where safe=0 and sad=0 and worst=0 and difficulty='EX') as EXFCCount,Count(*) filter(where safe=0 and sad=0 and worst=0 and difficulty='EXEX') as EXEXFCCount,Count(*) filter(where fine=0 and safe=0 and sad=0 and worst=0 and difficulty='E') as EPFCCount,Count(*) filter(where fine=0 and safe=0 and sad=0 and worst=0 and difficulty='N') as NPFCCount,Count(*) filter(where fine=0 and safe=0 and sad=0 and worst=0 and difficulty='H') as HPFCCount,Count(*) filter(where fine=0 and safe=0 and sad=0 and worst=0 and difficulty='EX') as EXPFCCount,Count(*) filter(where fine=0 and safe=0 and sad=0 and worst=0 and difficulty='EXEX') as EXEXPFCCount from plays where userid=$1 and songid=$2 group by userid)t1 join (select rank,t.score,t.percent from (select row_number()over(order by score desc)rank,* from(select distinct on (userid) * from (select * from plays where songid=$2)t order by userid,score desc)t)t where userid=$1)t2 on t1.userid=t1.userid",[userId,song.id])
+			.then((data)=>{
+				if (data.rows.length>0) {
+					song.report=data.rows[0]
+				} else {
+					song.report={ecount:0,ncount:0,hcount:0,excount:0,exexcount:0,efccount:0,nfccount:0,hfccount:0,exfccount:0,exexfccount:0,epfccount:0,npfccount:0,hpfccount:0,expfccount:0,exexpfccount:0,rank:0}
+				}
+				})
+			)
+		})
+		return Promise.all(promises)
+	})
+	.then((data)=>{
+		return res.status(200).json(songs);
+	})
+	.catch((err)=>{res.status(500).json(err.message)})
+})
+
+app.get('/ratings/:songname/:username',(req,res)=>{
+	var songId=-1,userId=-1;
+	db.query('select id from users where username=$1 limit 1', [req.params.username])
+	.then((data)=>{
+		if (data.rows.length>0) {
+			userId=data.rows[0].id
+			return db.query('select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1', [req.params.songname])
+		} else {
+			throw new Error("Could not find user!")
+		}
+	})
+	.then((data)=>{
+		if (data.rows.length>0) {
+			songId=data.rows[0].id
+			return db.query("select * from (select row_number()over(order by score desc)rank,* from(select distinct on (userid) * from (select * from plays where songid=$1)t order by userid,score desc)t)t where userid=$2",[songId,userId])
+		} else {
+			throw new Error("Could not find song!")
+		}
+ 	})
+	.then((data)=>{
+		res.status(200).json(data.rows)
+	})
+	.catch((err)=>{res.status(500).json(err.message)})
+	
 })
 
 app.get('/bestplays/:username',(req,res)=>{
@@ -401,6 +460,38 @@ app.get('/songfccount/:username/:songname/:difficulty',(req,res)=>{
 	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;return db.query('select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1', [req.params.songname])}else{throw new Error("Cannot find user!")}})
 	.then((data)=>{if(req.params.songname &&data.rows.length>0){songId=data.rows[0].id;return db.query('select * from plays where userid=$1 and songid=$2 and difficulty=$3 and safe=0 and sad=0 and worst=0',[userId,songId,req.params.difficulty])}else{res.status(400).json("Could not find song!")}})
 	.then((data)=>{if(data && data.rows.length>0){res.status(200).json({fccount:data.rows.length})}else{res.status(200).json({fccount:0})}})
+	.catch((err)=>{res.status(500).json(err.message)})
+})
+
+app.get('/songpfccount/:username/:songname/:difficulty',(req,res)=>{
+	var songId=-1,userId=-1;
+	db.query('select id from users where username=$1 limit 1',[req.params.username])
+	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;return db.query('select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1', [req.params.songname])}else{throw new Error("Cannot find user!")}})
+	.then((data)=>{if(req.params.songname &&data.rows.length>0){songId=data.rows[0].id;return db.query('select * from plays where userid=$1 and songid=$2 and difficulty=$3 and fine=0 and safe=0 and sad=0 and worst=0',[userId,songId,req.params.difficulty])}else{res.status(400).json("Could not find song!")}})
+	.then((data)=>{if(data && data.rows.length>0){res.status(200).json({fccount:data.rows.length})}else{res.status(200).json({fccount:0})}})
+	.catch((err)=>{res.status(500).json(err.message)})
+})
+
+app.get('/songmods/:username/:songname/:difficulty',(req,res)=>{
+	var songId=-1,userId=-1,hs=0,sd=0,hd=0;
+	db.query('select id from users where username=$1 limit 1',[req.params.username])
+	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;return db.query('select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1', [req.params.songname])}else{throw new Error("Cannot find user!")}})
+	.then((data)=>{if(req.params.songname &&data.rows.length>0){songId=data.rows[0].id;return db.query('select COUNT(mod) from (select * from plays where userid=$1 and songid=$2 and difficulty=$3 and mod=$4)t',[userId,songId,req.params.difficulty,"HS"])}else{res.status(400).json("Could not find song!")}})
+	.then((data)=>{if(data && data.rows.length>0){
+		hs=data.rows[0].count;
+	}
+		return db.query('select COUNT(mod) from (select * from plays where userid=$1 and songid=$2 and difficulty=$3 and mod=$4)t',[userId,songId,req.params.difficulty,"SD"])
+	})
+	.then((data)=>{if(data && data.rows.length>0){
+		sd=data.rows[0].count;
+		}
+		return db.query('select COUNT(mod) from (select * from plays where userid=$1 and songid=$2 and difficulty=$3 and mod=$4)t',[userId,songId,req.params.difficulty,"HD"])
+	})
+	.then((data)=>{if(data && data.rows.length>0){
+		hd=data.rows[0].count;
+	}
+		res.status(200).json({hs:hs,sd:sd,hd:hd})
+	})
 	.catch((err)=>{res.status(500).json(err.message)})
 })
 

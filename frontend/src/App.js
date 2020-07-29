@@ -13,7 +13,6 @@ import {
 const REMOTE_ADDR = "http://45.33.13.215:4502";
 
 const axios = require('axios');
-axios.defaults.timeout = 180000;
 
 var RATING_cool=new Image();
 RATING_cool.src="data:image/png;base64,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"
@@ -302,11 +301,18 @@ function Difficulty(p) {
 }
 
 function Play(p) {
+	
+	function GetDateDiff() {
+		var hours = Math.floor((Date.now()-new Date(p.play.date))/1000/60/60);
+		var days = Math.floor(hours/24)
+		if (hours<24) {return <>{hours} {"hour"+((hours!==1)?"s":"")} ago</>}
+		return <>{days} {"day"+((days!==1)?"s":"")} ago</>
+	}
 	return (
 	<>
 		<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfc":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fc":"")}>
 			{(p.index!==undefined)?<div className=" col-md-1 text-center border-right align-middle text-nowrap overflow-hidden"><span className="d-none d-md-block">{p.index+1}</span>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">FC</span>:<></>)}</div>:<></>}
-			<div className="col-md-3 text-center border-right align-middle text-nowrap overflow-hidden"><SongName song={p.song}/></div>
+			<div className="col-md-3 text-center border-right align-middle text-nowrap overflow-hidden"><SongName song={p.song}/><span className="tinytime">{GetDateDiff()}</span></div>
 			<div className="col-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/><Difficulty play={p.play} song={p.song}/></div>
 			<div className="col-md-6">
 				<div className="row">
@@ -370,7 +376,7 @@ function BestPlaysPanel(p) {
 	<div className="d-none d-md-block row">
 		<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{p.bestplays.map((play,i)=>{return <li className="list-group-item list-group-item-action">
+			{p.bestplays.map((play,i)=>{return <li className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			</ul>
@@ -379,12 +385,84 @@ function BestPlaysPanel(p) {
 	<div className="d-block d-sm-block d-md-none row ml-3 mr-3">
 		<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{p.bestplays.map((play,i)=>{return <li className="list-group-item list-group-item-action">
+			{p.bestplays.map((play,i)=>{return <li className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			</ul>
 		</div>
 	</div>
+	</>
+	);
+}
+
+function PlayDetail(p) {
+	return (
+		<>
+		<td>
+		{(p.song.report.rank>0)?p.song.report.rank:<i>Not Played</i>}
+		</td>
+		<td>
+		{(p.song.report.rank>0)?<>{p.song.report.score}</>:""}
+		</td>
+		<td>
+		{(p.song.report.rank>0)?<>{p.song.report.percent}%</>:""}
+		</td>
+		<td>
+			{p.song.report.ecount>0?<span className="badge badge-primary">{p.song.report.epfccount>0?"✪":p.song.report.efccount>0?"★":""}{p.song.report.ecount}</span>:<></>}
+			{p.song.report.ncount>0?<span className="badge badge-info">{p.song.report.npfccount>0?"✪":p.song.report.nfccount>0?"★":""}{p.song.report.ncount}</span>:<></>}
+			{p.song.report.hcount>0?<span className="badge badge-success">{p.song.report.hpfccount>0?"✪":p.song.report.hfccount>0?"★":""}{p.song.report.hcount}</span>:<></>}
+			{p.song.report.excount>0?<span className="badge badge-warning">{p.song.report.expfccount>0?"✪":p.song.report.exfccount>0?"★":""}{p.song.report.excount}</span>:<></>}
+			{p.song.report.exexcount>0?<span className="badge badge-danger">{p.song.report.exexpfccount>0?"✪":p.song.report.exexfccount>0?"★":""}{p.song.report.exexcount}</span>:<></>}
+		</td>
+		</>
+	);
+}
+
+function CompletionPanel(p) {
+	const [report,setReport] = useState([])
+	const [update,setUpdate] = useState(false)
+	useEffect(()=>{
+		axios.get("http://projectdivar.com/completionreport/"+p.username)
+		.then((data)=>{setReport(data.data)})
+		.catch((err)=>{console.log(err.message)})
+	},[update])
+	
+	return (
+	<>
+		<table className="table table-sm">
+			<thead>
+				<tr id="headerbar">
+					<th scope="col">
+						Song Name
+					</th>
+					<th>
+						Ranking
+					</th>
+					<th>
+						Score
+					</th>
+					<th>
+						%
+					</th>
+					<th>
+						Play Count
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			{report.map((song)=>{return <tr className="lighthover">
+				<td>
+					{song.name}
+				</td>
+				<PlayDetail song={song}/>
+			</tr>})}
+			</tbody>
+			<tfoot>
+			<tr><td colspan="8" id="footer">
+				<span className="badge badge-primary">Easy</span> <span className="badge badge-info">Normal</span> <span className="badge badge-success">Hard</span> <span className="badge badge-warning">Extreme</span> <span className="badge badge-danger">Extra Extreme</span> <span className="badge badge-light">★ = FC</span>  <span className="badge badge-light">✪ = Perfect FCs</span>
+			</td></tr>
+			</tfoot>
+		</table>
 	</>
 	);
 }
@@ -447,7 +525,7 @@ function Profile(p){
 					<StatisticsPanel name="Statistics" username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
 					<BestPlaysPanel name="Best Plays" username={username} bestplays={bestPlays} songs={p.songs}/>
-					<Panel name="Progress" username={username}/>
+					<CompletionPanel name="Progress" username={username} songs={p.songs}/>
 					<Panel name="Activity" username={username}/>
 					</>
 					:<></>

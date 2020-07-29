@@ -2,6 +2,34 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
 	app.use(
+	"/ratings/:songname",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/completionreport/:username",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/songmods/:username/:songname/:difficulty",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+  );
+	app.use(
+	"/songpfccount/:username/:songname/:difficulty",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+  );
+	app.use(
 	"/songs",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
