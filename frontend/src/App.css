@@ -4,6 +4,29 @@ badge-success {hard}
 badge-warning {ex}
 badge-danger {exex}*/
 
+.display-tooltip{
+	position:absolute;
+	z-index:1000000;
+	display:block;
+	font-size:12px;
+}
+
+.easy-background{
+	background-color:#d6f1ff;
+}
+.normal-background{
+	background-color:#d9ffe2;
+}
+.hard-background{
+	background-color:#fff6cc;
+}
+.ex-background{
+	background-color:#fccfcf;
+}
+.exex-background{
+	background-color:#ecd6ff;
+}
+
 html {
     height: 100%;
 }

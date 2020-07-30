@@ -295,7 +295,7 @@ function FormatRating(rating) {
 function Difficulty(p) {
 	return (
 	<>
-		<span className={"badge badge-"+CalculateBadge(p.play.difficulty)}>{FormatRating(p.song.rating[p.play.difficulty])} {p.play.difficulty}</span>
+		<span className={"badge badge-"+CalculateBadge(p.play.difficulty)}>{(p.song && p.song.rating && p.song.rating[p.play.difficulty])?FormatRating(p.song.rating[p.play.difficulty]):<></>} {p.play.difficulty}</span>
 	</>
 	);
 }
@@ -376,7 +376,7 @@ function BestPlaysPanel(p) {
 	<div className="d-none d-md-block row">
 		<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{p.bestplays.map((play,i)=>{return <li className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
+			{p.bestplays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			</ul>
@@ -385,7 +385,7 @@ function BestPlaysPanel(p) {
 	<div className="d-block d-sm-block d-md-none row ml-3 mr-3">
 		<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{p.bestplays.map((play,i)=>{return <li className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
+			{p.bestplays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			</ul>
@@ -395,7 +395,25 @@ function BestPlaysPanel(p) {
 	);
 }
 
+function ModDisplay(p) {
+	const[tooltip,setTooltip] = useState("")
+	const[visibility,setVisibility] = useState(false)
+	
+	return (
+		<span className={"border border-"+p.badge+" rounded "+p.diff+"-background"} style={{fontSize:"18px"}}>
+			{(p.hs>0)?<span style={{color:"#b33"}} onMouseOver={()=>{setTooltip("High Speed - "+p.diff.toUpperCase());setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>⬣</span>:<></>}
+			{(p.hd>0)?<span onMouseOver={()=>{setTooltip("Hidden - "+p.diff.toUpperCase());setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}} style={{color:"#968a0e"}}>⬣</span>:<></>}
+			{(p.sd>0)?<span onMouseOver={()=>{setTooltip("Sudden - "+p.diff.toUpperCase());setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}} style={{color:"#49b"}}>⬣</span>:<></>}
+				{(visibility)?<span style={{position:"absolute"}} className={"display-tooltip alert alert-dark "+p.diff+"-background"}>{tooltip}</span>:<></>}
+		</span>
+	)
+}
+
 function PlayDetail(p) {
+	const[tooltip,setTooltip] = useState("")
+	const[visibility,setVisibility] = useState(false)
+	const[style,setStyle] = useState("")
+	
 	return (
 		<>
 		<td>
@@ -408,14 +426,54 @@ function PlayDetail(p) {
 		{(p.song.report.rank>0)?<>{p.song.report.percent}%</>:""}
 		</td>
 		<td>
-			{p.song.report.ecount>0?<span className="badge badge-primary">{p.song.report.epfccount>0?"✪":p.song.report.efccount>0?"★":""}{p.song.report.ecount}</span>:<></>}
-			{p.song.report.ncount>0?<span className="badge badge-info">{p.song.report.npfccount>0?"✪":p.song.report.nfccount>0?"★":""}{p.song.report.ncount}</span>:<></>}
-			{p.song.report.hcount>0?<span className="badge badge-success">{p.song.report.hpfccount>0?"✪":p.song.report.hfccount>0?"★":""}{p.song.report.hcount}</span>:<></>}
-			{p.song.report.excount>0?<span className="badge badge-warning">{p.song.report.expfccount>0?"✪":p.song.report.exfccount>0?"★":""}{p.song.report.excount}</span>:<></>}
-			{p.song.report.exexcount>0?<span className="badge badge-danger">{p.song.report.exexpfccount>0?"✪":p.song.report.exexfccount>0?"★":""}{p.song.report.exexcount}</span>:<></>}
+			{p.song.report.ecount>0?<span className="badge badge-primary" onMouseOver={()=>{setTooltip(p.song.report.eclearcount+" / "+p.song.report.ecount+"  ("+(Math.floor(p.song.report.eclearcount/p.song.report.ecount)*100)+"% pass rate)");setStyle("easy");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.epfccount>0?"✪":p.song.report.efccount>0?"★":""}{p.song.report.ecount}</span>:<></>}
+			{p.song.report.ncount>0?<span className="badge badge-info" onMouseOver={()=>{setTooltip(p.song.report.nclearcount+" / "+p.song.report.ncount+"  ("+(Math.floor(p.song.report.nclearcount/p.song.report.ncount)*100)+"% pass rate)");setStyle("normal");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.npfccount>0?"✪":p.song.report.nfccount>0?"★":""}{p.song.report.ncount}</span>:<></>}
+			{p.song.report.hcount>0?<span className="badge badge-success" onMouseOver={()=>{setTooltip(p.song.report.hclearcount+" / "+p.song.report.hcount+"  ("+(Math.floor(p.song.report.hclearcount/p.song.report.hcount)*100)+"% pass rate)");setStyle("hard");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.hpfccount>0?"✪":p.song.report.hfccount>0?"★":""}{p.song.report.hcount}</span>:<></>}
+			{p.song.report.excount>0?<span className="badge badge-warning" onMouseOver={()=>{setTooltip(p.song.report.exclearcount+" / "+p.song.report.excount+"  ("+(Math.floor((p.song.report.exclearcount/p.song.report.excount)*100))+"% pass rate)");setStyle("ex");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.expfccount>0?"✪":p.song.report.exfccount>0?"★":""}{p.song.report.excount}</span>:<></>}
+			{p.song.report.exexcount>0?<span className="badge badge-danger" onMouseOver={()=>{setTooltip(p.song.report.exexclearcount+" / "+p.song.report.exexcount+"  ("+(Math.floor(p.song.report.exexclearcount/p.song.report.exexcount)*100)+"% pass rate)");setStyle("exex");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.exexpfccount>0?"✪":p.song.report.exexfccount>0?"★":""}{p.song.report.exexcount}</span>:<></>}
+			{(visibility)?<span style={{position:"absolute"}} className={"display-tooltip alert alert-dark "+style+"-background"}>{tooltip}</span>:<></>}
+		</td>
+		<td>
+			{(p.song.report.ehscount>0||p.song.report.ehdcount>0||p.song.report.esdcount>0)?
+				<ModDisplay badge="primary" diff="easy" 
+				hs={p.song.report.ehscount} hd={p.song.report.ehdcount} sd={p.song.report.esdcount}/>
+			:<></>
+			}
+			{(p.song.report.nhscount>0||p.song.report.nhdcount>0||p.song.report.nsdcount>0)?
+				<ModDisplay badge="info" diff="normal" 
+				hs={p.song.report.nhscount} hd={p.song.report.nhdcount} sd={p.song.report.nsdcount}/>
+			:<></>
+			}
+			{(p.song.report.hhscount>0||p.song.report.hhdcount>0||p.song.report.hsdcount>0)?
+				<ModDisplay badge="success" diff="hard" 
+				hs={p.song.report.hhscount} hd={p.song.report.hhdcount} sd={p.song.report.hsdcount}/>
+			:<></>
+			}
+			{(p.song.report.exhscount>0||p.song.report.exhdcount>0||p.song.report.exsdcount>0)?
+				<ModDisplay badge="warning" diff="ex" 
+				hs={p.song.report.exhscount} hd={p.song.report.exhdcount} sd={p.song.report.exsdcount}/>
+			:<></>
+			}
+			{(p.song.report.exexhscount>0||p.song.report.exexhdcount>0||p.song.report.exexsdcount>0)?
+				<ModDisplay badge="danger" diff="exex" 
+				hs={p.song.report.exexhscount} hd={p.song.report.exexhdcount} sd={p.song.report.exexsdcount}/>
+			:<></>
+			}
 		</td>
 		</>
 	);
+}
+
+function HoverSongName(p) {
+	const [name,setName] = useState(p.song.name)
+	return (
+		<tr key={p.song.id} className="lighthover" onMouseOver={()=>{setName((p.song.romanized_name.length>0)?p.song.romanized_name:p.song.english_name)}} onMouseOut={()=>{setName(p.song.name)}}>
+			<td>
+				{name}
+			</td>
+			<PlayDetail song={p.song}/>
+		</tr>
+	)
 }
 
 function CompletionPanel(p) {
@@ -447,18 +505,17 @@ function CompletionPanel(p) {
 					<th>
 						Play Count
 					</th>
+					<th>
+						Mods
+					</th>
 				</tr>
 			</thead>
 			<tbody>
-			{report.map((song)=>{return <tr className="lighthover">
-				<td>
-					{song.name}
-				</td>
-				<PlayDetail song={song}/>
-			</tr>})}
+				{report.map((song,i)=>{return <HoverSongName song={song} key={song.id}/>
+				})}
 			</tbody>
 			<tfoot>
-			<tr><td colspan="8" id="footer">
+			<tr><td colSpan="8" id="footer">
 				<span className="badge badge-primary">Easy</span> <span className="badge badge-info">Normal</span> <span className="badge badge-success">Hard</span> <span className="badge badge-warning">Extreme</span> <span className="badge badge-danger">Extra Extreme</span> <span className="badge badge-light">★ = FC</span>  <span className="badge badge-light">✪ = Perfect FCs</span>
 			</td></tr>
 			</tfoot>
@@ -560,7 +617,7 @@ function Rankings(){
 						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="FC Count" order="fccount"/></th>
 					</tr>
 				</thead>
-			{users.map((user)=><>
+			{users.map((user)=>
 				<tbody>
 					<tr>
 						<td className={(isLoading)?"loading":""}><Link to={"/user/"+user.username}>{user.username}</Link></td>
@@ -569,7 +626,7 @@ function Rankings(){
 						<td className={(isLoading)?"loading":""}>{user.playcount}</td>
 						<td className={(isLoading)?"loading":""}>{user.fccount}</td>
 					</tr>
-				</tbody></>)}
+				</tbody>)}
 			</table>
 		</>
 	);
@@ -650,6 +707,7 @@ function Submit(p) {
 function Website() {
 	const [songs,setSongs] = useState([])
 	const [update,setUpdate] = useState(false)
+	const [tooltip,setTooltip] = useState("")
 	
 	useEffect(()=>{
 		axios.get("http://www.projectdivar.com/songs")
@@ -689,6 +747,16 @@ function Website() {
 		</div>
 	);
 }
+
+/*window.onmousemove = function(e) {
+	var obj = document.getElementById("display-tooltip")
+	if (obj!=null) {
+		//var offset = obj.parentElement.getBoundingClientRect();
+		var tipDist = 15;
+		obj.style.top = (e.clientY + tipDist) + 'px';
+		obj.style.left = (e.clientX + tipDist) + 'px';
+	}
+}*/
 
 function App() {
 	return (
