@@ -12,6 +12,10 @@ services:
         - ./server:/server
     env_file:
         - ./server/.env.twitter
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
 
   postgres:
     image: postgres:10.4
@@ -24,6 +28,10 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: divar
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
       
   frontend:
     build: 
@@ -42,6 +50,10 @@ services:
     volumes:
         - /app/node_modules
         - ./frontend:/frontend
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
         
       
 #  prod-frontend:

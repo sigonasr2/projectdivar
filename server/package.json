@@ -13,7 +13,7 @@
     "connect-timeout": "^1.9.0",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.7-alpha.4",
+    "express-fileupload": "^1.1.9",
     "get-pixels": "^3.3.2",
     "image-pixels": "^2.2.2",
     "pg": "^8.2.1",

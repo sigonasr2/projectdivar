@@ -4,6 +4,10 @@ badge-success {hard}
 badge-warning {ex}
 badge-danger {exex}*/
 
+.highest{
+	z-index:1000001;
+}
+
 .display-tooltip{
 	position:absolute;
 	z-index:1000000;
@@ -11,6 +15,12 @@ badge-danger {exex}*/
 	font-size:12px;
 }
 
+.display-tooltipside{
+	position:absolute;
+	z-index:1000000;
+	font-size:12px;
+	top:-6px;
+}
 .easy-background{
 	background-color:#d6f1ff;
 }
@@ -46,6 +56,15 @@ body {
 		0 0 2px #aaa,
 		0 0 4px #aaa,
 		0 0 8px #999
+}
+
+.nostyle{
+	color: #333;
+}
+.nostyle:hover{
+	color: #333;
+	text-decoration:none;
+	background: #eef;
 }
 
 table th {

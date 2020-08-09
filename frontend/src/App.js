@@ -302,81 +302,141 @@ function Difficulty(p) {
 
 function Play(p) {
 	
+	function GetModifiedDiff(name) {
+		switch (name) {
+			case "E":{
+				return "easy";
+			}
+			case "N":{
+				return "normal";
+			}
+			case "H":{
+				return "hard";
+			}
+			case "EX":{
+				return "ex";
+			}
+			case "EXEX":{
+				return "exex";
+			}
+		}
+	}
+	
 	function GetDateDiff() {
 		var hours = Math.floor((Date.now()-new Date(p.play.date))/1000/60/60);
 		var days = Math.floor(hours/24)
 		if (hours<24) {return <>{hours} {"hour"+((hours!==1)?"s":"")} ago</>}
 		return <>{days} {"day"+((days!==1)?"s":"")} ago</>
 	}
-	return (
-	<>
-		<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfc":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fc":"")}>
-			{(p.index!==undefined)?<div className=" col-md-1 text-center border-right align-middle text-nowrap overflow-hidden"><span className="d-none d-md-block">{p.index+1}</span>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">FC</span>:<></>)}</div>:<></>}
-			<div className="col-md-3 text-center border-right align-middle text-nowrap overflow-hidden"><SongName song={p.song}/><span className="tinytime">{GetDateDiff()}</span></div>
-			<div className="col-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/><Difficulty play={p.play} song={p.song}/></div>
-			<div className="col-md-6">
-				<div className="row">
-					<div className="order-1 order-md-1 col-md-4 numbers text-center">
-						<div className="row justify-content-center">
-							<div className="col-4 col-md-5">
-								<img src={RATING_cool.src} className="pr-2" height="16"/>
-							</div>
-							<div className="col-4 col-md-7">
-								{p.play.cool}
-							</div>
+	function GetDateDisplay() {
+		var date = new Date(p.play.date);
+		var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+		return <>{months[date.getMonth()]+" "+date.getDate()+" "+date.getFullYear()+"   "+date.getHours()+":"+((date.getMinutes()<10)?"0"+date.getMinutes():date.getMinutes())}<span className="tinytime">{GetDateDiff()}</span></>
+	}
+	if (p.mini) {
+		return (
+		<>
+			<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfc":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fc":"")}>
+				<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div>
+				<div className="col-md-3 order-3 order-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{GetDateDisplay()}</div>
+				<div className="col-md-5 order-2 order-md-3">
+					<div className="row">
+						<div className="col-12 order-1 order-md-1 col-md-6 text-center">
+							{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
+						</div>
+						<div className="col-6 order-3 order-md-2 col-md-3 text-left text-md-left">
+							{(p.play.mod!==null&&p.play.mod.length>0)?
+								<ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
+								hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
+							:<></>
+							}
+						</div>
+						<div className="col-6 order-2 order-md-3 col-md-3 text-right text-md-left">
+							<b>{p.play.percent}%</b>
 						</div>
 					</div>
-					<div className="order-3 order-md-2 col-md-4 numbers text-center">
-						<div className="row justify-content-center">
-							<div className="col-4 col-md-5">
-								<img src={RATING_safe.src} className="pr-2" height="16"/>
-							</div>
-							<div className="col-4 col-md-7">
-								{p.play.safe}
-							</div>
-						</div></div>
-					<div className="order-5 order-md-3 col-md-4 numbers text-center">
-						<div className="row justify-content-center">
-							<div className="col-4 col-md-5">
-								<img src={RATING_worst.src} className="pr-2" height="16"/>
-							</div>
-							<div className="col-4 col-md-7">
-								{p.play.worst}
-							</div>
-						</div></div>
-					<div className="order-2 order-md-4 order-sm-2 col-md-4 numbers text-center">
-						<div className="row justify-content-center">
-							<div className="col-4 col-md-5">
-								<img src={RATING_fine.src} className="pr-2" height="16"/>
-							</div>
-							<div className="col-4 col-md-7">
-								{p.play.fine}
-							</div>
-						</div></div>
-					<div className="order-4 order-md-5 col-md-4 numbers text-center">
-						<div className="row justify-content-center">
-							<div className="col-4 col-md-5">
-								<img src={RATING_sad.src} className="pr-2" height="16"/>
-							</div>
-							<div className="col-4 col-md-7">
-								{p.play.sad}
-							</div>
-						</div></div>
-					<div className="order-6 order-md-6 col-md-4 numbers text-center"><b>{p.play.percent}%</b></div>
 				</div>
 			</div>
-		</div>
-	</>
-	);
+		</>
+		);
+	} else {
+		return (
+		<>
+			<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfc":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fc":"")}>
+				{(p.index!==undefined)?<div className=" col-md-1 text-center border-right align-middle text-nowrap overflow-hidden"><span className="d-none d-md-block">{p.index+1}</span>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}</div>:<></>}
+				<div className="col-md-3 text-center border-right align-middle text-nowrap overflow-hidden"><SongName song={p.song}/><span className="tinytime">{GetDateDiff()}</span></div>
+				<div className="col-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/><Difficulty play={p.play} song={p.song}/></div>
+				<div className="col-md-6">
+					<div className="row">
+						<div className="order-1 order-md-1 col-md-4 numbers text-center">
+							<div className="row justify-content-center">
+								<div className="col-4 col-md-5">
+									<img src={RATING_cool.src} className="pr-2" height="16"/>
+								</div>
+								<div className="col-4 col-md-7">
+									{p.play.cool}
+								</div>
+							</div>
+						</div>
+						<div className="order-3 order-md-2 col-md-4 numbers text-center">
+							<div className="row justify-content-center">
+								<div className="col-4 col-md-5">
+									<img src={RATING_safe.src} className="pr-2" height="16"/>
+								</div>
+								<div className="col-4 col-md-7">
+									{p.play.safe}
+								</div>
+							</div></div>
+						<div className="order-5 order-md-3 col-md-4 numbers text-center">
+							<div className="row justify-content-center">
+								<div className="col-4 col-md-5">
+									<img src={RATING_worst.src} className="pr-2" height="16"/>
+								</div>
+								<div className="col-4 col-md-7">
+									{p.play.worst}
+								</div>
+							</div></div>
+						<div className="order-2 order-md-4 order-sm-2 col-md-4 numbers text-center">
+							<div className="row justify-content-center">
+								<div className="col-4 col-md-5">
+									<img src={RATING_fine.src} className="pr-2" height="16"/>
+								</div>
+								<div className="col-4 col-md-7">
+									{p.play.fine}
+								</div>
+							</div></div>
+						<div className="order-4 order-md-5 col-md-4 numbers text-center">
+							<div className="row justify-content-center">
+								<div className="col-4 col-md-5">
+									<img src={RATING_sad.src} className="pr-2" height="16"/>
+								</div>
+								<div className="col-4 col-md-7">
+									{p.play.sad}
+								</div>
+							</div></div>
+						<div className="order-6 order-md-6 col-md-4 numbers text-center"><b>{p.play.percent}%</b></div>
+					</div>
+				</div>
+			</div>
+		</>
+		);
+	}
 }
 
 function BestPlaysPanel(p) {
+	var [bestPlays,setBestPlays] = useState([])
+	
+	useEffect(()=>{
+		axios.get("http://www.projectdivar.com/bestplays/"+p.username+"?fails=false&limit=5&offset=0")
+		.then((data)=>{setBestPlays(data.data);})
+	})
+	
 	return (
 	<>
 	<div className="d-none d-md-block row">
 		<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{p.bestplays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
+			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			</ul>
@@ -385,7 +445,7 @@ function BestPlaysPanel(p) {
 	<div className="d-block d-sm-block d-md-none row ml-3 mr-3">
 		<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{p.bestplays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
+			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			</ul>
@@ -404,7 +464,7 @@ function ModDisplay(p) {
 			{(p.hs>0)?<span style={{color:"#b33"}} onMouseOver={()=>{setTooltip("High Speed - "+p.diff.toUpperCase());setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>⬣</span>:<></>}
 			{(p.hd>0)?<span onMouseOver={()=>{setTooltip("Hidden - "+p.diff.toUpperCase());setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}} style={{color:"#968a0e"}}>⬣</span>:<></>}
 			{(p.sd>0)?<span onMouseOver={()=>{setTooltip("Sudden - "+p.diff.toUpperCase());setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}} style={{color:"#49b"}}>⬣</span>:<></>}
-				{(visibility)?<span style={{position:"absolute"}} className={"display-tooltip alert alert-dark "+p.diff+"-background"}>{tooltip}</span>:<></>}
+				{(visibility)?<span style={{position:"absolute"}} className={((p.side)?"display-tooltipside":"display-tooltip")+" alert alert-dark "+p.diff+"-background"}>{tooltip}</span>:<></>}
 		</span>
 	)
 }
@@ -426,11 +486,11 @@ function PlayDetail(p) {
 		{(p.song.report.rank>0)?<>{p.song.report.percent}%</>:""}
 		</td>
 		<td>
-			{p.song.report.ecount>0?<span className="badge badge-primary" onMouseOver={()=>{setTooltip(p.song.report.eclearcount+" / "+p.song.report.ecount+"  ("+(Math.floor(p.song.report.eclearcount/p.song.report.ecount)*100)+"% pass rate)");setStyle("easy");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.epfccount>0?"✪":p.song.report.efccount>0?"★":""}{p.song.report.ecount}</span>:<></>}
-			{p.song.report.ncount>0?<span className="badge badge-info" onMouseOver={()=>{setTooltip(p.song.report.nclearcount+" / "+p.song.report.ncount+"  ("+(Math.floor(p.song.report.nclearcount/p.song.report.ncount)*100)+"% pass rate)");setStyle("normal");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.npfccount>0?"✪":p.song.report.nfccount>0?"★":""}{p.song.report.ncount}</span>:<></>}
-			{p.song.report.hcount>0?<span className="badge badge-success" onMouseOver={()=>{setTooltip(p.song.report.hclearcount+" / "+p.song.report.hcount+"  ("+(Math.floor(p.song.report.hclearcount/p.song.report.hcount)*100)+"% pass rate)");setStyle("hard");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.hpfccount>0?"✪":p.song.report.hfccount>0?"★":""}{p.song.report.hcount}</span>:<></>}
-			{p.song.report.excount>0?<span className="badge badge-warning" onMouseOver={()=>{setTooltip(p.song.report.exclearcount+" / "+p.song.report.excount+"  ("+(Math.floor((p.song.report.exclearcount/p.song.report.excount)*100))+"% pass rate)");setStyle("ex");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.expfccount>0?"✪":p.song.report.exfccount>0?"★":""}{p.song.report.excount}</span>:<></>}
-			{p.song.report.exexcount>0?<span className="badge badge-danger" onMouseOver={()=>{setTooltip(p.song.report.exexclearcount+" / "+p.song.report.exexcount+"  ("+(Math.floor(p.song.report.exexclearcount/p.song.report.exexcount)*100)+"% pass rate)");setStyle("exex");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.exexpfccount>0?"✪":p.song.report.exexfccount>0?"★":""}{p.song.report.exexcount}</span>:<></>}
+			{p.song.report.ecount>0?<span className="badge badge-primary" onMouseOver={()=>{setTooltip(<>{p.song.report.eclearcount+" / "+p.song.report.ecount+"  ("+(Math.floor((p.song.report.eclearcount/p.song.report.ecount)*100))+"% pass rate)"}{(p.song.report.efccount>0)?<><br/>{"★FC'd "+p.song.report.efccount+" time"+(p.song.report.efccount!=1?"s":"")}</>:<></>}{(p.song.report.epfccount>0)?<><br/>{"✪Perfected "+p.song.report.epfccount+" time"+(p.song.report.epfccount!=1?"s":"")}</>:<></>}</>);setStyle("easy");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.epfccount>0?"✪":p.song.report.efccount>0?"★":""}{p.song.report.ecount}</span>:<></>}
+			{p.song.report.ncount>0?<span className="badge badge-info" onMouseOver={()=>{setTooltip(<>{p.song.report.nclearcount+" / "+p.song.report.ncount+"  ("+(Math.floor((p.song.report.nclearcount/p.song.report.ncount)*100))+"% pass rate)"}{(p.song.report.nfccount>0)?<><br/>{"★FC'd "+p.song.report.nfccount+" time"+(p.song.report.nfccount!=1?"s":"")}</>:<></>}{(p.song.report.npfccount>0)?<><br/>{"✪Perfected "+p.song.report.npfccount+" time"+(p.song.report.npfccount!=1?"s":"")}</>:<></>}</>);setStyle("normal");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.npfccount>0?"✪":p.song.report.nfccount>0?"★":""}{p.song.report.ncount}</span>:<></>}
+			{p.song.report.hcount>0?<span className="badge badge-success" onMouseOver={()=>{setTooltip(<>{p.song.report.hclearcount+" / "+p.song.report.hcount+"  ("+(Math.floor((p.song.report.hclearcount/p.song.report.hcount)*100))+"% pass rate)"}{(p.song.report.hfccount>0)?<><br/>{"★FC'd "+p.song.report.hfccount+" time"+(p.song.report.hfccount!=1?"s":"")}</>:<></>}{(p.song.report.hpfccount>0)?<><br/>{"✪Perfected "+p.song.report.hpfccount+" time"+(p.song.report.hpfccount!=1?"s":"")}</>:<></>}</>);setStyle("hard");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.hpfccount>0?"✪":p.song.report.hfccount>0?"★":""}{p.song.report.hcount}</span>:<></>}
+			{p.song.report.excount>0?<span className="badge badge-warning" onMouseOver={()=>{setTooltip(<>{p.song.report.exclearcount+" / "+p.song.report.excount+"  ("+(Math.floor((p.song.report.exclearcount/p.song.report.excount)*100))+"% pass rate)"}{(p.song.report.exfccount>0)?<><br/>{"★FC'd "+p.song.report.exfccount+" time"+(p.song.report.exfccount!=1?"s":"")}</>:<></>}{(p.song.report.expfccount>0)?<><br/>{"✪Perfected "+p.song.report.expfccount+" time"+(p.song.report.expfccount!=1?"s":"")}</>:<></>}</>);setStyle("ex");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.expfccount>0?"✪":p.song.report.exfccount>0?"★":""}{p.song.report.excount}</span>:<></>}
+			{p.song.report.exexcount>0?<span className="badge badge-danger" onMouseOver={()=>{setTooltip(<>{p.song.report.exexclearcount+" / "+p.song.report.exexcount+"  ("+(Math.floor((p.song.report.exexclearcount/p.song.report.exexcount)*100))+"% pass rate)"}{(p.song.report.exexfccount>0)?<><br/>{"★FC'd "+p.song.report.exexfccount+" time"+(p.song.report.exexfccount!=1?"s":"")}</>:<></>}{(p.song.report.exexpfccount>0)?<><br/>{"✪Perfected "+p.song.report.exexpfccount+" time"+(p.song.report.exexpfccount!=1?"s":"")}</>:<></>}</>);setStyle("exex");setVisibility(true)}} onMouseOut={()=>{setVisibility(false)}}>{p.song.report.exexpfccount>0?"✪":p.song.report.exexfccount>0?"★":""}{p.song.report.exexcount}</span>:<></>}
 			{(visibility)?<span style={{position:"absolute"}} className={"display-tooltip alert alert-dark "+style+"-background"}>{tooltip}</span>:<></>}
 		</td>
 		<td>
@@ -464,15 +524,49 @@ function PlayDetail(p) {
 	);
 }
 
-function HoverSongName(p) {
-	const [name,setName] = useState(p.song.name)
+function PlayData(p) {
+	var [data,setData] = useState([])
+	var [update,setUpdate] = useState(false)
+	
+	useEffect(()=>{
+		axios.get("http://projectdivar.com/plays/"+p.username+"/"+p.song.id)
+		.then((data)=>{setData(data.data)})
+	},[update])
+	
 	return (
-		<tr key={p.song.id} className="lighthover" onMouseOver={()=>{setName((p.song.romanized_name.length>0)?p.song.romanized_name:p.song.english_name)}} onMouseOut={()=>{setName(p.song.name)}}>
-			<td>
-				{name}
-			</td>
-			<PlayDetail song={p.song}/>
-		</tr>
+	<>
+		<div className="overflow-auto text-center" style={{height:"160px",width:"90%"}}>
+			{data.map((play,i)=><Play key={i} play={play} mini={true} song={p.song}/>)}
+		</div>
+	</>
+	)
+}
+
+function HoverSongName(p) {
+	var [name,setName] = useState(p.song.name)
+	var [expand,setExpand] = useState(<></>)
+	var [toggle,setToggle] = useState(false)
+	return (
+		<>
+			<tr key={p.song.id} className="lighthover" onMouseOver={()=>{setName((p.song.romanized_name.length>0)?p.song.romanized_name:p.song.english_name)}} onMouseOut={()=>{setName(p.song.name)}}
+			data-toggle="collapse" data-target={"#collapse"+p.song.id} aria-expanded="false" aria-controls="collapseExample" onClick={()=>{
+				if (!toggle) {
+					setExpand(<PlayData song={p.song} username={p.username}/>)
+					setToggle(true)
+				} else {
+					setToggle(false)
+				}
+			}
+			}>
+				<td>
+					{name}
+				</td>
+				<PlayDetail song={p.song}/>
+			</tr>
+			<tr className="collapse" id={"collapse"+p.song.id}>
+				<td colSpan="6">{expand}</td>
+			</tr>
+		</>
 	)
 }
 
@@ -511,7 +605,7 @@ function CompletionPanel(p) {
 				</tr>
 			</thead>
 			<tbody>
-				{report.map((song,i)=>{return <HoverSongName song={song} key={song.id}/>
+				{report.map((song,i)=>{return <HoverSongName song={song} key={song.id} username={p.username}/>
 				})}
 			</tbody>
 			<tfoot>
@@ -538,6 +632,24 @@ const CalculateAccuracy=(cool,fine,safe,sad,worst)=>{
 	return Math.round((sum/noteCount)*10000)/100+"%";
 }
 
+function ClearBadge(p) {
+	var [display,setDisplay] = useState(<></>)
+	
+		/*<span className="badge badge-primary">{easy}/{diffs.E}
+			{(fcdata&&fcdata.E>0)?<><br/>★{fcdata.E}</>:<></>}
+			{(pfcdata&&pfcdata.E>0)?<><br/>✪{pfcdata.E}</>:<></>}</span>*/
+	return(
+	<>
+	<span className={"badge badge-"+CalculateBadge(p.diff)} onMouseOver={()=>{
+		setDisplay(<>{((p.fcdata&&p.fcdata[p.diff]>0)?<><br/>★{p.fcdata[p.diff]}</>:<></>)}
+			{((p.pfcdata&&p.pfcdata[p.diff]>0)?<><br/>✪{p.pfcdata[p.diff]}</>:<></>)}</>)
+	}} onMouseOut={()=>{
+		setDisplay(<></>)
+	}}>{p.count}/{p.diffs[p.diff]}{display}</span>
+	</>
+	)
+}
+
 function Profile(p){
 	let { username } = useParams();
 	let match = useRouteMatch();
@@ -551,11 +663,16 @@ function Profile(p){
 	var [update,setUpdate] = useState(false);
 	var [diffs,setDiffs] = useState({});
 	var [user,setUserData] = useState({});
-	var [bestPlays,setBestPlays] = useState([]);
 	var [render,setRender] = useState(false);
 	
-	function CalculateClear(easy,normal,hard,ex,exex) {
-		return <><span className="badge badge-primary">{easy}/{diffs.E}</span><span className="badge badge-info">{normal}/{diffs.N}</span><span className="badge badge-success">{hard}/{diffs.H}</span><span className="badge badge-warning">{ex}/{diffs.EX}</span><span className="badge badge-danger">{exex}/{diffs.EXEX}</span></>;
+	function CalculateClear(easy,normal,hard,ex,exex,fcdata,pfcdata) {
+		return <>
+			<ClearBadge diff="E" count={easy} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge diff="N" count={normal} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge diff="H" count={hard} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge diff="EX" count={ex} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge diff="EXEX" count={exex} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+		</>
 	}
 	
 	useEffect(()=>{
@@ -563,17 +680,17 @@ function Profile(p){
 		.then((data)=>{setUserData(data.data);setPlayCount(data.data.playcount);setFCCount(data.data.fccount);setRating(data.data.rating);setLastPlayed(data.data.last_played);setAccuracy(CalculateAccuracy(data.data.cool,data.data.fine,data.data.safe,data.data.sad,data.data.worst))});
 		axios.get("http://projectdivar.com:4501/songdiffs")
 		.then((data)=>{setDiffs(data.data)})
-		axios.get("http://www.projectdivar.com/bestplays/"+username+"?fails=false")
-		.then((data)=>{setBestPlays(data.data);})
 	},[update])
 	
 	useEffect(()=>{
-		setClear(CalculateClear(user.eclear,user.nclear,user.hclear,user.exclear,user.exexclear))
+		if (user!={}) {
+			setClear(CalculateClear(user.eclear,user.nclear,user.hclear,user.exclear,user.exexclear,user.fcdata,user.pfcdata))
+		}
 	},[diffs,user])
 	
 	useEffect(()=>{
-		setRender(user&&playcount&&fccount&&rating&&lastPlayed&&accuracy&&diffs&&bestPlays&&cleared)
-	},[user,playcount,fccount,rating,lastPlayed,accuracy,diffs,bestPlays,cleared])
+		setRender(user&&playcount&&fccount&&rating&&lastPlayed&&accuracy&&diffs&&cleared)
+	},[user,playcount,fccount,rating,lastPlayed,accuracy,diffs,cleared])
 	
 	return (
 		<>
@@ -581,7 +698,7 @@ function Profile(p){
 				{(render)?<>
 					<StatisticsPanel name="Statistics" username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
-					<BestPlaysPanel name="Best Plays" username={username} bestplays={bestPlays} songs={p.songs}/>
+					<BestPlaysPanel name="Best Plays" username={username} songs={p.songs}/>
 					<CompletionPanel name="Progress" username={username} songs={p.songs}/>
 					<Panel name="Activity" username={username}/>
 					</>
@@ -632,7 +749,7 @@ function Rankings(){
 	);
 }
 
-function Submit(p) {
+function ImageUpload(p) {
 	var [file,setFile] = useState(null);
 	var [fileProcess,setFileProcess] = useState(0);
 	var [error,setError] = useState(null);
@@ -654,7 +771,7 @@ function Submit(p) {
 		}
 		const data = new FormData() 
 		data.append('file', file)
-		data.append("username","sigonasr2");
+		data.append("username","The Internet");
 		data.append("authentication_token","sig");
 		if (!data.has("username") || !data.has("authentication_token")) {setError("Authentication failed!");return;}
 		
@@ -704,6 +821,104 @@ function Submit(p) {
 	}
 }
 
+function SongSearch(p) {
+	//Requires: p.song / p.setSong
+	const [song,setSong] = useState("")
+	const [focused,setFocused] = useState(false)
+	
+	return (
+		<>
+			<input className="form-control form-control-lg" value={song} placeholder={p.song} onFocus={()=>{setFocused(true)}} onChange={(e)=>{
+				setSong(e.target.value)
+			}
+			}/>
+			{(focused)?
+			<div className="overflow-auto rounded-lg" style={{background:"#eef",position:"absolute",width:"95%",height:"240px"}}>{Object.keys(p.songs).filter((key)=>
+				{
+					var s = p.songs[key]
+					return s.name.toLowerCase().includes(song.toLowerCase())||s.romanized_name.toLowerCase().includes(song.toLowerCase())||s.english_name.toLowerCase().includes(song.toLowerCase())||s.artist.toLowerCase().includes(song.toLowerCase())||s.vocaloid.toLowerCase().includes(song.toLowerCase())
+			}).map((key)=><div className="pb-1 homelink" onClick={()=>{setSong(p.songs[key].name);setFocused(false)}}><h4>{p.songs[key].name}</h4>{(p.songs[key].romanized_name)?p.songs[key].romanized_name:p.songs[key].english_name}</div>)}</div>:<></>}
+			
+			More stuff goes here.
+		</>
+	)
+}
+
+function SimpleUpload(p){
+	const [song,setSong] = useState("Catch the Wave")
+	
+	return (
+		<>
+			<SongSearch song={song} setSong={setSong} songs={p.songs}/>
+		</>
+	)
+}
+
+function Submit(p) {
+	return (
+		<div className="row">
+			<div className="col-12 col-md-8">
+				<Switch>
+					<Route path="/submitplay/simple">
+						<SimpleUpload songs={p.songs}/>
+					</Route>
+					<Route path="/submitplay/detail">
+						Detailed
+					</Route>
+					<Route path="/submitplay/switch">
+						Switch
+					</Route>
+					<Route path="/submitplay/image">
+						<ImageUpload/>
+					</Route>
+					<Route path="/submitplay">
+						<h2>Select a submission method</h2>
+						<div className="card">
+							<Link to="/submitplay/simple" className="nostyle">
+								<div className="card-body">
+									<h5 className="card-title">Simple Submit</h5>
+									<p className="card-text">Submit your plays by entering the clear % of a song</p>
+									<p className="card-text"><small className="text-muted">The simplest way to submit plays, it won't be entirely accurate, but it lets you submit plays very quickly.</small></p>
+								</div>
+							</Link>
+						</div>
+						<br/>
+						<div className="card">
+							<Link to="/submitplay/detail" className="nostyle">
+								<div className="card-body">
+									<h5 className="card-title">Detailed Submit</h5>
+									<p className="card-text">Submit your plays by entering all the information about a play</p>
+									<p className="card-text"><small className="text-muted">You can submit as many songs as you like, but you will have to provide details for each play.</small></p>
+								</div>
+							</Link>
+						</div>
+						<br/>
+						<div className="card">
+							<Link to="/submitplay/image" className="nostyle">
+								<div className="card-body">
+									<h5 className="card-title">Image Upload</h5>
+									<p className="card-text">Upload images from your Nintendo Switch for automatic processing/scoring!</p>
+									<p className="card-text"><small className="text-muted">Put up to 50 images in a zip file to mass-upload your screenshotted plays to your profile. You will need to extract them from your microSD card from your Nintendo Switch.</small></p>
+								</div>
+							</Link>
+						</div>
+						<br/>
+						<div className="card">
+							<Link to="/submitplay/switch" className="nostyle">
+								<div className="card-body">
+									<h5 className="card-title">Nintendo Switch/Twitter Upload</h5>
+									<p className="card-text">Setup your account for uploading through Twitter using your Nintendo Switch!</p>
+									<p className="card-text"><small className="text-muted">You can select up to 4 images to post to Twitter at one time.</small></p>
+								</div>
+							</Link>
+						</div>
+					</Route>
+				</Switch>
+			</div>
+		</div>
+	)
+}
+
 function Website() {
 	const [songs,setSongs] = useState([])
 	const [update,setUpdate] = useState(false)
@@ -719,7 +934,7 @@ function Website() {
 	return (
 		<div className="row">
 			<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
-				<h3>Sidebar Contents</h3>
+				<h3 className="d-none d-md-block">Sidebar Contents</h3>
 					<Link to="/rankings/rating/desc">Rankings</Link><br/>
 					Item 2<br/>
 					Item 3<br/>
@@ -736,7 +951,7 @@ function Website() {
 						}
 					</Route>
 					<Route path="/submitplay">
-						<Submit/>
+						<Submit songs={songs}/>
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>

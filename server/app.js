@@ -102,7 +102,7 @@ app.delete('/remove',(req,res)=>{
 		db.query("select id,authentication_token,playcount,fccount,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1",[req.body.username])
 		.then((data)=>{if(data && data.rows.length>0){userObj=data.rows[0];if (req.body.authentication_token===userObj.authentication_token){return db.query("delete from plays where id=$1 and userid=$2 returning *",[req.body.playid,userObj.id])}else{throw new Error("Could not authenticate user!")}}else{throw new Error("Cannot find user!")}})
 		.then((data)=>{if(data && data.rows.length>0){songObj=data.rows[0];return CalculateRating(req.body.username)}else{throw new Error("Could not find play!")}})
-		.then((data)=>{rating=data;return db.query("select * from plays where songid=$1 and userid=$2 and difficulty=$3 limit 1",[songObj.songid,userObj.id,songObj.difficulty])})
+		.then((data)=>{rating=data;return db.query("select * from plays where songid=$1 and userid=$2 and difficulty=$3 and score>0 limit 1",[songObj.songid,userObj.id,songObj.difficulty])})
 		.then((data)=>{if(data && data.rows.length===0){isFirstClear=true;}/*console.log([data,userObj.playcount-1,(songObj.safe==0&&songObj.sad==0&&songObj.worst==0)?userObj.fccount-1:userObj.fccount,userObj.cool-songObj.cool,userObj.fine-songObj.fine,userObj.safe-songObj.safe,userObj.sad-songObj.sad,userObj.worst-songObj.worst,(songObj.difficulty=="E")?userObj.ecount-1:userObj.ecount,(songObj.difficulty=="N")?userObj.ncount-1:userObj.ncount,(songObj.difficulty=="H")?userObj.hcount-1:userObj.hcount,(songObj.difficulty=="EX")?userObj.excount-1:userObj.excount,(songObj.difficulty=="EXEX")?userObj.exexcount-1:userObj.exexcount]);*/return db.query("update users set rating=$1,playcount=$2,fccount=$3,cool=$4,fine=$5,safe=$6,sad=$7,worst=$8,eclear=$9,nclear=$10,hclear=$11,exclear=$12,exexclear=$13 where id=$14 returning rating,playcount,fccount,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear",[rating,userObj.playcount-1,(songObj.safe==0&&songObj.sad==0&&songObj.worst==0)?userObj.fccount-1:userObj.fccount,userObj.cool-songObj.cool,userObj.fine-songObj.fine,userObj.safe-songObj.safe,userObj.sad-songObj.sad,userObj.worst-songObj.worst,(songObj.difficulty=="E" && isFirstClear)?userObj.eclear-1:userObj.eclear,(songObj.difficulty=="N" && isFirstClear)?userObj.nclear-1:userObj.nclear,(songObj.difficulty=="H" && isFirstClear)?userObj.hclear-1:userObj.hclear,(songObj.difficulty=="EX" && isFirstClear)?userObj.exclear-1:userObj.exclear,(songObj.difficulty=="EXEX" && isFirstClear)?userObj.exexclear-1:userObj.exexclear,userObj.id])})
 		.then((data)=>{if(data && data.rows.length>0){res.status(200).json({user:data.rows[0],song:songObj})}else{throw new Error("Could not update user information, but song is deleted!")}})
 		.catch((err)=>{res.status(500).json(err.message)})
@@ -207,7 +207,13 @@ app.post('/upload', function(req, res) {
 
 app.post('/submit', (req, res) => {
 	if (req.body &&
-	req.body.username!==undefined && req.body.authentication_token!==undefined && req.body.song!==undefined && req.body.difficulty!==undefined && req.body.cool!==undefined && req.body.fine!==undefined && req.body.safe!==undefined && req.body.sad!==undefined && req.body.worst!==undefined && req.body.percent!==undefined) {
+	req.body.username!==undefined && req.body.authentication_token!==undefined && req.body.song!==undefined && req.body.difficulty!==undefined && req.body.cool!==undefined && req.body.fine!==undefined && req.body.safe!==undefined && req.body.sad!==undefined && req.body.worst!==undefined && req.body.fail!==undefined && req.body.percent!==undefined) {
+		
+		if (req.body.cool==-1||req.body.fine==-1||req.body.safe==-1||req.body.sad==-1||req.body.worst==-1) {
+			fs.writeFileSync("invalidSongs",JSON.stringify(req.body)+"\n","a");
+			res.status(400).json("Invalid note parameters!");
+		}
+		
 		var fail = true;
 		if (req.body.fail!==undefined) {
 			fail = (req.body.fail=='true');
@@ -263,8 +269,11 @@ app.post('/submit', (req, res) => {
 
 CalculateSongScore=(song)=>{
 	if (song.fail==true){return 0;}
-	var noteCount=song.cool+song.fine+song.safe+song.sad+song.worst;
-	var comboBreaks=song.safe+song.sad+song.worst;
+	var noteCount=Number(song.cool)+Number(song.fine)+Number(song.safe)+Number(song.sad)+Number(song.worst);
+	var comboBreaks=Number(song.safe)+Number(song.sad)+Number(song.worst);
+	/*console.log("Combo Breaks: "+comboBreaks)
+	console.log("Is FC? "+(comboBreaks===0))
+	console.log("Is PFC? "+(song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0))*/
 	var scoreMult=1;
 	var percentMult=1;
 	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=3}else if(comboBreaks===0){scoreMult=2}else{scoreMult=1}
@@ -278,6 +287,8 @@ CalculateSongScore=(song)=>{
 			if(song.percent<60){percentMult=0}else{percentMult=1+(0.4*((song.percent-60)/40.0))}
 		}
 	}
+	/*console.log("Score mult: "+scoreMult)
+	console.log("Percent mult: "+percentMult)*/
 	var score = ((song.cool*100+song.fine*50+song.safe*10+song.sad*5)/1000.0)*percentMult*scoreMult
 	if (scoreMult>0 && percentMult>0) {
 		score += Math.pow(song.rating,3)/5
@@ -345,7 +356,8 @@ app.get('/recalculatescore/:playid',(req,res)=>{
 	.then((data)=>res.status(200).json(data)).catch((err)=>{console.log(err);res.status(500).json(err.message);})
 });
 
-/*app.get('/playdata',(req,res)=>{
+/*
+app.get('/playdata',(req,res)=>{
 	db.query('select * from plays')
 	.then((data)=>{res.status(200).json(data.rows)})
 	.catch((err)=>res.status(500).json(err.message))
@@ -430,9 +442,33 @@ app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
 })
 
 app.get('/userdata/:username',(req,res)=>{
-	var songId=-1,userId=-1;
+	var songId=-1,userId=-1,finalData={};
 	db.query('select playcount,fccount,rating,last_played,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1',[req.params.username])
-	.then((data)=>{if(data && data.rows.length>0){res.status(200).json(data.rows[0])}})
+	.then((data)=>{if(data && data.rows.length>0){finalData=data.rows[0];return db.query("select t.difficulty,COUNT(t.difficulty) from (select distinct on(songid) songid,*,users.id from plays join users on userid=users.id where users.username=$1 and plays.safe=0 and plays.worst=0 and plays.sad=0)t group by t.difficulty",[req.params.username])}else{throw new Error("Could not retrieve user data!")}})
+	.then((data)=>{
+		if (data) {
+			var fcData={}
+			data.rows.forEach((fc)=>{fcData[fc.difficulty]=fc.count})
+			finalData={...{fcdata:fcData},...finalData}
+			return db.query("select t.difficulty,COUNT(t.difficulty) from (select distinct on(songid) songid,*,users.id from plays join users on userid=users.id where users.username=$1 and plays.fine=0 and plays.safe=0 and plays.worst=0 and plays.sad=0)t group by t.difficulty",[req.params.username])
+		}else{throw new Error("Could not retrieve user data!")}
+	})
+	.then((data)=>{
+		if (data) {
+			var fcData={}
+			data.rows.forEach((fc)=>{fcData[fc.difficulty]=fc.count})
+			finalData={...{pfcdata:fcData},...finalData}
+			res.status(200).json(finalData)
+		}else{throw new Error("Could not retrieve user data!")}
+	})
+	.catch((err)=>{res.status(500).json(err.message)})
+})
+
+app.get('/plays/:username/:songid',(req,res)=>{
+	db.query("select plays.* from plays join users on users.id=plays.userid where users.username=$1 and plays.songid=$2 order by score desc,date desc limit 100",[req.params.username,req.params.songid])
+	.then((data)=>{
+		res.status(200).json(data.rows)
+	})
 	.catch((err)=>{res.status(500).json(err.message)})
 })
 
@@ -519,6 +555,135 @@ app.get('/users/:orderby/:sortorder',(req,res)=>{
 		res.status(400).json("Invalid query!")
 	}
 })
+
+function ValidateToken(username,token) {
+	return db.query('select authentication_token from users where username=$1 limit 1',[username])
+	.then((data)=>{
+		if (data.rows.length>0) {
+			return token===data.rows[0].authentication_token;
+		} else {
+			return false;
+		}
+	})
+}
+
+function GetSongId(songname) {
+	return db.query("select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1",[songname])
+	.then((data)=>{
+		if (data.rows.length>0) {
+			return data.rows[0].id;
+		} else {
+			throw new Error("Could not get song ID for song '"+songname+"'")
+		}
+	})
+}
+
+function GetNoteCount(songname,difficulty) {
+	var songID=-1;
+	return GetSongId(songname)
+	.then((id)=>{songID=id;return db.query("select notecount from songdata where songid=$1 and difficulty=$2 limit 1",[songID,difficulty])})
+	.then((data)=>{
+		if (data.rows.length>0) {
+			return data.rows[0].notecount;
+		} else {
+			throw new Error("Could not get note count for song '"+songname+"' on difficulty '"+difficulty+"'")
+		}
+	})
+}
+
+app.post('/song/:songname/:difficulty',(req,res)=>{
+	if (req.body&&req.params.songname&&req.params.difficulty&&req.body.username&&req.body.percent&&req.body.authentication_token) {
+		var noteCount=0,songID=0,fail=false;
+		ValidateToken(req.body.username,req.body.authentication_token)
+		.then((allowed)=>{
+			if (allowed) {
+				return GetSongId(req.params.songname)
+			}else{throw new Error("Could not authenticate!")}
+		})
+		.then((songId)=>{
+			if (songId) {
+				songID=songId;
+				return GetNoteCount(req.params.songname,req.params.difficulty)
+			}else{throw new Error("Could not find song ID!")}
+		})
+		.then((noteCount)=>{
+			var percentThreshold=(req.params.difficulty==="E"?100:107)/100.0
+			var percent=(req.params.difficulty==="E"?100:107)?Math.min(req.body.percent/100.0,percentThreshold):Math.min(req.body.percent/107.0,percentThreshold);
+			var cool = 0;
+			var fine = 0;
+			var safe = 0;
+			var sad = 0;
+			var worst = 0;
+			for (var i=0;i<noteCount;i++) {
+				if (req.body.isFC) {
+					if (Math.random()<percent) {
+						cool++;
+					} else {
+						fine++;
+					}
+				} else 
+				{
+					if (Math.random()<percent) {
+						cool++;
+						continue;
+					} else 
+					if (Math.random()<percent) {
+						fine++;
+						continue;
+					} else 
+					if (Math.random()<percent) {
+						worst++;
+						continue;
+					} else 
+					if (Math.random()<percent) {
+						safe++;
+						continue;
+					} else 
+					if (Math.random()<percent) {
+						sad++;
+						continue;
+					} else {
+						worst++;
+					}
+				}
+			}
+			
+			switch (req.params.difficulty){
+				case "E":{
+					if (req.body.percent<30){fail=true;}
+				}break;
+				case "N":{
+					if (req.body.percent<50){fail=true;}
+				}break;
+				case "H":{
+					if (req.body.percent<60){fail=true;}
+				}break;
+				case "EX":
+				case "EXEX":{
+					if (req.body.percent<70){fail=true;}
+				}break;
+				default:{
+					if (req.body.percent<60){fail=true;}
+				}break;
+			}
+			
+			if (req.body.fail) {
+				fail=req.body.fail
+			}
+			//res.status(200).json({cool:cool,fine:fine,safe:safe,sad:sad,worst:worst,percent:req.body.percent})
+			return axios.post("http://projectdivar.com/submit",{
+				username:req.body.username,authentication_token:req.body.authentication_token,song:req.params.songname,difficulty:req.params.difficulty,cool:cool,fine:fine,safe:safe,sad:sad,worst:worst,percent:req.body.percent,fail:String(fail)
+			})
+		})
+		.then((data)=>{
+			res.status(200).json(data.data)
+		})
+		.catch((err)=>{res.status(400).json(err.message)})
+	} else {
+		res.status(400).json("Invalid query!")
+	}
+})
+
 /*
 app.get('/twitter/mentions', function(req, res) {
 	if (req.query.data) {
