@@ -423,13 +423,15 @@ app.get('/ratings/:songname/:username',(req,res)=>{
 })
 
 app.get('/bestplays/:username',(req,res)=>{
-	var songId=-1,userId=-1,songPromises=[],plays=[];
+	var songId=-1,userId=-1,songPromises=[],plays=[],limit=5,offset=0;
+	if (req.query.limit) {limit=req.query.limit}
+	if (req.query.offset) {offset=req.query.offset}
 	db.query('select id from users where username=$1 limit 1',[req.params.username])
-	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;return db.query("select * from (select distinct on (songid) * from plays where userid=$1 "+((req.query.fails==="false")?"and score!=0":"")+" order by songid,score desc)t order by score desc;",[userId])}else{throw new Error("Cannot find user!")}})
+	.then((data)=>{if (data.rows.length>0){userId=data.rows[0].id;return db.query("select * from (select distinct on (songid) * from plays where userid=$1 "+((req.query.fails==="false")?"and score!=0":"")+" order by songid,score desc)t order by score desc limit $2 offset $3",[userId,Number(limit),Number(offset)])}else{throw new Error("Cannot find user!")}})
 	.then((data)=>{
 		res.status(200).json(data.rows)
 	})
-	.catch((err)=>{res.status(500).json(err.message+JSON.stringify(req.body))})
+	.catch((err)=>{res.status(500).json(err.message)})
 })
 
 app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
@@ -465,7 +467,10 @@ app.get('/userdata/:username',(req,res)=>{
 })
 
 app.get('/plays/:username/:songid',(req,res)=>{
-	db.query("select plays.* from plays join users on users.id=plays.userid where users.username=$1 and plays.songid=$2 order by score desc,date desc limit 100",[req.params.username,req.params.songid])
+	var limit=5,offset=0;
+	if (req.query.limit) {limit=req.query.limit}
+	if (req.query.offset) {offset=req.query.offset}
+	db.query("select plays.* from plays join users on users.id=plays.userid where users.username=$1 and plays.songid=$2 order by score desc,percent desc,date desc limit $3 offset $4",[req.params.username,req.params.songid,Number(limit),Number(offset)])
 	.then((data)=>{
 		res.status(200).json(data.rows)
 	})

@@ -331,7 +331,7 @@ function Play(p) {
 	function GetDateDisplay() {
 		var date = new Date(p.play.date);
 		var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-		return <>{months[date.getMonth()]+" "+date.getDate()+" "+date.getFullYear()+"   "+date.getHours()+":"+((date.getMinutes()<10)?"0"+date.getMinutes():date.getMinutes())}<span className="tinytime">{GetDateDiff()}</span></>
+		return <>{months[date.getMonth()]+" "+date.getDate()+" "+date.getFullYear()+"   "+date.getHours()+":"+((date.getMinutes()<10)?"0"+date.getMinutes():date.getMinutes())}<span className="tinytime infront">{GetDateDiff()}</span></>
 	}
 	if (p.mini) {
 		return (
@@ -423,33 +423,131 @@ function Play(p) {
 	}
 }
 
+function LoadMore(p) {
+	var [offset,setOffset] = useState(p.params.limit)
+	var [params,setParams] = useState(p.params)
+	var [loading,setLoading] = useState(false)
+	var [visible,setVisible] = useState(false)
+	var [update,setUpdate] = useState(false)
+	
+	useEffect(()=>{
+		axios.get(p.url+constructParams(params))
+		.then((data)=>{
+			if (data.data.length>0) {
+				setVisible(true)
+			}
+		})
+	},[update])
+	
+	function constructParams(params) {
+		var st = Object.keys(params).reduce((str,key)=>{
+			if (str==="") {
+				return str+="?"+key+"="+params[key]
+			} else {
+				return str+="&"+key+"="+params[key]
+			}
+		},"")
+		return st
+	}
+	if (!visible){
+		return (<></>)
+	}
+	else
+	if (p.listItem) {
+		return (
+			<li className="list-group-item list-group-item-action homelink" onClick={()=>{
+			setLoading(true)
+			axios.get(p.url+constructParams(params))
+			.then((data)=>{
+				if (data.data.length>0) {
+					var newVals = [...p.value]
+					data.data.forEach((val)=>{
+						newVals.push(val)
+					})
+					p.setValue(newVals)
+					//console.log(newVals)
+					var obj = {...params}
+					obj.offset+=offset
+					setParams(obj)
+					setLoading(false)
+					if (data.data.length<p.params.limit) {
+						setVisible(false)
+					}
+				} else {
+					setVisible(false)
+					setLoading(false)
+				}
+			})
+		}
+		}>
+				<div className="row text-center">
+			<div className="col-12">
+			{(!loading)?<h6 className="link"><i>- Load More -</i></h6>:<div className="spinner-grow text-primary" role="status"><span className="sr-only">Loading...</span></div>
+			}
+			</div>
+		</div>
+			</li>
+		)
+	} else 
+	return (
+		<div className="row text-center homelink" onClick={()=>{
+			setLoading(true)
+			axios.get(p.url+constructParams(params))
+			.then((data)=>{
+				if (!data.data) {
+					setVisible(false)
+				} else
+				if (data.data.length>0) {
+					var newVals = [...p.value]
+					data.data.forEach((val)=>{
+						newVals.push(val)
+					})
+					p.setValue(newVals)
+					//console.log(newVals)
+					var obj = {...params}
+					obj.offset+=offset
+					setParams(obj)
+					setLoading(false)
+					if (data.data.length<p.params.limit) {
+						setVisible(false)
+					}
+				} else {
+					setVisible(false)
+					setLoading(false)
+				}
+			})
+		}
+		}>
+			<div className="col-12">
+			{(!loading)?<h6 className="link"><i>- Load More -</i></h6>:<div className="spinner-grow text-primary" role="status"><span className="sr-only">Loading...</span></div>
+			}
+			</div>
+		</div>
+	)
+}
+
 function BestPlaysPanel(p) {
 	var [bestPlays,setBestPlays] = useState([])
+	var [update,setUpdate] = useState(false)
 	
 	useEffect(()=>{
 		axios.get("http://www.projectdivar.com/bestplays/"+p.username+"?fails=false&limit=5&offset=0")
 		.then((data)=>{setBestPlays(data.data);})
-	})
+	},[update])
+	
+	var content=<div className="col-md-12 mt-3 mb-3">
+			<ul className="list-group list-group-flush border border-danger rounded-lg">
+			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
+					<Play index={i} play={play} song={p.songs[play.songid]}/>
+				</li>})}
+			<LoadMore listItem={true} url={"http://www.projectdivar.com/bestplays/"+p.username} params={{fails:false,limit:15,offset:5}} value={bestPlays} setValue={setBestPlays}/>
+			</ul>
+		</div>
 	
 	return (
 	<>
-	<div className="d-none d-md-block row">
-		<div className="col-md-12 mt-3 mb-3">
-			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
-					<Play index={i} play={play} song={p.songs[play.songid]}/>
-				</li>})}
-			</ul>
-		</div>
-	</div>
-	<div className="d-block d-sm-block d-md-none row ml-3 mr-3">
-		<div className="col-md-12 mt-3 mb-3">
-			<ul className="list-group list-group-flush overflow-auto border border-danger rounded-lg" style={{height:"320px"}}>
-			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
-					<Play index={i} play={play} song={p.songs[play.songid]}/>
-				</li>})}
-			</ul>
-		</div>
+	<div className="row ml-3 mr-3">
+		{content}
 	</div>
 	</>
 	);
@@ -530,13 +628,17 @@ function PlayData(p) {
 	
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/plays/"+p.username+"/"+p.song.id)
-		.then((data)=>{setData(data.data)})
+		.then((data)=>{setData(data.data);})
 	},[update])
 	
 	return (
 	<>
-		<div className="overflow-auto text-center" style={{height:"160px",width:"90%"}}>
-			{data.map((play,i)=><Play key={i} play={play} mini={true} song={p.song}/>)}
+		<div className="text-center background-songs">
+			<h5>Individual Plays for {p.song.name} from {p.username}</h5>
+			<div className="border rounded">
+				{data.map((play,i)=><Play key={i} play={play} mini={true} song={p.song}/>)}
+				<LoadMore url={"http://www.projectdivar.com/plays/"+p.username+"/"+p.song.id} params={{limit:15,offset:5}} value={data} setValue={setData}/>
+			</div>
 		</div>
 	</>
 	)
@@ -548,7 +650,7 @@ function HoverSongName(p) {
 	var [toggle,setToggle] = useState(false)
 	return (
 		<>
-			<tr key={p.song.id} className="lighthover" onMouseOver={()=>{setName((p.song.romanized_name.length>0)?p.song.romanized_name:p.song.english_name)}} onMouseOut={()=>{setName(p.song.name)}}
+			<tr key={p.song.id} className="lighthover"
 			data-toggle="collapse" data-target={"#collapse"+p.song.id} aria-expanded="false" aria-controls="collapseExample" onClick={()=>{
 				if (!toggle) {
 					setExpand(<PlayData song={p.song} username={p.username}/>)
@@ -559,7 +661,7 @@ function HoverSongName(p) {
 			}
 			}>
 				<td>
-					{name}
+					{(toggle)?<>⯆</>:<>⯈</>} {name} <span className="tinytext">{(p.song.romanized_name.length>0)?<>{(p.song.romanized_name!==p.song.name)?<>{p.song.romanized_name}</>:<></>}</>:<>{(p.song.english_name!==p.song.name)?<>{p.song.english_name}</>:<></>}</>}</span>
 				</td>
 				<PlayDetail song={p.song}/>
 			</tr>

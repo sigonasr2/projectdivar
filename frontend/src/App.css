@@ -4,6 +4,10 @@ badge-success {hard}
 badge-warning {ex}
 badge-danger {exex}*/
 
+.link{
+	color:#66e;
+}
+
 .highest{
 	z-index:1000001;
 }
@@ -14,6 +18,7 @@ badge-danger {exex}*/
 	display:block;
 	font-size:12px;
 }
+
 
 .display-tooltipside{
 	position:absolute;
@@ -81,6 +86,10 @@ table th {
     z-index: 100000;
 }
 
+.background-songs{
+	background-color:#eef;
+}
+
 .background-list-1{
 	background-color:#cee;
 }
@@ -98,12 +107,20 @@ table th {
 	background-color:rgba(160,160,255,0.5);
 }
 
+.tinytext{
+	font-size:10px;
+	/*z-index:-10000;*/
+	color:#666;
+	font-style:italic;
+	/*background-color:rgba(240,240,255,0.8);*/
+}
+
 .tinytime{
 	font-size:10px;
 	position:absolute;
 	bottom:0px;
 	right:7px;
-	z-index:-10000;
+	/*z-index:-10000;*/
 	color:#666;
 	font-style:italic;
 	/*background-color:rgba(240,240,255,0.8);*/
