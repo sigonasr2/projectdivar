@@ -337,41 +337,45 @@ function Play(p) {
 		return (
 		<>
 			<div className="d-none d-md-block">
-				<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfc":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fc":"")}>
-					<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div>
-					<div className="col-md-3 order-3 order-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{GetDateDisplay()}</div>
-					<div className="col-md-5 order-2 order-md-3">
-						<div className="row">
-							<div className="col-12 order-1 order-md-1 col-md-6 text-center">
-								{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
-							</div>
-							<div className="col-6 order-3 order-md-2 col-md-3 text-left text-md-left">
-								{(p.play.mod!==null&&p.play.mod.length>0)?
-									<ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
-									hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
-								:<></>
-								}
-							</div>
-							<div className="col-6 order-2 order-md-3 col-md-3 text-right text-md-left">
-								<b>{p.play.percent}%</b>
+				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
+					<div className={"row align-middle"}>
+						<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div>
+						<div className="col-md-3 order-3 order-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{GetDateDisplay()}</div>
+						<div className="col-md-5 order-2 order-md-3">
+							<div className="row">
+								<div className="col-12 order-1 order-md-1 col-md-6 text-center">
+									{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
+								</div>
+								<div className="col-6 order-3 order-md-2 col-md-3 text-left text-md-left">
+									{(p.play.mod!==null&&p.play.mod.length>0)?
+										<ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
+										hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
+									:<></>
+									}
+								</div>
+								<div className="col-6 order-2 order-md-3 col-md-3 text-right text-md-left">
+									<b>{p.play.percent}%</b>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div className="d-block d-small d-md-none">
-			{<div className="row"><div className="offset-4 col-4 text-center">{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div></div>}
-				<div className="row">
-					<div className="offset-2 col-4 text-center">
-						{Math.floor(p.play.score)} pts
-						<br/>
-						{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
-					</div>
-					<div className="col-4 text-center">
-						<b>{p.play.percent}%</b> <ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
-									hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
-						<br/>
-						{GetDateDisplay(true)}
+				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
+				{<div className="row"><div className="offset-4 col-4 text-center">{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div></div>}
+					<div className="row">
+						<div className="offset-2 col-4 text-center">
+							{Math.floor(p.play.score)} pts
+							<br/>
+							{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
+						</div>
+						<div className="col-4 text-center">
+							<b>{p.play.percent}%</b> <ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
+										hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
+							<br/>
+							{GetDateDisplay(true)}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -381,7 +385,7 @@ function Play(p) {
 	} else {
 		return (
 		<>
-			<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfc":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fc":"")}>
+			<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
 				{(p.index!==undefined)?<div className=" col-md-1 text-center border-right align-middle text-nowrap overflow-hidden"><span className="d-none d-md-block">{p.index+1}</span>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}</div>:<></>}
 				<div className="col-md-3 text-center border-right align-middle text-nowrap overflow-hidden"><SongName song={p.song}/><span className="tinytime">{GetDateDiff()}</span></div>
 				<div className="col-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/><Difficulty play={p.play} song={p.song}/></div>
@@ -669,7 +673,7 @@ function HoverSongName(p) {
 	var [toggle,setToggle] = useState(false)
 	return (
 		<>
-			<tr key={p.song.id} className="lighthover" onClick={()=>{
+			<tr key={p.song.id} className="lighthover cursor" onClick={()=>{
 				if (!toggle) {
 					setExpand(<tr className="fadein">
 								<td colSpan="6"><PlayData song={p.song} username={p.username}/></td>

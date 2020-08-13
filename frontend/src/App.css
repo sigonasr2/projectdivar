@@ -23,6 +23,10 @@ badge-danger {exex}*/
 	top:-16px;
 }
 
+.cursor:hover{
+	cursor:pointer;
+}
+
 .fadein{
   animation-name: fadein;
   animation-duration: 1s;
@@ -114,6 +118,27 @@ table th {
 
 .lighthover:hover{
 	background-color:rgba(160,160,255,0.5);
+}
+
+.fchighlight{
+	background: rgb(238,238,255);
+	background: linear-gradient(0deg, rgba(241,255,115,0) 0%, rgba(169,238,255,0.5) 25%, rgba(241,255,115,0) 100%);
+}
+
+.pfchighlight{
+	background: linear-gradient(0deg, rgba(241,255,115,0) 0%, rgba(255,230,180,0.5) 25%, rgba(241,255,115,0) 100%);
+}
+
+.pfc{
+	animation-name:colorchange;
+	animation-iteration-count: infinite;
+	animation-duration: 4s;
+	animation-direction: alternate;
+}
+
+@keyframes colorchange {
+  0%   {background: rgba(160,18,18,1);}
+  100%   {background: rgba(250,100,100,1);}
 }
 
 .tinytext{
