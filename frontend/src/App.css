@@ -19,6 +19,15 @@ badge-danger {exex}*/
 	font-size:12px;
 }
 
+.moveDown{
+	top:-16px;
+}
+
+.fadein{
+  animation-name: fadein;
+  animation-duration: 1s;
+}
+
 
 .display-tooltipside{
 	position:absolute;
