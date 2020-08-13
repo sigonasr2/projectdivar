@@ -276,15 +276,15 @@ CalculateSongScore=(song)=>{
 	console.log("Is PFC? "+(song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0))*/
 	var scoreMult=1;
 	var percentMult=1;
-	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=3}else if(comboBreaks===0){scoreMult=2}else{scoreMult=1}
+	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=2.4}else if(comboBreaks===0){scoreMult=1.4}else{scoreMult=1}
 	switch (song.difficulty){
-		case "E":{if(song.percent<30){percentMult=0;}else{percentMult=1+(0.4*((song.percent-30)/70.0))}}break;
-		case "N":{if(song.percent<50){percentMult=0}else{percentMult=1+(0.4*((song.percent-50)/50.0))}}break;
-		case "H":{if(song.percent<60){percentMult=0}else{percentMult=1+(0.4*((song.percent-60)/40.0))}}break;
+		case "E":{if(song.percent<30){percentMult=0;}else{percentMult=1+Math.pow(1.0*((song.percent-30)/70.0),3)}}break;
+		case "N":{if(song.percent<50){percentMult=0}else{percentMult=1+Math.pow(1.0*((song.percent-50)/50.0),3)}}break;
+		case "H":{if(song.percent<60){percentMult=0}else{percentMult=1+Math.pow(1.0*((song.percent-60)/40.0),3)}}break;
 		case "EX":
-		case "EXEX":{if(song.percent<70){percentMult=0}else{percentMult=1+(0.4*((song.percent-70)/30.0))}}break;
+		case "EXEX":{if(song.percent<70){percentMult=0}else{percentMult=1+Math.pow(1.0*((song.percent-70)/30.0),3)}}break;
 		default:{
-			if(song.percent<60){percentMult=0}else{percentMult=1+(0.4*((song.percent-60)/40.0))}
+			if(song.percent<60){percentMult=0}else{percentMult=1+(Math.pow(1.0*((song.percent-60)/40.0),3))}
 		}
 	}
 	/*console.log("Score mult: "+scoreMult)
