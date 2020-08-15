@@ -370,7 +370,7 @@ app.get('/completionreport/:username',(req,res)=>{
 	.then ((data)=>{
 		if (data.rows.length>0) {
 			userId=data.rows[0].id;
-			return db.query('select * from songs')
+			return db.query('select * from songs order by id asc')
 		} else {
 			throw new Error("Cannot find user!")
 		}
@@ -709,8 +709,9 @@ var process_images = []
 var processPromises = []
 var largestId = 0
 var filterId = 0
+var MAX_INDEX = 12 //To prevent being rate-limited.
 
-function Process(data){
+function Process(data,ind){
 	for (var i in data.data.statuses) {
 		var tweet = data.data.statuses[i]
 		if (tweet.source && tweet.source.includes("Nintendo Switch Share")) {
@@ -724,17 +725,21 @@ function Process(data){
 		}
 	}
 	//console.log(process_images)
-	if (data.data.search_metadata.next_results) {
+	if (data.data.search_metadata.next_results && ind<MAX_INDEX) {
 		return axios.get('https://api.twitter.com/1.1/search/tweets.json'+data.data.search_metadata.next_results, {
 			headers: {
 			/*BEARER*/	Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
 		}})
-		.then((data)=>{return Process(data)})
+		.then((data)=>{
+			//console.log("Going to next: "+(ind+1))
+			return Process(data,ind+1)})
 	}
 	return "Done!";
 }
 
-app.use('/files',express.static('files'))
+app.use('/files',express.static('files',{
+ maxAge: 86400000 * 30
+}))
 
 /*
 axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
@@ -778,11 +783,12 @@ setInterval(
 }
 ,5000)
 
+
 setInterval(()=>{db.query("select * from twitter_bot limit 1")
 .then((data)=>{
 	largestId=filterId=data.rows[0].lastpost;
 	//console.log("Filter Id: "+filterId);
-	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
+	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=%23mega39s', {
 		headers: {
 			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
 		}
@@ -792,7 +798,8 @@ setInterval(()=>{db.query("select * from twitter_bot limit 1")
 	//console.log(data.data.statuses)
 	//console.log(data.data)
 	//data.data.s
-	return Process(data);
+	//console.log("Reading Twitter Data...")
+	return Process(data,0);
 })
 .then((data)=>{
 	//console.log(process_images)
@@ -805,6 +812,7 @@ setInterval(()=>{db.query("select * from twitter_bot limit 1")
 		return db.query("select id from users where twitter=$1",[obj.user])
 		.then((data)=>{
 			if (data.rows.length>0) {
+				console.log("Process new play for User id "+data.rows[0].id+"...")
 				return db.query("insert into uploadedplays values($1,$2,$3)",[obj.image,data.rows[0].id,new Date()])
 				.then(()=>{resolve("Done!")})
 			} else {
