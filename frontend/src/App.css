@@ -4,21 +4,12 @@ badge-success {hard}
 badge-warning {ex}
 badge-danger {exex}*/
 
-.centered{
-}
-
 .link{
 	color:#66e;
 }
 
 .highest{
-	position:relative;
 	z-index:1000001;
-	background: #eef;
-}
-
-.below{
-	z-index:-1;
 }
 
 .display-tooltip{
@@ -94,16 +85,18 @@ body {
 	background: #eef;
 }
 
-.scrollingHeader{
+table th {
     position: -webkit-sticky; /* this is for all Safari (Desktop & iOS), not for Chrome*/
     position: sticky;
     top: 0;
+    z-index: 100000;
     background: #fff;
 }
-.scrollingFooter{
+#footer{
     position: -webkit-sticky; /* this is for all Safari (Desktop & iOS), not for Chrome*/
     position: sticky;
     bottom: 0;
+    z-index: 100000;
 }
 
 .background-songs{
