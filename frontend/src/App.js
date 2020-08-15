@@ -336,7 +336,7 @@ function Play(p) {
 	if (p.mini) {
 		return (
 		<>
-			<div className="d-none d-md-block">
+			<div className="d-none d-md-block below">
 				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
 					<div className={"row align-middle"}>
 						<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div>
@@ -656,7 +656,7 @@ function PlayData(p) {
 	
 	return (
 	<>
-		<div className="text-center background-songs">
+		<div className="text-center background-songs below">
 			<h5>Individual Plays for {p.song.name} from {p.username}</h5>
 			<div className="border rounded">
 				{data.map((play,i)=><Play key={i} play={play} mini={true} song={p.song}/>)}
@@ -674,19 +674,21 @@ function HoverSongName(p) {
 	return (
 		<>
 			<tr key={p.song.id} className="lighthover cursor" onClick={()=>{
-				if (!toggle) {
-					setExpand(<tr className="fadein">
-								<td colSpan="6"><PlayData song={p.song} username={p.username}/></td>
-							</tr>)
-					setToggle(true)
-				} else {
-					setExpand(<></>)
-					setToggle(false)
+				if ((p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)) {
+					if (!toggle) {
+						setExpand(<tr className="fadein">
+									<td colSpan="6"><PlayData song={p.song} username={p.username}/></td>
+								</tr>)
+						setToggle(true)
+					} else {
+						setExpand(<></>)
+						setToggle(false)
+					}
 				}
 			}
 			}>
-				<td>
-					{(toggle)?<>⯆</>:<>⯈</>} {name} <span className="tinytext">{(p.song.romanized_name.length>0)?<>{(p.song.romanized_name!==p.song.name)?<>{p.song.romanized_name}</>:<></>}</>:<>{(p.song.english_name!==p.song.name)?<>{p.song.english_name}</>:<></>}</>}</span>
+				<td className="overflow-hidden">
+					{(p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)?((toggle)?<>⯆</>:<>⯈</>):<></>} {name} <span className="tinytext">{(p.song.romanized_name.length>0)?<>{(p.song.romanized_name!==p.song.name)?<>{p.song.romanized_name}</>:<></>}</>:<>{(p.song.english_name!==p.song.name)?<>{p.song.english_name}</>:<></>}</>}</span>
 				</td>
 				<PlayDetail song={p.song}/>
 			</tr>
@@ -697,6 +699,9 @@ function HoverSongName(p) {
 
 function CompletionPanel(p) {
 	const [report,setReport] = useState([])
+	const [song,setSong] = useState("")
+	const [filter,setFilter] = useState({})
+	const [style,setStyle] = useState(true)
 	const [update,setUpdate] = useState(false)
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/completionreport/"+p.username)
@@ -706,35 +711,36 @@ function CompletionPanel(p) {
 	
 	return (
 	<>
+		<SongSearch songs={p.songs} song={song} setSong={setSong} setStyle={setStyle} filteredSongs={filter} setFilteredSongs={setFilter}/>
 		<table className="table table-sm">
 			<thead>
 				<tr id="headerbar">
-					<th scope="col">
+					<th scope="col" className={(style)?"scrollingHeader":""}>
 						Song Name
 					</th>
-					<th>
+					<th className={(style)?"scrollingHeader":""}>
 						Ranking
 					</th>
-					<th>
+					<th className={(style)?"scrollingHeader":""}>
 						Score
 					</th>
-					<th>
+					<th className={(style)?"scrollingHeader":""}>
 						%
 					</th>
-					<th>
+					<th className={(style)?"scrollingHeader":""}>
 						Play Count
 					</th>
-					<th>
+					<th className={(style)?"scrollingHeader":""}>
 						Mods
 					</th>
 				</tr>
 			</thead>
 			<tbody>
-				{report.map((song,i)=>{return <HoverSongName song={song} key={song.id} username={p.username}/>
+				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return <HoverSongName song={song} key={song.id} username={p.username}/>
 				})}
 			</tbody>
 			<tfoot>
-			<tr><td colSpan="8" id="footer">
+			<tr><td colSpan="8" id="footer" className={(style)?"scrollingFooter":""}>
 				<span className="badge badge-primary">Easy</span> <span className="badge badge-info">Normal</span> <span className="badge badge-success">Hard</span> <span className="badge badge-warning">Extreme</span> <span className="badge badge-danger">Extra Extreme</span> <span className="badge badge-light">★ = FC</span>  <span className="badge badge-light">✪ = Perfect FCs</span>
 			</td></tr>
 			</tfoot>
@@ -947,22 +953,53 @@ function ImageUpload(p) {
 }
 
 function SongSearch(p) {
-	//Requires: p.song / p.setSong
+	//Requires: p.songs / p.song / p.setSong / p.filteredSongs / p.setFilteredSongs
 	const [song,setSong] = useState("")
 	const [focused,setFocused] = useState(false)
 	
+	useEffect(()=>{
+		if (p.setStyle) {
+			if (focused) {
+				p.setStyle(false)
+			} else {
+				p.setStyle(true)
+			}
+		}
+	},[focused])
+	
 	return (
 		<>
-			<input className="form-control form-control-lg" value={song} placeholder={p.song} onFocus={()=>{setFocused(true)}} onChange={(e)=>{
+			<input className="form-control form-control-lg" value={song} placeholder={"🔍 Search by Song,Artist,Vocaloid"} onKeyDown={(e)=>{if (e.key==="Enter") {setFocused(false);e.target.blur()}}}				onFocus={()=>{setFocused(true)}} onChange={(e)=>{
+				if (p.setFilteredSongs){p.setFilteredSongs({})}
 				setSong(e.target.value)
+			}
+			} onBlur={()=>{
+				setTimeout(()=>{setFocused(false)},250)
 			}
 			}/>
 			{(focused)?
-			<div className="overflow-auto rounded-lg" style={{background:"#eef",position:"absolute",width:"95%",height:"240px"}}>{Object.keys(p.songs).filter((key)=>
+			<div className="overflow-auto rounded-lg" style={{background:"#eef",position:"absolute",width:"95%",height:"240px"}}>{
+				Object.keys(p.songs).filter((key)=>
 				{
 					var s = p.songs[key]
 					return s.name.toLowerCase().includes(song.toLowerCase())||s.romanized_name.toLowerCase().includes(song.toLowerCase())||s.english_name.toLowerCase().includes(song.toLowerCase())||s.artist.toLowerCase().includes(song.toLowerCase())||s.vocaloid.toLowerCase().includes(song.toLowerCase())
-			}).map((key)=><div className="pb-1 homelink" onClick={()=>{setSong(p.songs[key].name);setFocused(false)}}><h4>{p.songs[key].name}</h4>{(p.songs[key].romanized_name)?p.songs[key].romanized_name:p.songs[key].english_name}</div>)}</div>:<></>}
+			}).map((key)=>{
+				if (p.setFilteredSongs&&p.filteredSongs) {
+					var obj = p.filteredSongs;
+					obj[key]=true
+					//console.log(obj)
+					p.setFilteredSongs(obj)
+				}
+				return <div key={key} className="pb-1 homelink highest" onClick={()=>{setSong(p.songs[key].name);p.setSong(p.songs[key].name);setFocused(false);if(p.setFilteredSongs&&p.filteredSongs){var obj={};obj[key]=true;p.setFilteredSongs(obj)}}}>
+			<div className="d-flex flex-row">
+			<div className="p-2">
+			<img className="centered" src={p.songs[key].album_art.replace("album_art","album_art/small")}/>
+			</div>
+			<div className="p-8">
+			<h4>{p.songs[key].name}</h4>{(p.songs[key].romanized_name)?p.songs[key].romanized_name:p.songs[key].english_name}
+			</div>
+			</div>
+			</div>})}</div>:<></>}
 			
 			More stuff goes here.
 		</>
@@ -1001,19 +1038,9 @@ function Submit(p) {
 						<div className="card">
 							<Link to="/submitplay/simple" className="nostyle">
 								<div className="card-body">
-									<h5 className="card-title">Simple Submit</h5>
+									<h5 className="card-title">Manual Submit</h5>
 									<p className="card-text">Submit your plays by entering the clear % of a song</p>
-									<p className="card-text"><small className="text-muted">The simplest way to submit plays, it won't be entirely accurate, but it lets you submit plays very quickly.</small></p>
-								</div>
-							</Link>
-						</div>
-						<br/>
-						<div className="card">
-							<Link to="/submitplay/detail" className="nostyle">
-								<div className="card-body">
-									<h5 className="card-title">Detailed Submit</h5>
-									<p className="card-text">Submit your plays by entering all the information about a play</p>
-									<p className="card-text"><small className="text-muted">You can submit as many songs as you like, but you will have to provide details for each play.</small></p>
+									<p className="card-text"><small className="text-muted">The simplest way to submit plays, type in a %, tweak the other values quickly, then submit your play! Optionally include a screenshot.</small></p>
 								</div>
 							</Link>
 						</div>

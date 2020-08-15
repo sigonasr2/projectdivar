@@ -1,0 +1,24 @@
+Step 1: Obtain song title data from https://vocaloid.fandom.com/wiki/Hatsune_Miku:_Project_DIVA_Mega_Mix
+Step 2: Copy paste table into transformtable.js
+	2a: Remove the numbers.
+	2b: Replace tabs w/ ','
+	2c: Replace newlines w/ '],['
+	2d: Make any other minor corrections, need 4 args per array value
+Step 3: Run node transformtable.js
+Step 4: Apply SQL output to database table.
+Step 5: Create new entries for songData.sql
+Step 6: select name from songs order by id desc; <-- Run this query and grab the song names. Replace \n with ","
+Step 7: Set these songs under NEWSONGS array in DivaBot.
+Step 8: Play Hard Diff of songs.
+	8a: Press F1 in DivaBot on each song in song select to grab image barcode.
+	8b: Image capture results screen of the song. (Send later through twitter bot in order to process results screen barcodes)
+	8c: Label all the diff ratings in the songData.sql file once you unlock EX.
+	8d: Load those into the database.
+Step 9: Name images after songs and store captured images in imgParser/demo/resources.
+Step 10: Turn on REDO_COLOR_DATA for imgparser
+Step 11: Run the program, verify colordata is updated.
+Step 12: Turn off REDO_COLOR_DATA.
+Step 13: Upload new color data to the server imgParser. Restart server imgParser.
+Step 14: Add notecounts to songs as they are collected.
+Step 15: Collect BPM and album art data from https://108memo.jp/.
+	15a: Locally download album art to the server and store in files/album_art/XXX.jpg
