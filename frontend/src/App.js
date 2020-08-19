@@ -11,9 +11,23 @@ import {
   useHistory
 } from "react-router-dom";
 
+import {
+	Modal,
+	Button
+} from "react-bootstrap";
+
 const REMOTE_ADDR = "http://45.33.13.215:4502";
 
 const axios = require('axios');
+
+var IMAGE_CAMERA=(p)=>{
+	return(
+	<svg {...p} width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-camera-fill link cursor" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+	  <path fillRule="evenodd" d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
+	</svg>
+	)
+}
 
 var RATING_cool=new Image();
 RATING_cool.src="data:image/png;base64,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"
@@ -301,6 +315,31 @@ function Difficulty(p) {
 	);
 }
 
+function ImageDisplayer(p) {
+	var [zoom,setZoom] = useState(false)
+	
+	//p.play
+	return(
+		<Modal
+		  size="xl"
+		  aria-labelledby="contained-modal-title-vcenter"
+		  centered
+		  scrollable
+		  show={p.modalVisible}
+		  onHide={()=>{p.setModalVisible(false)}}
+		>
+		{(p.play!==undefined&&p.songs[p.play.songid])?<><Modal.Header closeButton>
+			<Modal.Title id="contained-modal-title-vcenter">
+			{`${p.username}'s ${p.songs[p.play.songid].name} Play - [${p.play.difficulty}] ${p.play.percent}%`}
+			</Modal.Title>
+		  </Modal.Header>
+		  <Modal.Body>
+			<img src={p.play.src} width={(zoom)?"auto":"100%"} className={(zoom)?"zoomout":"zoomin"} onClick={()=>{setZoom(!zoom)}}/>
+		  </Modal.Body></>:<></>}
+		</Modal>
+	)
+}
+
 function Play(p) {
 	
 	function GetModifiedDiff(name) {
@@ -337,17 +376,18 @@ function Play(p) {
 	if (p.mini) {
 		return (
 		<>
-			<div className="d-none d-md-block below">
+			<div className={"d-none d-md-block below "+((p.play.src)?"background-songs-click":"")} onClick={(p.play.src)?()=>{p.setModalSrc(p.play)
+								p.setModalVisible(true)}:null}>
 				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
 					<div className={"row align-middle"}>
 						<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div>
 						<div className="col-md-3 order-3 order-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{GetDateDisplay()}</div>
-						<div className="col-md-5 order-2 order-md-3">
+						<div className="col-md-7 order-2 order-md-3">
 							<div className="row">
-								<div className="col-12 order-1 order-md-1 col-md-6 text-center">
+								<div className="col-12 order-1 order-md-1 col-md-5 text-center">
 									{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
 								</div>
-								<div className="col-6 order-3 order-md-2 col-md-3 text-left text-md-left">
+								<div className="col-6 order-3 order-md-2 col-md-2 text-left text-md-left">
 									{(p.play.mod!==null&&p.play.mod.length>0)?
 										<ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
 										hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
@@ -357,12 +397,16 @@ function Play(p) {
 								<div className="col-6 order-2 order-md-3 col-md-3 text-right text-md-left">
 									<b>{p.play.percent}%</b>
 								</div>
+								<div className="col-6 order-2 order-md-3 col-md-2 text-right text-md-left">
+								{(p.play.src)?<IMAGE_CAMERA/>:<></>}
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div className="d-block d-small d-md-none">
+			<div className={"d-block d-small d-md-none "+((p.play.src)?"background-songs-click":"")} onClick={(p.play.src)?()=>{p.setModalSrc(p.play)
+								p.setModalVisible(true)}:null}>
 				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
 				{<div className="row"><div className="offset-4 col-4 text-center">{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div></div>}
 					<div className="row">
@@ -372,8 +416,10 @@ function Play(p) {
 							{p.play.cool+"/"+p.play.fine+"/"+p.play.safe+"/"+p.play.sad+"/"+p.play.worst}
 						</div>
 						<div className="col-4 text-center">
-							<b>{p.play.percent}%</b> <ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
-										hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>
+							<b>{p.play.percent}%</b> {(p.play.mod!==null&&p.play.mod.length>0)?<ModDisplay side={true} badge={CalculateBadge(p.play.difficulty)} diff={GetModifiedDiff(p.play.difficulty)} 
+							hs={p.play.mod=="HS"?1:0} hd={p.play.mod=="HD"?1:0} sd={p.play.mod=="SD"?1:0}/>:<></>}
+							<span className="pl-2"/>
+							{(p.play.src)?<IMAGE_CAMERA/>:<></>}
 							<br/>
 							{GetDateDisplay(true)}
 						</div>
@@ -386,7 +432,8 @@ function Play(p) {
 	} else {
 		return (
 		<>
-			<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
+			<div className={"row align-middle "+((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")+((p.play.src)?" background-songs-click":"")} onClick={(p.play.src)?()=>{p.setModalSrc(p.play)
+								p.setModalVisible(true)}:null}>
 				{(p.index!==undefined)?<div className=" col-md-1 text-center border-right align-middle text-nowrap overflow-hidden"><span className="d-none d-md-block">{p.index+1}</span>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}</div>:<></>}
 				<div className="col-md-3 text-center border-right align-middle text-nowrap overflow-hidden"><SongName song={p.song}/><span className="tinytime">{GetDateDiff()}</span></div>
 				<div className="col-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/><Difficulty play={p.play} song={p.song}/></div>
@@ -438,7 +485,8 @@ function Play(p) {
 									{p.play.sad}
 								</div>
 							</div></div>
-						<div className="order-6 order-md-6 col-md-4 numbers text-center"><b>{p.play.percent}%</b></div>
+						<div className="order-6 order-md-6 col-md-4 numbers text-center"><b>{p.play.percent}% {(p.play.src)?<span className="pl-4"><IMAGE_CAMERA onClick={()=>{p.setModalSrc(p.play)
+								p.setModalVisible(true)}}/></span>:<></>}</b></div>
 					</div>
 				</div>
 			</div>
@@ -562,7 +610,7 @@ function BestPlaysPanel(p) {
 	var content=<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush border border-danger rounded-lg">
 			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
-					<Play index={i} play={play} song={p.songs[play.songid]}/>
+					<Play setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
 			<LoadMore listItem={true} url={"http://www.projectdivar.com/bestplays/"+p.username} params={{fails:false,limit:15,offset:5}} value={bestPlays} setValue={setBestPlays}/>
 			</ul>
@@ -660,7 +708,7 @@ function PlayData(p) {
 		<div className="text-center background-songs below">
 			<h5>Individual Plays for {p.song.name} from {p.username}</h5>
 			<div className="border rounded">
-				{data.map((play,i)=><Play key={i} play={play} mini={true} song={p.song}/>)}
+				{data.map((play,i)=><Play setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} key={i} play={play} mini={true} song={p.song}/>)}
 				<LoadMore url={"http://www.projectdivar.com/plays/"+p.username+"/"+p.song.id} params={{limit:15,offset:5}} value={data} setValue={setData}/>
 			</div>
 		</div>
@@ -697,7 +745,7 @@ function HoverSongName(p) {
 		if ((p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)) {
 			if (toggle) {
 			setExpand(<tr className="fadein">
-						<td colSpan="6"><PlayData song={p.song} username={p.username}/></td>
+						<td colSpan="6"><PlayData setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} song={p.song} username={p.username}/></td>
 					</tr>)
 				window.scroll(0,cumulativeOffset(document.getElementById("songRow_"+p.song.name)).top-document.getElementById("songRow_"+p.song.name).getBoundingClientRect().height);
 					} else {
@@ -736,20 +784,11 @@ function CompletionPanel(p) {
 	const [filter,setFilter] = useState({})
 	const [style,setStyle] = useState(true)
 	const [update,setUpdate] = useState(false)
-	const [loadedCount,setLoadedCount] = useState(0)
-	const [scrollWindow,setScrollWindow] = useState(false)
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/completionreport/"+p.username)
 		.then((data)=>{setReport(data.data)})
 		.catch((err)=>{console.log(err.message)})
 	},[update])  
-	
-	useEffect(()=>{
-		console.log(loadedCount)
-		if (p.songs.length===loadedCount) {
-			setScrollWindow(true)
-		}
-	},[loadedCount])
   
 	return (
 	<>
@@ -778,7 +817,7 @@ function CompletionPanel(p) {
 				</tr>
 			</thead>
 			<tbody>
-				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return <HoverSongName to={song.name} song={song} key={song.id} username={p.username} scrollWindow={scrollWindow} loadedCount={loadedCount} setLoadedCount={setLoadedCount}/>
+				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return <HoverSongName setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>
 				})}
 			</tbody>
 			<tfoot>
@@ -837,6 +876,8 @@ function Profile(p){
 	var [diffs,setDiffs] = useState({});
 	var [user,setUserData] = useState({});
 	var [render,setRender] = useState(false);
+	var [modalsrc,setModalSrc] = useState({})
+	var [modalVisible,setModalVisible] = useState(false);
 	
 	function CalculateClear(easy,normal,hard,ex,exex,fcdata,pfcdata) {
 		return <>
@@ -867,12 +908,13 @@ function Profile(p){
 	
 	return (
 		<>
+			<ImageDisplayer username={username} songs={p.songs} play={modalsrc} modalVisible={modalVisible} setModalVisible={setModalVisible}></ImageDisplayer>
 			<h2>{username+"'s Profile"}</h2>
 				{(render)?<>
 					<StatisticsPanel name="Statistics" username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
-					<BestPlaysPanel name="Best Plays" username={username} songs={p.songs}/>
-					<CompletionPanel name="Progress" username={username} songs={p.songs}/>
+					<BestPlaysPanel name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
+					<CompletionPanel name="Progress" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
 					<Panel name="Activity" username={username}/>
 					</>
 					:<></>
@@ -908,7 +950,7 @@ function Rankings(){
 					</tr>
 				</thead>
 			{users.map((user)=>
-				<tbody>
+				<tbody key={user.id}>
 					<tr>
 						<td className={(isLoading)?"loading":""}><Link to={"/user/"+user.username}>{user.username}</Link></td>
 						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{user.last_played}</td>
@@ -1049,11 +1091,33 @@ function SongSearch(p) {
 }
 
 function SimpleUpload(p){
-	const [song,setSong] = useState("Catch the Wave")
+	const [song,setSong] = useState("")
+	const [percentage,setPercentage] = useState("")
 	
 	return (
 		<>
 			<SongSearch song={song} setSong={setSong} songs={p.songs}/>
+			{(song.length>0?<>
+			
+			<div className="input-group">
+				<div className="input-group-prepend">
+					<label htmlFor="validationCustomUsername">
+						<span className="input-group-text" id=	"inputGroupPrepend">Song %</span>
+					</label>
+					<input type="text" className="form-control" id="validationCustomUsername" value={percentage} placeholder="101.46%" aria-describedby="inputGroupPrepend"
+					onChange={(e)=>{
+						if (!e.target.value.includes("%")) {
+							e.target.value+="%"
+							e.target.selectionStart=e.target.selectionEnd=e.target.value.length-1
+						}
+					setPercentage(e.target.value)}}
+					required/>
+					<small className="text-muted">
+					  Input the % you got on the results screen.
+					</small>
+				</div>
+			</div>
+			</>:<></>)}
 		</>
 	)
 }

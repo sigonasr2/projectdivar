@@ -4,6 +4,14 @@ badge-success {hard}
 badge-warning {ex}
 badge-danger {exex}*/
 
+.zoomin:hover{
+	cursor:zoom-in;
+}
+
+.zoomout:hover{
+	cursor:zoom-out;
+}
+
 .centered{
 }
 
@@ -105,6 +113,11 @@ body {
     position: -webkit-sticky; /* this is for all Safari (Desktop & iOS), not for Chrome*/
     position: sticky;
     bottom: 0;
+}
+
+.background-songs-click:hover{
+	background-color:#aaf;
+	cursor:pointer;
 }
 
 .background-songs{
