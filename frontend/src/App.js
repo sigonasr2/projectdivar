@@ -1,4 +1,4 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState,useEffect,useRef} from 'react';
 import logo from './logo.svg';
 import './App.css';
 import {
@@ -7,7 +7,8 @@ import {
   Route,
   Link,
   useRouteMatch,
-  useParams
+  useParams,
+  useHistory
 } from "react-router-dom";
 
 const REMOTE_ADDR = "http://45.33.13.215:4502";
@@ -666,27 +667,59 @@ function PlayData(p) {
 	</>
 	)
 }
+var cumulativeOffset = function(element) {
+    var top = 0, left = 0;
+    do {
+        top += element.offsetTop  || 0;
+        left += element.offsetLeft || 0;
+        element = element.offsetParent;
+    } while(element);
+
+    return {
+        top: top,
+        left: left
+    };
+};
 
 function HoverSongName(p) {
+	let match = useRouteMatch({
+		path: "/user/"+p.username+"/"+p.to,
+		exact: true
+	  });
+	  
 	var [name,setName] = useState(p.song.name)
 	var [expand,setExpand] = useState(<></>)
-	var [toggle,setToggle] = useState(false)
+	var [toggle,setToggle] = useState(match)
+	
+	let history = useHistory();
+	
+	useEffect(()=>{
+		if ((p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)) {
+			if (toggle) {
+			setExpand(<tr className="fadein">
+						<td colSpan="6"><PlayData song={p.song} username={p.username}/></td>
+					</tr>)
+				window.scroll(0,cumulativeOffset(document.getElementById("songRow_"+p.song.name)).top-document.getElementById("songRow_"+p.song.name).getBoundingClientRect().height);
+					} else {
+			setExpand(<></>)
+					}
+		}
+	},[toggle])
+	
 	return (
 		<>
-			<tr key={p.song.id} className="lighthover cursor" onClick={()=>{
-				if ((p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)) {
-					if (!toggle) {
-						setExpand(<tr className="fadein">
-									<td colSpan="6"><PlayData song={p.song} username={p.username}/></td>
-								</tr>)
-						setToggle(true)
-					} else {
-						setExpand(<></>)
-						setToggle(false)
+			<tr id={"songRow_"+p.song.name} key={p.song.id} className="lighthover cursor" onClick={(e)=>{
+					if ((p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)) {
+						if (!toggle) {
+							setToggle(true)
+							history.push("/user/"+p.username+"/"+p.to)
+						} else {
+							setToggle(false)
+						}
 					}
+					//console.log(e.target.getBoundingClientRect()+"/"+window.pageYOffset)
 				}
-			}
-			}>
+				}>
 				<td className="overflow-hidden">
 					{(p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)?((toggle)?<>⯆</>:<>⯈</>):<></>} {name} <span className="tinytext">{(p.song.romanized_name.length>0)?<>{(p.song.romanized_name!==p.song.name)?<>{p.song.romanized_name}</>:<></>}</>:<>{(p.song.english_name!==p.song.name)?<>{p.song.english_name}</>:<></>}</>}</span>
 				</td>
@@ -703,12 +736,21 @@ function CompletionPanel(p) {
 	const [filter,setFilter] = useState({})
 	const [style,setStyle] = useState(true)
 	const [update,setUpdate] = useState(false)
+	const [loadedCount,setLoadedCount] = useState(0)
+	const [scrollWindow,setScrollWindow] = useState(false)
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/completionreport/"+p.username)
 		.then((data)=>{setReport(data.data)})
 		.catch((err)=>{console.log(err.message)})
-	},[update])
+	},[update])  
 	
+	useEffect(()=>{
+		console.log(loadedCount)
+		if (p.songs.length===loadedCount) {
+			setScrollWindow(true)
+		}
+	},[loadedCount])
+  
 	return (
 	<>
 		<SongSearch songs={p.songs} song={song} setSong={setSong} setStyle={setStyle} filteredSongs={filter} setFilteredSongs={setFilter}/>
@@ -736,7 +778,7 @@ function CompletionPanel(p) {
 				</tr>
 			</thead>
 			<tbody>
-				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return <HoverSongName song={song} key={song.id} username={p.username}/>
+				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return <HoverSongName to={song.name} song={song} key={song.id} username={p.username} scrollWindow={scrollWindow} loadedCount={loadedCount} setLoadedCount={setLoadedCount}/>
 				})}
 			</tbody>
 			<tfoot>

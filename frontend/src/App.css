@@ -99,6 +99,7 @@ body {
     position: sticky;
     top: 0;
     background: #fff;
+	z-index:1;
 }
 .scrollingFooter{
     position: -webkit-sticky; /* this is for all Safari (Desktop & iOS), not for Chrome*/
