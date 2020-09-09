@@ -170,7 +170,7 @@ function Sort(p){
 
 function ProfileDataContainer(p){
 	return (
-		<div className={"col-md-"+p.width+"  border"}>
+		<div className={"col-md-"+p.width+"  border"} onMouseOver={()=>{if (p.setMouseOver) {p.setMouseOver(true)}}} onMouseOut={()=>{if(p.setMouseOver){p.setMouseOver(false)}}}>
 			<div className="row">
 				<div className="text-center label col-6 col-md-12">
 					{p.label}
@@ -190,7 +190,7 @@ function StatisticsPanel(p) {
 				<div className="col-md-1"></div>
 				<ProfileDataContainer label="Play Count" data={p.playcount} width="2"/>
 				<ProfileDataContainer label="FC Count" data={p.fccount} width="2"/>
-				<ProfileDataContainer label="Cleared" data={p.cleared} width="4"/>
+				<ProfileDataContainer setMouseOver={p.setMouseOver} label="Cleared" data={p.cleared} width="4"/>
 				<ProfileDataContainer label="Accuracy" data={p.accuracy} width="2"/>
 				<div className="col-md-1"></div>
 			</div>
@@ -376,11 +376,11 @@ function Play(p) {
 	if (p.mini) {
 		return (
 		<>
-			<div className={"d-none d-md-block below "+((p.play.src)?"background-songs-click":"")} onClick={(p.play.src)?()=>{p.setModalSrc(p.play)
+			<div className={"d-none d-md-block below border border-bottom "+((p.play.src)?"background-songs-click":"")} onClick={(p.play.src)?()=>{p.setModalSrc(p.play)
 								p.setModalVisible(true)}:null}>
 				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
 					<div className={"row align-middle"}>
-						<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{Math.floor(p.play.score)} pts<br/>{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div>
+						<div className="col-md-2 order-1 order-md-1 text-center border-right align-middle text-nowrap overflow-hidden">{(p.title&&p.song)?<>{p.song.name}<br/></>:<></>}{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)} <Difficulty play={p.play} song={p.song}/> {Math.floor(p.play.score)} pts</div>
 						<div className="col-md-3 order-3 order-md-2 text-center border-right align-middle text-nowrap overflow-hidden">{GetDateDisplay()}</div>
 						<div className="col-md-7 order-2 order-md-3">
 							<div className="row">
@@ -407,7 +407,7 @@ function Play(p) {
 			</div>
 			<div className={"d-block d-small d-md-none "+((p.play.src)?"background-songs-click":"")} onClick={(p.play.src)?()=>{p.setModalSrc(p.play)
 								p.setModalVisible(true)}:null}>
-				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>
+				<div className={((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"pfchighlight":(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?"fchighlight":"")}>{(p.title&&p.song)?<>{p.song.name}<br/></>:<></>}
 				{<div className="row"><div className="offset-4 col-4 text-center">{((p.play.fine==0&&p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge pfc">✪PFC</span>:(p.play.safe==0&&p.play.sad==0&&p.play.worst==0)?<span className="badge fc">★FC</span>:<></>)}<Difficulty play={p.play} song={p.song}/></div></div>}
 					<div className="row">
 						<div className="offset-2 col-4 text-center">
@@ -426,7 +426,6 @@ function Play(p) {
 					</div>
 				</div>
 			</div>
-			<hr className="mb-0"/>
 		</>
 		);
 	} else {
@@ -850,14 +849,22 @@ function ClearBadge(p) {
 		/*<span className="badge badge-primary">{easy}/{diffs.E}
 			{(fcdata&&fcdata.E>0)?<><br/>★{fcdata.E}</>:<></>}
 			{(pfcdata&&pfcdata.E>0)?<><br/>✪{pfcdata.E}</>:<></>}</span>*/
+			
+	function toggle(state) {
+		if (state) {
+			setDisplay(<>{((p.fcdata&&p.fcdata[p.diff]>0)?<><br/>★ {p.fcdata[p.diff]}</>:<></>)}
+			{((p.pfcdata&&p.pfcdata[p.diff]>0)?<><br/>✪ {p.pfcdata[p.diff]}</>:<></>)}</>)
+		} else {
+			setDisplay(<></>)
+		}
+	}
+			
+	useEffect(()=>{
+		toggle(p.mouseOver)
+	},[p.mouseOver])
 	return(
 	<>
-	<span className={"badge badge-"+CalculateBadge(p.diff)} onMouseOver={()=>{
-		setDisplay(<>{((p.fcdata&&p.fcdata[p.diff]>0)?<><br/>★{p.fcdata[p.diff]}</>:<></>)}
-			{((p.pfcdata&&p.pfcdata[p.diff]>0)?<><br/>✪{p.pfcdata[p.diff]}</>:<></>)}</>)
-	}} onMouseOut={()=>{
-		setDisplay(<></>)
-	}}>{p.count}/{p.diffs[p.diff]}{display}</span>
+	<span className={"badge badge-"+CalculateBadge(p.diff)} onTouchStart={()=>{toggle(true)}}>{p.count}/{p.diffs[p.diff]}{display}</span>
 	</>
 	)
 }
@@ -878,14 +885,15 @@ function Profile(p){
 	var [render,setRender] = useState(false);
 	var [modalsrc,setModalSrc] = useState({})
 	var [modalVisible,setModalVisible] = useState(false);
+	var [mouseOver,setMouseOver] = useState(false);
 	
 	function CalculateClear(easy,normal,hard,ex,exex,fcdata,pfcdata) {
 		return <>
-			<ClearBadge diff="E" count={easy} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
-			<ClearBadge diff="N" count={normal} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
-			<ClearBadge diff="H" count={hard} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
-			<ClearBadge diff="EX" count={ex} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
-			<ClearBadge diff="EXEX" count={exex} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge mouseOver={mouseOver} diff="E" count={easy} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge mouseOver={mouseOver} diff="N" count={normal} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge mouseOver={mouseOver} diff="H" count={hard} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge mouseOver={mouseOver} diff="EX" count={ex} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
+			<ClearBadge mouseOver={mouseOver} diff="EXEX" count={exex} diffs={diffs} fcdata={fcdata} pfcdata={pfcdata}/>
 		</>
 	}
 	
@@ -900,10 +908,10 @@ function Profile(p){
 		if (user!={}) {
 			setClear(CalculateClear(user.eclear,user.nclear,user.hclear,user.exclear,user.exexclear,user.fcdata,user.pfcdata))
 		}
-	},[diffs,user])
+	},[diffs,user,mouseOver])
 	
 	useEffect(()=>{
-		setRender(user&&playcount&&fccount&&rating&&lastPlayed&&accuracy&&diffs&&cleared)
+		setRender(user!==undefined&&playcount!==undefined&&fccount!==undefined&&rating!==undefined&&lastPlayed!==undefined&&accuracy!==undefined&&diffs!==undefined&&cleared!==undefined)
 	},[user,playcount,fccount,rating,lastPlayed,accuracy,diffs,cleared])
 	
 	return (
@@ -911,7 +919,7 @@ function Profile(p){
 			<ImageDisplayer username={username} songs={p.songs} play={modalsrc} modalVisible={modalVisible} setModalVisible={setModalVisible}></ImageDisplayer>
 			<h2>{username+"'s Profile"}</h2>
 				{(render)?<>
-					<StatisticsPanel name="Statistics" username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
+					<StatisticsPanel name="Statistics" setMouseOver={setMouseOver} username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
 					<BestPlaysPanel name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
 					<CompletionPanel name="Progress" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
@@ -986,8 +994,8 @@ function ImageUpload(p) {
 		}
 		const data = new FormData() 
 		data.append('file', file)
-		data.append("username","The Internet");
-		data.append("authentication_token","sig");
+		data.append("username","GOD");
+		data.append("authentication_token","GOD");
 		if (!data.has("username") || !data.has("authentication_token")) {setError("Authentication failed!");return;}
 		
 		if (file.size>15*1024*1024) {
@@ -1177,6 +1185,30 @@ function Submit(p) {
 	)
 }
 
+function RecentPlays(p) {
+	const [update,setUpdate] = useState(false)
+	const [recentPlayData,setRecentPlayData] = useState([])
+	
+	useEffect(()=>{
+		
+		const interval = setInterval(()=>{
+			axios.get("http://projectdivar.com/recentplays/sigonasr2")
+			.then((data)=>{
+				setRecentPlayData(data.data);
+			})
+			.catch((err)=>{})
+		},5000);
+		
+		return ()=>{clearInterval(interval)}
+	},[update])
+	
+	return (
+	<>
+		{recentPlayData.map((play,i)=><Play index={i} play={play} song={p.songs[play.songid]} title={true} mini={true}/>)}
+	</>
+	)
+}
+
 function Website() {
 	const [songs,setSongs] = useState([])
 	const [update,setUpdate] = useState(false)
@@ -1210,6 +1242,10 @@ function Website() {
 					</Route>
 					<Route path="/submitplay">
 						<Submit songs={songs}/>
+					</Route>
+					<Route path="/recentplays">
+						<h1 className="title">Project DivaR</h1>
+						<RecentPlays songs={songs}/>
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>

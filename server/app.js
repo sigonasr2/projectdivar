@@ -53,7 +53,7 @@ app.get('/song/:songname', (req, res) => {
 })
 
 app.get('/songs', (req, res) => {
-    db.query('select songs.*,songdata.rating as rating,songdata.difficulty from songs left join songdata on songs.id=songdata.songid' , (error, results) => {
+    db.query('select songs.*,songdata.rating as rating,songdata.difficulty,songdata.notecount from songs left join songdata on songs.id=songdata.songid' , (error, results) => {
       if (error) {
 		res.status(500).json(error.message)
       } else {
@@ -64,10 +64,14 @@ app.get('/songs', (req, res) => {
 			if (data[song.id]) {
 				if (typeof(data[song.id].rating)==="string"){
 					var oldRating = data[song.id].rating;
+					var oldNoteCount = data[song.id].notecount;
 					data[song.id].rating={}
+					data[song.id].notecount={}
 					data[song.id].rating[data[song.id].difficulty]=oldRating;
+					data[song.id].notecount[data[song.id].difficulty]=oldNoteCount;
 				}
 				data[song.id].rating[song.difficulty]=song.rating;
+				data[song.id].notecount[song.difficulty]=song.notecount;
 			} else {
 				data[song.id]=song
 			}})
@@ -540,6 +544,15 @@ app.get('/rating/:username',(req,res)=>{
 	if (req.params.username) {
 		db.query('select rating from users where username=$1 limit 1',[req.params.username])
 		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows[0])}else{res.status(200).json({rating:0})}})
+	} else {
+		res.status(400).json("Invalid username!")
+	}
+})
+
+app.get('/recentplays/:username',(req,res)=>{
+	if (req.params.username) {
+		db.query('select plays.* from plays join users on users.id=plays.userid where users.username=$1 order by plays.id desc limit 10',[req.params.username])
+		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows)}else{res.status(200).json([])}})
 	} else {
 		res.status(400).json("Invalid username!")
 	}

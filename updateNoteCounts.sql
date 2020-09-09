@@ -751,3 +751,70 @@ update songdata set notecount= where songid=146 and difficulty='EXEX';
 update songdata set notecount= where songid=148 and difficulty='EXEX';
 
 
+update songdata set notecount=242 where songid=152 and difficulty='E';
+update songdata set notecount=293 where songid=152 and difficulty='H';
+update songdata set notecount=357 where songid=152 and difficulty='EX';
+update songdata set notecount=372 where songid=152 and difficulty='EXEX';
+update songdata set notecount=296 where songid=153 and difficulty='E';
+update songdata set notecount=369 where songid=153 and difficulty='N';
+update songdata set notecount=447 where songid=153 and difficulty='H';
+update songdata set notecount=541 where songid=153 and difficulty='EX';
+update songdata set notecount=561 where songid=153 and difficulty='EXEX';
+update songdata set notecount=389 where songid=154 and difficulty='E';
+update songdata set notecount=479 where songid=154 and difficulty='N';
+update songdata set notecount=529 where songid=154 and difficulty='H';
+update songdata set notecount=682 where songid=154 and difficulty='EX';
+update songdata set notecount=758 where songid=154 and difficulty='EXEX';
+
+update songdata set notecount=282 where songid=155 and difficulty='E';
+update songdata set notecount=366 where songid=155 and difficulty='N';
+update songdata set notecount=495 where songid=155 and difficulty='H';
+update songdata set notecount=593 where songid=155 and difficulty='EX';
+
+update songdata set notecount=332 where songid=156 and difficulty='E';
+update songdata set notecount=421 where songid=156 and difficulty='N';
+update songdata set notecount=535 where songid=156 and difficulty='H';
+update songdata set notecount=808 where songid=156 and difficulty='EX';
+
+update songdata set notecount=409 where songid=157 and difficulty='N';
+update songdata set notecount=495 where songid=157 and difficulty='H';
+update songdata set notecount=536 where songid=157 and difficulty='EX';
+update songdata set notecount=545 where songid=157 and difficulty='EXEX';
+
+update songdata set notecount=313 where songid=158 and difficulty='E';
+update songdata set notecount=534 where songid=158 and difficulty='N';
+update songdata set notecount=827 where songid=158 and difficulty='H';
+update songdata set notecount=893 where songid=158 and difficulty='EX';
+
+update songdata set notecount=196 where songid=159 and difficulty='E';
+update songdata set notecount=242 where songid=159 and difficulty='N';
+update songdata set notecount=276 where songid=159 and difficulty='H';
+update songdata set notecount=282 where songid=159 and difficulty='EX';
+update songdata set notecount=282 where songid=159 and difficulty='EXEX';
+
+update songdata set notecount=224 where songid=160 and difficulty='E';
+update songdata set notecount=297 where songid=160 and difficulty='N';
+update songdata set notecount=388 where songid=160 and difficulty='H';
+update songdata set notecount=415 where songid=160 and difficulty='EX';
+update songdata set notecount=417 where songid=160 and difficulty='EXEX';
+
+update songdata set notecount=449 where songid=161 and difficulty='N';
+update songdata set notecount=537 where songid=161 and difficulty='H';
+update songdata set notecount=644 where songid=161 and difficulty='EX';
+update songdata set notecount=702 where songid=161 and difficulty='EXEX';
+
+update songdata set notecount=344 where songid=162 and difficulty='E';
+update songdata set notecount=434 where songid=162 and difficulty='N';
+update songdata set notecount=482 where songid=162 and difficulty='H';
+update songdata set notecount=486 where songid=162 and difficulty='EX';
+
+update songdata set notecount=310 where songid=163 and difficulty='N';
+update songdata set notecount=410 where songid=163 and difficulty='H';
+update songdata set notecount=453 where songid=163 and difficulty='EX';
+
+update songdata set notecount=337 where songid=164 and difficulty='E';
+update songdata set notecount=414 where songid=164 and difficulty='N';
+update songdata set notecount=495 where songid=164 and difficulty='H';
+update songdata set notecount=525 where songid=164 and difficulty='EX';
+update songdata set notecount=525 where songid=164 and difficulty='EXEX';
+
