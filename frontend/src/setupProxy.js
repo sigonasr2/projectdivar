@@ -2,6 +2,27 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
 	app.use(
+	"/authenticateuser",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/sendemail/register",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/sendemail/login",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
 	"/recentplays/:username",
 	createProxyMiddleware({
 	  target: 'http://server:4501',

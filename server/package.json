@@ -11,13 +11,10 @@
   "dependencies": {
     "axios": "^0.19.2",
     "connect-timeout": "^1.9.0",
-    "crypto": "^1.0.1",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.9",
-    "get-pixels": "^3.3.2",
-    "image-pixels": "^2.2.2",
+    "nodemailer": "^6.4.11",
     "pg": "^8.2.1",
-    "readimage": "^1.1.1",
     "request": "^2.88.2",
     "twitter-autohook": "^1.7.1",
     "unzipper": "^0.10.11"

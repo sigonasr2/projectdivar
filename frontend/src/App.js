@@ -1130,6 +1130,15 @@ function SimpleUpload(p){
 	)
 }
 
+function SendMail() {
+	//process.env.REACT_APP_FRONTEND_AUTH
+	return (
+	<>
+	
+	</>
+	)
+}
+
 function Submit(p) {
 	return (
 		<div className="row">
@@ -1242,6 +1251,9 @@ function Website() {
 					</Route>
 					<Route path="/submitplay">
 						<Submit songs={songs}/>
+					</Route>
+					<Route path="/sendmail">
+						<SendMail/>
 					</Route>
 					<Route path="/recentplays">
 						<h1 className="title">Project DivaR</h1>

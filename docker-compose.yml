@@ -47,6 +47,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     working_dir: /frontend
+    env_file:
+        - ./frontend/.env
     volumes:
         - /app/node_modules
         - ./frontend:/frontend

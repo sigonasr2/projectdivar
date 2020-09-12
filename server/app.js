@@ -12,6 +12,7 @@ app.use(
     extended: true,
   })
 )
+const nodemailer = require('nodemailer');
 const fileUpload = require('express-fileupload');
 const unzipper = require('unzipper');
 const fs = require('fs');
@@ -699,6 +700,82 @@ app.post('/song/:songname/:difficulty',(req,res)=>{
 		.catch((err)=>{res.status(400).json(err.message)})
 	} else {
 		res.status(400).json("Invalid query!")
+	}
+})
+
+function CheckUserExists(username,email) {
+	return db.query("select id,username,email from users where username=$1 or email=$2 limit 1",[username,email])
+}
+
+function SendRegistrationEmail(username,emailTo,authCode) {
+	const transporter = nodemailer.createTransport({
+	  service: 'gmail',
+	  auth: {
+		user: 'admin@projectdivar.com',
+		pass: process.env.GMAIL // naturally, replace both with your real credentials or an application-specific password
+	  }
+	});
+	transporter.sendMail({
+		from: 'admin@projectdivar.com',
+		to: emailTo,
+		subject: 'Project DivaR Registration Code',
+		html: `<b>${username}</b>,<br><br>Thank you for signing up for Project DivaR!<br><br>Your authentication code is <b>${authCode}</b>!`
+	}, (err, info) => {
+		if (err) { 
+			console.log(err.message)
+		} else {
+			console.log(info.envelope);
+			console.log(info.messageId);
+		}
+	});
+}
+
+app.post('/sendemail/register',function(req,res) {
+	if (req.body&&req.body.username&&req.body.email) {
+		//Generate a token for the user to login with.
+		CheckUserExists(req.body.username,req.body.email)
+		.then((data)=>{
+			var authCode=Math.floor(Math.random()*90000)+10000
+			var authenticationToken=String(Math.floor(Math.random()*90000)+10000)+"-"+String(Math.floor(Math.random()*90000)+10000)+"-"+String(Math.floor(Math.random()*90000)+10000);
+			if (data.rows.length>0) {
+				db.query("update users set code=$1 where id=$2",[authCode,data.rows[0].id])
+			} else {
+				db.query("insert into users(username,email,authentication_token,code) values($1,$2,$3,$4)",
+				[req.body.username,req.body.email,authenticationToken,authCode])
+			}
+			return authCode
+		})
+		.then((authCode)=>{
+			res.status(200).json("Email sent.")
+			SendRegistrationEmail(req.body.username,req.body.email,authCode)
+		})
+		.catch((err)=>{
+			res.status(500).json(err.message)
+		})
+	} else {
+		res.status(400).json("Invalid credentials!")
+	}
+})
+
+function AuthenticateUser(username,auth) {
+	return db.query("select id,username,email from users where username=$1 and authentication_token=$2 limit 1",[username,auth])
+}
+
+app.post('/authenticateuser',function(req,res) {
+	if (req.body&&req.body.username&&req.body.authenticationToken) {
+		AuthenticateUser(req.body.username,req.body.authenticationToken)
+		.then((data)=>{
+			if (data.rows.length>0) {
+				res.status(200).json("Authentication Success!")
+			} else {
+				res.status(400).json("Authentication Failed!")
+			}
+		})
+		.catch((err)=>{
+			res.status(500).json(err.message)
+		})
+	} else {
+		res.status(400).json("Invalid credentials!")
 	}
 })
 
