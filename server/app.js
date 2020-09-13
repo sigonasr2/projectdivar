@@ -16,6 +16,7 @@ const nodemailer = require('nodemailer');
 const fileUpload = require('express-fileupload');
 const unzipper = require('unzipper');
 const fs = require('fs');
+const moment = require('moment');
 app.use(
 	fileUpload({createParentPath:true,
 	limits: { fileSize: 15 * 1024 * 1024, files: 1 },
@@ -81,7 +82,7 @@ app.get('/songs', (req, res) => {
     })
 })
 
-app.post('/register', (req, res) => {
+/*app.post('/register', (req, res) => {
 	if (req.body && req.body.username &&
 req.body.username.length>2 && req.body.email) {
 		var duplicateFound=false;
@@ -98,7 +99,7 @@ req.body.username.length>2 && req.body.email) {
 	} else {
 		res.status(400).json("Invalid username!")
 	}
-})
+})*/
 
 app.delete('/remove',(req,res)=>{
 	if (req.body &&
@@ -281,6 +282,9 @@ CalculateSongScore=(song)=>{
 	console.log("Is PFC? "+(song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0))*/
 	var scoreMult=1;
 	var percentMult=1;
+	if (song.percent>110) {
+		song.percent=100
+	}
 	if (song.fine===0&&song.safe===0&&song.sad===0&&song.worst===0){scoreMult=2.4}else if(comboBreaks===0){scoreMult=1.4}else{scoreMult=1}
 	switch (song.difficulty){
 		case "E":{if(song.percent<30){percentMult=0;}else{percentMult=1+Math.pow(1.0*((song.percent-30)/70.0),3)}}break;
@@ -704,7 +708,30 @@ app.post('/song/:songname/:difficulty',(req,res)=>{
 })
 
 function CheckUserExists(username,email) {
-	return db.query("select id,username,email from users where username=$1 or email=$2 limit 1",[username,email])
+	return db.query("select id,username,email,registered from users where username=$1 or email=$2 limit 1",[username,email])
+}
+
+function SendLoginEmail(username,emailTo,authCode) {
+	const transporter = nodemailer.createTransport({
+	  service: 'gmail',
+	  auth: {
+		user: 'admin@projectdivar.com',
+		pass: process.env.GMAIL // naturally, replace both with your real credentials or an application-specific password
+	  }
+	});
+	transporter.sendMail({
+		from: 'admin@projectdivar.com',
+		to: emailTo,
+		subject: 'Project DivaR Login Code',
+		html: `<b>${username}</b>,<br><br>Thank you for using Project DivaR!<br><br>Your authentication code is <b>${authCode}</b>!`
+	}, (err, info) => {
+		if (err) { 
+			console.log(err.message)
+		} else {
+			console.log(info.envelope);
+			console.log(info.messageId);
+		}
+	});
 }
 
 function SendRegistrationEmail(username,emailTo,authCode) {
@@ -730,24 +757,127 @@ function SendRegistrationEmail(username,emailTo,authCode) {
 	});
 }
 
+function GetUserInfo(username) {
+	return db.query("select id,username,email,code_time from users where username=$1 limit 1",[username])
+}
+function GetUserLoginAllowed(username,authCode) {
+	return db.query("select id,username,email,code_time from users where username=$1 and code=$2 limit 1",[username,authCode])
+}
+app.post('/authenticate/authToken',(req,res)=>{
+	if (req.body&&req.body.username&&req.body.authCode) {
+		GetUserLoginAllowed(req.body.username.trim(),req.body.authCode.trim())
+		.then((data)=>{
+			if (data.rows.length>0) {
+				return db.query("select authentication_token from users where id=$1",[data.rows[0].id])
+			} else {
+				return new Error("Failed login!")
+			}
+		})
+		.then((data)=>{
+			if (data.rows.length>0) {
+				res.status(200).json(data.rows[0])
+			} else {
+				return new Error("Failed to get authentication token!")
+			}
+		})
+		.catch((err)=>{
+			res.status(500).json(err.message)
+		})
+	} else {
+		res.status(400).json("Invalid Credentials!")
+	}
+})
+
+app.post('/authenticate/login',(req,res)=>{
+	if (req.body&&req.body.username&&req.body.authCode) {
+		GetUserLoginAllowed(req.body.username.trim(),req.body.authCode.trim())
+		.then((data)=>{
+			if (data.rows.length>0) {
+				res.status(200).json("Login allowed!")
+			} else {
+				res.status(400).json("Failed login!")
+			}
+		})
+	} else {
+		res.status(400).json("Invalid Credentials!")
+	}
+})
+
+app.post('/sendemail/login',function(req,res) {
+	if (req.body&&req.body.username) {
+		GetUserInfo(req.body.username.trim())
+		.then((data)=>{
+			if (data.rows.length>0) {
+				res.status(200).json("Email sent.")
+				//console.log(data.rows[0].code_time)
+				if (data.rows[0].code_time) {
+					if (moment(data.rows[0].code_time,"YYYY-MM-DD HH:mm:ss.SSSZ").diff(moment(),'minutes')<=-15) {
+						var authCode=Math.floor(Math.random()*90000)+10000
+						SendLoginEmail(req.body.username,data.rows[0].email,authCode)
+						db.query("update users set code=$1,code_time=$3 where id=$2",[authCode,data.rows[0].id,moment()])
+					}
+					//console.log(moment(data.rows[0].code_time,"YYYY-MM-DD HH:mm:ss.SSSZ").diff(moment(),'minutes'))
+				} else {
+					var authCode=Math.floor(Math.random()*90000)+10000
+					SendLoginEmail(req.body.username,data.rows[0].email,authCode)
+					db.query("update users set code=$1,code_time=$3 where id=$2",[authCode,data.rows[0].id,moment()])
+				}
+			} else {
+				res.status(400).json("User does not exist!")
+			}
+		})
+	} else {
+		res.status(400).json("Invalid credentials!")
+	}
+})
+
+app.patch('/updateRegisteredState',function(req,res) {
+	if (req.body&&req.body.username&&req.body.authCode) {
+		GetUserLoginAllowed(req.body.username,req.body.authCode)
+		.then((data)=>{
+			if (data.rows.length>0) {
+				return db.query("update users set registered=$1 where id=$2",[true,data.rows[0].id])
+			} else {
+				throw new Error("Could not login!")
+			}
+		})
+		.then((data)=>{
+			res.status(200).json("Registered!")
+		})
+		.catch((err)=>{
+			res.status(500).json("Could not finish registration!")
+		})
+	} else {
+		res.status(400).json("Invalid credentials!")
+	}
+})
+
 app.post('/sendemail/register',function(req,res) {
 	if (req.body&&req.body.username&&req.body.email) {
 		//Generate a token for the user to login with.
-		CheckUserExists(req.body.username,req.body.email)
+		CheckUserExists(req.body.username.trim(),req.body.email.trim())
 		.then((data)=>{
 			var authCode=Math.floor(Math.random()*90000)+10000
 			var authenticationToken=String(Math.floor(Math.random()*90000)+10000)+"-"+String(Math.floor(Math.random()*90000)+10000)+"-"+String(Math.floor(Math.random()*90000)+10000);
 			if (data.rows.length>0) {
-				db.query("update users set code=$1 where id=$2",[authCode,data.rows[0].id])
+				//db.query("update users set code=$1 where id=$2",[authCode,data.rows[0].id])
+				if (data.rows[0].registered) {
+					throw new Error("User already exists!")
+				} else {
+					return db.query("update users set code=$1 where id=$2 returning code",[authCode,data.rows[0].id])
+				}
 			} else {
-				db.query("insert into users(username,email,authentication_token,code) values($1,$2,$3,$4)",
+				return db.query("insert into users(username,email,authentication_token,code) values($1,$2,$3,$4) returning code",
 				[req.body.username,req.body.email,authenticationToken,authCode])
 			}
-			return authCode
 		})
-		.then((authCode)=>{
-			res.status(200).json("Email sent.")
-			SendRegistrationEmail(req.body.username,req.body.email,authCode)
+		.then((data)=>{
+			if (data.rows.length>0) {
+				res.status(200).json("Email sent.")
+				SendRegistrationEmail(req.body.username,req.body.email,data.rows[0].code)
+			} else {
+				res.status(500).json("Something bad happened!")
+			}
 		})
 		.catch((err)=>{
 			res.status(500).json(err.message)
@@ -763,7 +893,7 @@ function AuthenticateUser(username,auth) {
 
 app.post('/authenticateuser',function(req,res) {
 	if (req.body&&req.body.username&&req.body.authenticationToken) {
-		AuthenticateUser(req.body.username,req.body.authenticationToken)
+		AuthenticateUser(req.body.username.trim(),req.body.authenticationToken.trim())
 		.then((data)=>{
 			if (data.rows.length>0) {
 				res.status(200).json("Authentication Success!")

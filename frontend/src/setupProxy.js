@@ -2,6 +2,27 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
 	app.use(
+	"/authenticate/authToken",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/updateRegisteredState",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/authenticate/login",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
 	"/authenticateuser",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
@@ -101,13 +122,6 @@ module.exports = function(app) {
   );
   app.use(
 	"/song/:songname",
-	createProxyMiddleware({
-	  target: 'http://server:4501',
-	  changeOrigin: true,
-	})
-  );
-  app.use(
-	"/register",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
 	  changeOrigin: true,

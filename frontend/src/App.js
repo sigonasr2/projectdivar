@@ -13,7 +13,8 @@ import {
 
 import {
 	Modal,
-	Button
+	Button,
+	Form
 } from "react-bootstrap";
 
 const REMOTE_ADDR = "http://45.33.13.215:4502";
@@ -957,8 +958,8 @@ function Rankings(){
 						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="FC Count" order="fccount"/></th>
 					</tr>
 				</thead>
-			{users.map((user)=>
-				<tbody key={user.id}>
+			{users.map((user,i)=>
+				<tbody key={i}>
 					<tr>
 						<td className={(isLoading)?"loading":""}><Link to={"/user/"+user.username}>{user.username}</Link></td>
 						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{user.last_played}</td>
@@ -1218,10 +1219,294 @@ function RecentPlays(p) {
 	)
 }
 
+function LoginInfo(p) {
+	const [username,setUsername] = useState(undefined)
+	const [authToken,setAuthToken] = useState(undefined)
+	const [loggedIn,setLoggedIn] = useState(false)
+	//Load our storage data if exists.
+	useEffect(()=>{
+		try {
+			setUsername(localStorage.getItem("username"))
+			setAuthToken(localStorage.getItem("authToken"))
+		}catch{
+			console.log("Not logged in!");
+		}
+	},[p.update])
+	
+	useEffect(()=>{
+		if (username!==undefined&&authToken!==undefined) {
+			axios.post("http://projectdivar.com/authenticate/login",{username:username,authCode:authToken})
+			.then((data)=>{
+				setLoggedIn(true);
+				p.setUsername(username);
+			})
+			.catch((err)=>{
+				setLoggedIn(false);
+			})
+		}
+	},[username,authToken])
+	
+	return (
+	<>
+	{loggedIn?<>
+		Welcome, <b>{username}</b>!<br/>
+		<Link to="/auth">App Auth Code</Link><br/>
+		
+	</>:<>
+		<Link to="/login">Login</Link><br/>
+		<Link to="/register">Register</Link>
+	</>}
+	</>
+	)
+}
+
+function Login(p) {
+	const [username,setUsername] = useState("")
+	const [authCode,setAuthCode] = useState("")
+	const [authCodeVisible,setAuthCodeVisible] = useState(false)
+	const [error,setError] = useState(false)
+	const [disabled,setDisabled] = useState(false)
+	
+	let history = useHistory();
+	
+	if (p.isLoggedIn) {
+		history.push("/")
+	}
+	
+	return (
+	<>
+		<Form>
+			{error&&<h3 style={{color:"red"}}>{error}</h3>}
+			{authCodeVisible&&<><h3>We have sent you an email containing your login code!</h3>
+			<br/>
+			Please submit it to finish the login process.
+			</>}
+			<Form.Group controlId="formUsername">
+				<Form.Label>Username</Form.Label>
+				<Form.Control disabled={authCodeVisible} isInvalid={username.length<1} onChange={(e)=>{setUsername(e.currentTarget.value)}} placeholder="MikuMiku" value={username} />
+				<Form.Text className="text-muted">
+					We will send an email to the registered email of this account.
+				</Form.Text>
+			</Form.Group>
+				{authCodeVisible&&<>
+				<div className="row">
+				<div className="col-4">
+				<Form.Group controlId="formCode">
+					<Form.Label>Authentication Code</Form.Label>
+					<Form.Control isInvalid={authCode.length!=5} onChange={(e)=>{setAuthCode(e.currentTarget.value)}} placeholder="XXXXX" value={authCode} />
+					<Form.Text className="text-muted">
+						Please enter the code you received in your email here. Then submit again.
+					</Form.Text>
+				</Form.Group>
+				</div>
+				</div></>
+				}
+			<Button disabled={disabled} variant="primary" type="submit" onClick={(e)=>{e.preventDefault()
+				if (username.length>=1) {
+					setDisabled(true)
+					setError(false)
+					if (authCode.length===5) {
+						axios.post("http://projectdivar.com/authenticate/login",{username:username,authCode:authCode})
+						.then((data)=>{
+							localStorage.setItem("username",username)
+							localStorage.setItem("authToken",authCode)
+							p.setLoginPanelUpdate(true)
+							history.push("/")
+						})
+						.catch((err)=>{
+							if (err) {
+								setError("Invalid Authentication Code!")
+								setDisabled(false)
+							}
+						})
+					} else {
+						axios.post("http://projectdivar.com/sendemail/login",{username:username})
+						.then((data)=>{
+							setAuthCodeVisible(true)
+							setDisabled(false)
+						})
+						.catch((err)=>{
+							if (err) {
+								setError("Invalid credentials provided!")
+								setDisabled(false)
+							}
+						})
+					}
+				}
+			}}>
+			{authCodeVisible?"Submit Code":"Login"}
+			</Button>
+		</Form>
+	</>
+	)
+}
+
+function Register(p) {
+	const [username,setUsername] = useState("")
+	const [email,setEmail] = useState("")
+	const [authCode,setAuthCode] = useState("")
+	const [authCodeVisible,setAuthCodeVisible] = useState(false)
+	const [error,setError] = useState(false)
+	const [disabled,setDisabled] = useState(false)
+	let history = useHistory();
+	
+	if (p.isLoggedIn) {
+		history.push("/")
+	}
+	
+	return (
+	<>
+		<Form>
+			{error&&<h3 style={{color:"red"}}>{error}</h3>}
+			{authCodeVisible&&<><h3>We have sent you an email containing your registration code!</h3>
+			<br/>
+			Please submit it to finish the registration process.
+			</>}
+			<Form.Group controlId="formUsername">
+				<Form.Label>Username</Form.Label>
+				<Form.Control disabled={authCodeVisible} isInvalid={username.length<1} onChange={(e)=>{setUsername(e.currentTarget.value)}} placeholder="MikuMiku" value={username} />
+			</Form.Group>
+			<Form.Group controlId="formEmail">
+				<Form.Label>Email Address</Form.Label>
+				<Form.Control disabled={authCodeVisible} type="email" disabled={authCodeVisible} isInvalid={email.length<1} onChange={(e)=>{setEmail(e.currentTarget.value)}} placeholder="MikuMiku@39.net" value={email} />
+				<Form.Text className="text-muted">
+					Please provide a valid email address! We use your email account as your "password", so it is a requirement for this site.
+				</Form.Text>
+			</Form.Group>
+				{authCodeVisible&&<>
+				<div className="row">
+				<div className="col-4">
+				<Form.Group controlId="formAuthCode">
+					<Form.Label>Authentication Code</Form.Label>
+					<Form.Control isInvalid={authCode.length!=5} onChange={(e)=>{setAuthCode(e.currentTarget.value)}} placeholder="XXXXX" value={authCode} />
+					<Form.Text className="text-muted">
+						Please enter the code you received in your email here. Then submit again.
+					</Form.Text>
+				</Form.Group>
+				</div>
+				</div></>
+				}
+			<Button disabled={disabled} variant="primary" type="submit" onClick={(e)=>{e.preventDefault()
+				if (username.length>=1&&email.length>=1) {
+					setDisabled(true)
+					setError(false)
+					if (authCode.length===5) {
+						axios.post("http://projectdivar.com/authenticate/login",{username:username,authCode:authCode})
+						.then((data)=>{
+							localStorage.setItem("username",username)
+							localStorage.setItem("authToken",authCode)
+							p.setLoginPanelUpdate(true)
+							return axios.patch("http://projectdivar.com/updateRegisteredState",{username:username,authCode:authCode})
+						})
+						.then((data)=>{
+							//console.log(data)
+							history.push("/")
+						})
+						.catch((err)=>{
+							if (err) {
+								setError("Invalid Authentication Code!")
+								setDisabled(false)
+							}
+						})
+					} else {
+						axios.post("http://projectdivar.com/sendemail/register",{username:username,email:email})
+						.then((data)=>{
+							setAuthCodeVisible(true)
+							setDisabled(false)
+						})
+						.catch((err)=>{
+							if (err) {
+								setError("Username or Email already in use!")
+								setDisabled(false)
+							}
+						})
+					}
+				}
+			}}>
+			{authCodeVisible?"Submit Code":"Register"}
+			</Button>
+		</Form>
+	</>
+	)
+}
+
+function UserAuth(p) {
+	const[showAuthCode,setShowAuthCode] = useState(false)
+	const[authToken,setAuthToken] = useState("")
+	let history = useHistory();
+	
+	if (!p.isLoggedIn) {
+		history.push("/")
+	}
+	
+	return(<>
+	Your <b>App Authentication Code</b> is used for verifying your identity when using apps such as <b>DivaBot</b>. By clicking the <b>{"<Reveal Code>"}</b> button, you understand that you should not share this code or show it to anyone!
+	<br/><br/>
+	{showAuthCode?
+		<input readOnly value={authToken}></input>
+		:<button onClick={()=>{
+			axios.post("http://projectdivar.com/authenticate/authToken",{username:localStorage.getItem("username"),
+			authCode:localStorage.getItem("authToken")})
+			.then((data)=>{
+				setAuthToken(data.data.authentication_token)
+				setShowAuthCode(true)
+			})
+			.catch((err)=>{
+				setAuthToken(err.message)
+			})
+		}
+		}>
+		{"<Click to reveal App Authentication Code>"}
+		</button>
+	}
+	</>)
+}
+
+function ReleaseList(p) {
+	return(
+	<>
+		<ul className="list-group">
+		{p.releases.map((release,i)=>
+		<li key={i} className="list-group-item">
+		<b>{release[0]}</b> - <a href={release[1]}>{release[1].replace("http://projectdivar.com/files/releases/","")}</a> <i>(Released {release[2]})</i>
+		</li>
+		)}
+		</ul>
+	</>
+	)
+}
+
+function DivaBot() {
+	const releases=[
+	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020"],
+	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020"],
+	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020"]]
+	
+	return (
+	<>
+		<b>DivaBot</b> was created by <b>sigonasr2</b> in order to allow Project Diva streamers to personalize their stream setups with their personal scores and achievements into their game.
+		
+		<br/><br/>
+		The app works by monitoring your game's capture area as you are streaming in order to identify what song you are playing, and what scores you achieve. It is used with this website to make score
+		submitting and tracking easier.
+		<br/>
+		The app currently supports <b>Megamix</b>. Other games will be supported in the future.
+		<hr/>
+		<h3>Setup Instructions</h3>
+		{<iframe width="100%" height="480" src="https://www.youtube.com/embed/IAPpbp5EFto" frameBorder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>}
+		<hr/>
+		<h3>Downloads</h3>
+		<ReleaseList releases={releases}/>
+	</>
+	)
+}
+
 function Website() {
 	const [songs,setSongs] = useState([])
 	const [update,setUpdate] = useState(false)
 	const [tooltip,setTooltip] = useState("")
+	const [loginPanelUpdate,setLoginPanelUpdate] = useState(false)
+	const [username,setUsername] = useState(undefined)
 	
 	useEffect(()=>{
 		axios.get("http://www.projectdivar.com/songs")
@@ -1233,11 +1518,11 @@ function Website() {
 	return (
 		<div className="row">
 			<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
-				<h3 className="d-none d-md-block">Sidebar Contents</h3>
+				<h3 className="d-none d-md-block">Menu</h3>
+					<LoginInfo setUsername={setUsername} update={loginPanelUpdate}/>
+					<br/><br/>
 					<Link to="/rankings/rating/desc">Rankings</Link><br/>
-					Item 2<br/>
-					Item 3<br/>
-					Item 4<br/>
+					<Link to="/divabot">DivaBot</Link><br/>
 			</div>
 			<div className="col-md-10 pt-3 pb-3">
 				<Switch>
@@ -1252,12 +1537,25 @@ function Website() {
 					<Route path="/submitplay">
 						<Submit songs={songs}/>
 					</Route>
-					<Route path="/sendmail">
-						<SendMail/>
+					<Route path="/divabot">
+						<h1 className="title">DivaBot</h1>
+						<DivaBot/>
+					</Route>
+					<Route path="/auth">
+						<h1 className="title">App Authentication Token</h1>
+						<UserAuth username={username} isLoggedIn={username!==undefined}/>
 					</Route>
 					<Route path="/recentplays">
 						<h1 className="title">Project DivaR</h1>
 						<RecentPlays songs={songs}/>
+					</Route>
+					<Route path="/login">
+						<h1 className="title">Login to Project DivaR</h1>
+						<Login isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
+					</Route>
+					<Route path="/register">
+						<h1 className="title">Register New Account</h1>
+						<Register isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>
