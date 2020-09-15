@@ -29,6 +29,191 @@ var IMAGE_CAMERA=(p)=>{
 	</svg>
 	)
 }
+var IMAGE_BUG=(p)=>{
+	return(
+	<svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-bug-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+		<path fillRule="evenodd" d="M4.978.855a.5.5 0 1 0-.956.29l.41 1.352A4.985 4.985 0 0 0 3 6h10a4.985 4.985 0 0 0-1.432-3.503l.41-1.352a.5.5 0 1 0-.956-.29l-.291.956A4.978 4.978 0 0 0 8 1a4.979 4.979 0 0 0-2.731.811l-.29-.956zM13 6v1H8.5v8.975A5 5 0 0 0 13 11h.5a.5.5 0 0 1 .5.5v.5a.5.5 0 1 0 1 0v-.5a1.5 1.5 0 0 0-1.5-1.5H13V9h1.5a.5.5 0 0 0 0-1H13V7h.5A1.5 1.5 0 0 0 15 5.5V5a.5.5 0 0 0-1 0v.5a.5.5 0 0 1-.5.5H13zm-5.5 9.975V7H3V6h-.5a.5.5 0 0 1-.5-.5V5a.5.5 0 0 0-1 0v.5A1.5 1.5 0 0 0 2.5 7H3v1H1.5a.5.5 0 0 0 0 1H3v1h-.5A1.5 1.5 0 0 0 1 11.5v.5a.5.5 0 1 0 1 0v-.5a.5.5 0 0 1 .5-.5H3a5 5 0 0 0 4.5 4.975z"/>
+	</svg>
+	)
+}
+var IMAGE_CONTROLLER=(p)=>{
+	return(
+	<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi bi-controller" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path fillRule="evenodd" d="M11.119 2.693c.904.19 1.75.495 2.235.98.407.408.779 1.05 1.094 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.815-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773a11.307 11.307 0 0 1-.739-.809c-.126-.147-.25-.291-.368-.422-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.422-.243.283-.494.576-.739.81-.398.378-.877.705-1.513.772a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772.486-.485 1.331-.79 2.235-.98.932-.196 2.03-.292 3.119-.292 1.089 0 2.187.096 3.119.292zm-6.032.979c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.505C4.861 9.97 5.978 9.026 8 9.026s3.139.943 3.965 1.855c.164.182.307.35.44.505.214.25.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z"/>
+	  <path d="M11.5 6.026a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1 1a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm2 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1 1a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-7-2.5h1v3h-1v-3z"/>
+	  <path d="M3.5 6.526h3v1h-3v-1zM3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .258.966l-1.932.518a.5.5 0 0 1-.612-.354zm9.976 0a.5.5 0 0 0-.353-.613l-1.932-.518a.5.5 0 1 0-.259.966l1.932.518a.5.5 0 0 0 .612-.354z"/>
+	</svg>
+	)
+}
+var IMAGE_ARCADE=(p)=>{
+	return(
+	<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi bi-joystick" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path d="M7.106 15.553L.553 12.276A1 1 0 0 1 0 11.382V9.471a1 1 0 0 1 .606-.89L6 6.269v1.088L1 9.5l5.658 2.83a3 3 0 0 0 2.684 0L15 9.5l-5-2.143V6.27l5.394 2.312a1 1 0 0 1 .606.89v1.911a1 1 0 0 1-.553.894l-6.553 3.277a2 2 0 0 1-1.788 0z"/>
+	  <path fillRule="evenodd" d="M7.5 9.5v-6h1v6h-1z"/>
+	  <path d="M10 9.75c0 .414-.895.75-2 .75s-2-.336-2-.75S6.895 9 8 9s2 .336 2 .75zM10 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+	</svg>
+	)
+}
+var IMAGE_TABLET=(p)=>{
+	return(
+	<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi bi-tablet-landscape" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path fillRule="evenodd" d="M1 4v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1zm-1 8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8z"/>
+	  <path fillRule="evenodd" d="M14 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0z"/>
+	</svg>
+	)
+}
+var IMAGE_MIXMODE=(p)=>{
+	return(
+	<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <g
+     stroke="none"
+     strokeWidth="1"
+     fillRule="evenodd"
+     id="g22"
+     transform="matrix(0.23504594,0.08739104,-0.08739104,0.23504594,7.4047351,-0.89601877)">
+		<g
+		   id="g20">
+		  <g
+			 transform="translate(26,16)"
+			 id="g10">
+			<path
+			   d="m 6,28 c -2.7614237,0 -5,-2.238576 -5,-5 0,-2.761424 2.2385763,-5 5,-5 2.7614238,0 5,2.238576 5,5 0,2.761424 -2.2385762,5 -5,5 z m 0,-2 c 1.6568543,0 3,-1.343146 3,-3 0,-1.656854 -1.3431457,-3 -3,-3 -1.6568543,0 -3,1.343146 -3,3 0,1.656854 1.3431457,3 3,3 z"
+			   fillRule="nonzero"
+			   id="path6" />
+			<path
+			   d="M 6,4 C 4.8954305,4 4,3.1045695 4,2 4,0.8954305 4.8954305,0 6,0 7.1045695,0 8,0.8954305 8,2 8,3.1045695 7.1045695,4 6,4 Z m 0,8 C 4.8954305,12 4,11.10457 4,10 4,8.8954305 4.8954305,8 6,8 7.1045695,8 8,8.8954305 8,10 8,11.10457 7.1045695,12 6,12 Z M 2,8 C 0.8954305,8 0,7.1045695 0,6 0,4.8954305 0.8954305,4 2,4 3.1045695,4 4,4.8954305 4,6 4,7.1045695 3.1045695,8 2,8 Z m 8,0 C 8.8954305,8 8,7.1045695 8,6 8,4.8954305 8.8954305,4 10,4 c 1.10457,0 2,0.8954305 2,2 0,1.1045695 -0.89543,2 -2,2 z"
+			   id="path8" />
+		  </g>
+		  <g
+			 transform="matrix(-1,0,0,1,41.130435,11)"
+			 fillRule="nonzero"
+			 id="g18">
+			<path
+			   d="M 16.26087,41 V 2.7254902 H 9.1304348 C 5.1912482,2.7254902 2,5.9136707 2,9.8463828 V 33.879107 C 2,37.806243 5.1950878,41 9.1304348,41 Z M 0,9.8463828 C 0,4.8090529 4.0867262,0.7254902 9.1304348,0.7254902 h 8.1226402 c 0.556589,0 1.007795,0.4461589 1.007795,1.0032974 V 43 H 9.1304348 C 4.0878349,43 0,38.908131 0,33.879107 Z"
+			   id="path12" />
+			<path
+			   d="m 17.930435,5.8998424 c 0,0.08424 0.05524,0.1393733 0.130435,0.1393733 h -0.130435 z m 0.130435,5.9040796 c -0.06814,0 -0.130435,0.06182 -0.130435,0.139373 v -0.139373 z m -0.130435,0 h -0.739131 v 1 h 0.869566 c 0.04437,0 0.08793,-0.0032 0.130434,-0.0095 V 5.0490748 c -0.04255,-0.00649 -0.0861,-0.00986 -0.130434,-0.00986 h -0.869566 v 1 h 0.739131 z M 17.191304,5.0392157 h 0.869566 c 0.480247,0 0.869565,0.3957278 0.869565,0.8606267 v 6.0434526 c 0,0.475311 -0.38597,0.860627 -0.869565,0.860627 h -0.869566 z"
+			   id="path14" />
+			<path
+			   d="m 17.930435,29.19396 c 0,0.08424 0.05524,0.139373 0.130435,0.139373 h -0.130435 z m 0.130435,5.904079 c -0.06814,0 -0.130435,0.06182 -0.130435,0.139373 v -0.139373 z m -0.130435,0 h -0.739131 v 1 h 0.869566 c 0.04437,0 0.08793,-0.0032 0.130434,-0.0095 v -7.745343 c -0.04255,-0.0065 -0.0861,-0.0099 -0.130434,-0.0099 h -0.869566 v 1 h 0.739131 z m -0.739131,-6.764706 h 0.869566 c 0.480247,0 0.869565,0.395728 0.869565,0.860627 v 6.043452 c 0,0.475312 -0.38597,0.860627 -0.869565,0.860627 h -0.869566 z"
+			   id="path16" />
+		  </g>
+		</g>
+	  </g>
+	  <g
+		 id="g22-6"
+		 fillRule="evenodd"
+		 strokeWidth="1"
+		 stroke="none"
+		 transform="matrix(0.23714163,-0.08153304,0.08153304,0.23714163,-6.7259967,1.4700063)">
+		<g
+		   id="g20-4">
+		  <g
+			 id="g10-4"
+			 transform="translate(26,16)">
+			<path
+			   id="path6-5"
+			   fillRule="nonzero"
+			   d="M 6,10 C 3.2385763,10 1,7.7614237 1,5 1,2.2385763 3.2385763,0 6,0 c 2.7614238,0 5,2.2385763 5,5 0,2.7614237 -2.2385762,5 -5,5 z M 6,8 C 7.6568543,8 9,6.6568543 9,5 9,3.3431458 7.6568543,2 6,2 4.3431457,2 3,3.3431458 3,5 3,6.6568543 4.3431457,8 6,8 Z" />
+			<path
+			   id="path8-1"
+			   d="m 6,22 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.1045695,0 2,0.89543 2,2 0,1.104569 -0.8954305,2 -2,2 z m 0,8 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.1045695,0 2,0.89543 2,2 0,1.104569 -0.8954305,2 -2,2 z M 2,26 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.1045695,0 2,0.89543 2,2 0,1.104569 -0.8954305,2 -2,2 z m 8,0 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.10457,0 2,0.89543 2,2 0,1.104569 -0.89543,2 -2,2 z" />
+		  </g>
+		  <g
+			 id="g18-1"
+			 fillRule="nonzero"
+			 transform="translate(23,11)">
+			<path
+			   id="path12-2"
+			   d="M 16.117647,41 V 2.7254902 H 9.0588235 C 5.1595194,2.7254902 2,5.8842795 2,9.781461 V 33.944029 C 2,37.841438 5.1598077,41 9.0588235,41 Z M 0,9.781461 C 0,4.7799864 4.0546734,0.7254902 9.0588235,0.7254902 h 8.0589335 c 0.552224,0 0.99989,0.4461589 0.99989,1.0032974 V 43 H 9.0588235 C 4.0557734,43 0,38.946542 0,33.944029 Z" />
+			<path
+			   id="path14-3"
+			   d="m 17.780392,5.8998424 c 0,0.082482 0.05656,0.1393733 0.137255,0.1393733 h -0.137255 z m 0.137255,5.9040796 c -0.07367,0 -0.137255,0.06359 -0.137255,0.139373 v -0.139373 z m -0.137255,0 h -0.72549 v 1 h 0.862745 c 0.04676,0 0.0926,-0.0037 0.137255,-0.01071 V 5.0503178 c -0.0447,-0.0073 -0.09054,-0.011102 -0.137255,-0.011102 h -0.862745 v 1 h 0.72549 z m -0.72549,-6.7647063 h 0.862745 c 0.476481,0 0.862745,0.3957278 0.862745,0.8606267 v 6.0434526 c 0,0.475311 -0.382942,0.860627 -0.862745,0.860627 h -0.862745 z" />
+			<path
+			   id="path16-0"
+			   d="m 17.780392,29.19396 c 0,0.08248 0.05656,0.139373 0.137255,0.139373 h -0.137255 z m 0.137255,5.904079 c -0.07367,0 -0.137255,0.06359 -0.137255,0.139373 v -0.139373 z m -0.137255,0 h -0.72549 v 1 h 0.862745 c 0.04676,0 0.0926,-0.0037 0.137255,-0.01071 V 28.34443 c -0.0447,-0.0073 -0.09054,-0.0111 -0.137255,-0.0111 h -0.862745 v 1 h 0.72549 z m -0.72549,-6.764706 h 0.862745 c 0.476481,0 0.862745,0.395728 0.862745,0.860627 v 6.043452 c 0,0.475312 -0.382942,0.860627 -0.862745,0.860627 h -0.862745 z" />
+		  </g>
+		</g>
+	  </g>
+	</svg>
+	)
+}
+var IMAGE_JOYCONS=(p)=>{
+	return(
+	<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+		  <g
+		 stroke="none"
+		 strokeWidth="1"
+		 fillRule="evenodd"
+		 id="g22"
+		 transform="matrix(0.37879869,0,0,0.37879869,0.40087271,-4.4665372)">
+		<g
+		   id="g20">
+		  <g
+			 transform="translate(26,16)"
+			 id="g10">
+			<path
+			   d="m 6,28 c -2.7614237,0 -5,-2.238576 -5,-5 0,-2.761424 2.2385763,-5 5,-5 2.7614238,0 5,2.238576 5,5 0,2.761424 -2.2385762,5 -5,5 z m 0,-2 c 1.6568543,0 3,-1.343146 3,-3 0,-1.656854 -1.3431457,-3 -3,-3 -1.6568543,0 -3,1.343146 -3,3 0,1.656854 1.3431457,3 3,3 z"
+			   fillRule="nonzero"
+			   id="path6" />
+			<path
+			   d="M 6,4 C 4.8954305,4 4,3.1045695 4,2 4,0.8954305 4.8954305,0 6,0 7.1045695,0 8,0.8954305 8,2 8,3.1045695 7.1045695,4 6,4 Z m 0,8 C 4.8954305,12 4,11.10457 4,10 4,8.8954305 4.8954305,8 6,8 7.1045695,8 8,8.8954305 8,10 8,11.10457 7.1045695,12 6,12 Z M 2,8 C 0.8954305,8 0,7.1045695 0,6 0,4.8954305 0.8954305,4 2,4 3.1045695,4 4,4.8954305 4,6 4,7.1045695 3.1045695,8 2,8 Z m 8,0 C 8.8954305,8 8,7.1045695 8,6 8,4.8954305 8.8954305,4 10,4 c 1.10457,0 2,0.8954305 2,2 0,1.1045695 -0.89543,2 -2,2 z"
+			   id="path8" />
+		  </g>
+		  <g
+			 transform="matrix(-1,0,0,1,41.130435,11)"
+			 fillRule="nonzero"
+			 id="g18">
+			<path
+			   d="M 16.26087,41 V 2.7254902 H 9.1304348 C 5.1912482,2.7254902 2,5.9136707 2,9.8463828 V 33.879107 C 2,37.806243 5.1950878,41 9.1304348,41 Z M 0,9.8463828 C 0,4.8090529 4.0867262,0.7254902 9.1304348,0.7254902 h 8.1226402 c 0.556589,0 1.007795,0.4461589 1.007795,1.0032974 V 43 H 9.1304348 C 4.0878349,43 0,38.908131 0,33.879107 Z"
+			   id="path12" />
+			<path
+			   d="m 17.930435,5.8998424 c 0,0.08424 0.05524,0.1393733 0.130435,0.1393733 h -0.130435 z m 0.130435,5.9040796 c -0.06814,0 -0.130435,0.06182 -0.130435,0.139373 v -0.139373 z m -0.130435,0 h -0.739131 v 1 h 0.869566 c 0.04437,0 0.08793,-0.0032 0.130434,-0.0095 V 5.0490748 c -0.04255,-0.00649 -0.0861,-0.00986 -0.130434,-0.00986 h -0.869566 v 1 h 0.739131 z M 17.191304,5.0392157 h 0.869566 c 0.480247,0 0.869565,0.3957278 0.869565,0.8606267 v 6.0434526 c 0,0.475311 -0.38597,0.860627 -0.869565,0.860627 h -0.869566 z"
+			   id="path14" />
+			<path
+			   d="m 17.930435,29.19396 c 0,0.08424 0.05524,0.139373 0.130435,0.139373 h -0.130435 z m 0.130435,5.904079 c -0.06814,0 -0.130435,0.06182 -0.130435,0.139373 v -0.139373 z m -0.130435,0 h -0.739131 v 1 h 0.869566 c 0.04437,0 0.08793,-0.0032 0.130434,-0.0095 v -7.745343 c -0.04255,-0.0065 -0.0861,-0.0099 -0.130434,-0.0099 h -0.869566 v 1 h 0.739131 z m -0.739131,-6.764706 h 0.869566 c 0.480247,0 0.869565,0.395728 0.869565,0.860627 v 6.043452 c 0,0.475312 -0.38597,0.860627 -0.869565,0.860627 h -0.869566 z"
+			   id="path16" />
+		  </g>
+		</g>
+	  </g>
+	  <g
+		 id="g22-6"
+		 fillRule="evenodd"
+		 strokeWidth="1"
+		 stroke="none"
+		 transform="matrix(0.37879869,0,0,0.37879869,-8.7351179,-4.4850005)">
+		<g
+		   id="g20-4">
+		  <g
+			 id="g10-4"
+			 transform="translate(26,16)">
+			<path
+			   id="path6-5"
+			   fillRule="nonzero"
+			   d="M 6,10 C 3.2385763,10 1,7.7614237 1,5 1,2.2385763 3.2385763,0 6,0 c 2.7614238,0 5,2.2385763 5,5 0,2.7614237 -2.2385762,5 -5,5 z M 6,8 C 7.6568543,8 9,6.6568543 9,5 9,3.3431458 7.6568543,2 6,2 4.3431457,2 3,3.3431458 3,5 3,6.6568543 4.3431457,8 6,8 Z" />
+			<path
+			   id="path8-1"
+			   d="m 6,22 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.1045695,0 2,0.89543 2,2 0,1.104569 -0.8954305,2 -2,2 z m 0,8 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.1045695,0 2,0.89543 2,2 0,1.104569 -0.8954305,2 -2,2 z M 2,26 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.1045695,0 2,0.89543 2,2 0,1.104569 -0.8954305,2 -2,2 z m 8,0 c -1.1045695,0 -2,-0.895431 -2,-2 0,-1.10457 0.8954305,-2 2,-2 1.10457,0 2,0.89543 2,2 0,1.104569 -0.89543,2 -2,2 z" />
+		  </g>
+		  <g
+			 id="g18-1"
+			 fillRule="nonzero"
+			 transform="translate(23,11)">
+			<path
+			   id="path12-2"
+			   d="M 16.117647,41 V 2.7254902 H 9.0588235 C 5.1595194,2.7254902 2,5.8842795 2,9.781461 V 33.944029 C 2,37.841438 5.1598077,41 9.0588235,41 Z M 0,9.781461 C 0,4.7799864 4.0546734,0.7254902 9.0588235,0.7254902 h 8.0589335 c 0.552224,0 0.99989,0.4461589 0.99989,1.0032974 V 43 H 9.0588235 C 4.0557734,43 0,38.946542 0,33.944029 Z" />
+			<path
+			   id="path14-3"
+			   d="m 17.780392,5.8998424 c 0,0.082482 0.05656,0.1393733 0.137255,0.1393733 h -0.137255 z m 0.137255,5.9040796 c -0.07367,0 -0.137255,0.06359 -0.137255,0.139373 v -0.139373 z m -0.137255,0 h -0.72549 v 1 h 0.862745 c 0.04676,0 0.0926,-0.0037 0.137255,-0.01071 V 5.0503178 c -0.0447,-0.0073 -0.09054,-0.011102 -0.137255,-0.011102 h -0.862745 v 1 h 0.72549 z m -0.72549,-6.7647063 h 0.862745 c 0.476481,0 0.862745,0.3957278 0.862745,0.8606267 v 6.0434526 c 0,0.475311 -0.382942,0.860627 -0.862745,0.860627 h -0.862745 z" />
+			<path
+			   id="path16-0"
+			   d="m 17.780392,29.19396 c 0,0.08248 0.05656,0.139373 0.137255,0.139373 h -0.137255 z m 0.137255,5.904079 c -0.07367,0 -0.137255,0.06359 -0.137255,0.139373 v -0.139373 z m -0.137255,0 h -0.72549 v 1 h 0.862745 c 0.04676,0 0.0926,-0.0037 0.137255,-0.01071 V 28.34443 c -0.0447,-0.0073 -0.09054,-0.0111 -0.137255,-0.0111 h -0.862745 v 1 h 0.72549 z m -0.72549,-6.764706 h 0.862745 c 0.476481,0 0.862745,0.395728 0.862745,0.860627 v 6.043452 c 0,0.475312 -0.382942,0.860627 -0.862745,0.860627 h -0.862745 z" />
+		  </g>
+		</g>
+	  </g>
+	</svg>
+	)
+}
 
 var RATING_cool=new Image();
 RATING_cool.src="data:image/png;base64,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"
@@ -172,7 +357,7 @@ function Sort(p){
 function ProfileDataContainer(p){
 	return (
 		<div className={"col-md-"+p.width+"  border"} onMouseOver={()=>{if (p.setMouseOver) {p.setMouseOver(true)}}} onMouseOut={()=>{if(p.setMouseOver){p.setMouseOver(false)}}}>
-			<div className="row">
+				<div className="row">
 				<div className="text-center label col-6 col-md-12">
 					{p.label}
 				</div>
@@ -605,7 +790,7 @@ function BestPlaysPanel(p) {
 	useEffect(()=>{
 		axios.get("http://www.projectdivar.com/bestplays/"+p.username+"?fails=false&limit=5&offset=0")
 		.then((data)=>{setBestPlays(data.data);})
-	},[update])
+	},[update,p.username])
 	
 	var content=<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush border border-danger rounded-lg">
@@ -788,7 +973,7 @@ function CompletionPanel(p) {
 		axios.get("http://projectdivar.com/completionreport/"+p.username)
 		.then((data)=>{setReport(data.data)})
 		.catch((err)=>{console.log(err.message)})
-	},[update])  
+	},[update,p.username])  
   
 	return (
 	<>
@@ -870,6 +1055,30 @@ function ClearBadge(p) {
 	)
 }
 
+
+function FavoritePlaystyle(p) {
+	switch (p.playstyle){
+		case "PS4 Controller":{
+			return <ProfileDataContainer playstyle_icon={true} label="Favorite Playstyle" data={p.playstyle} width="4"/>
+		}
+		case "Joycons":{
+			return <ProfileDataContainer playstyle_icon={true} label="Favorite Playstyle" data={p.playstyle} width="4"/>
+		}
+		case "Mix Mode":{
+			return <ProfileDataContainer playstyle_icon={true} label="Favorite Playstyle" data={p.playstyle} width="4"/>
+		}
+		case "Arcade Controller":{
+			return <ProfileDataContainer playstyle_icon={true} label="Favorite Playstyle" data={p.playstyle} width="4"/>
+		}
+		case "Touch Screen":{
+			return <ProfileDataContainer playstyle_icon={true} label="Favorite Playstyle" data={p.playstyle} width="4"/>
+		}
+		default:{
+			return <></>
+		}
+	}
+}
+
 function Profile(p){
 	let { username } = useParams();
 	let match = useRouteMatch();
@@ -903,7 +1112,8 @@ function Profile(p){
 		.then((data)=>{setUserData(data.data);setPlayCount(data.data.playcount);setFCCount(data.data.fccount);setRating(data.data.rating);setLastPlayed(data.data.last_played);setAccuracy(CalculateAccuracy(data.data.cool,data.data.fine,data.data.safe,data.data.sad,data.data.worst))});
 		axios.get("http://projectdivar.com:4501/songdiffs")
 		.then((data)=>{setDiffs(data.data)})
-	},[update])
+		setModalVisible(false);
+	},[update,username])
 	
 	useEffect(()=>{
 		if (user!={}) {
@@ -920,6 +1130,12 @@ function Profile(p){
 			<ImageDisplayer username={username} songs={p.songs} play={modalsrc} modalVisible={modalVisible} setModalVisible={setModalVisible}></ImageDisplayer>
 			<h2>{username+"'s Profile"}</h2>
 				{(render)?<>
+					{user.playstyle&&user.playstyle.length>0&&
+					<div className="row">
+						<div className="col-md-4"></div>
+						<FavoritePlaystyle playstyle={user.playstyle}/>
+						<div className="col-md-4"></div>
+					</div>}
 					<StatisticsPanel name="Statistics" setMouseOver={setMouseOver} username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
 					<BestPlaysPanel name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
@@ -979,6 +1195,16 @@ function ImageUpload(p) {
 	var [error,setError] = useState(null);
 	var [success,setSuccess] = useState(null);
 	var [fileProgress,setFileProgress] = useState(0);
+	var [update,setUpdate] = useState(false);
+	var [authToken,setAuthToken] = useState(false);
+	
+	useEffect(()=>{
+		axios.post("http://projectdivar.com/authenticate/authToken",{username:localStorage.getItem("username"),
+			authCode:localStorage.getItem("authToken")})
+		.then((data)=>{
+			setAuthToken(data.data.authentication_token)
+		})
+	},[update])
 	
 	var prepFile = (e)=>{
 		setFile(e.currentTarget.files[0])
@@ -995,8 +1221,8 @@ function ImageUpload(p) {
 		}
 		const data = new FormData() 
 		data.append('file', file)
-		data.append("username","GOD");
-		data.append("authentication_token","GOD");
+		data.append("username",localStorage.getItem("username"));
+		data.append("authentication_token",authToken);
 		if (!data.has("username") || !data.has("authentication_token")) {setError("Authentication failed!");return;}
 		
 		if (file.size>15*1024*1024) {
@@ -1131,15 +1357,6 @@ function SimpleUpload(p){
 	)
 }
 
-function SendMail() {
-	//process.env.REACT_APP_FRONTEND_AUTH
-	return (
-	<>
-	
-	</>
-	)
-}
-
 function Submit(p) {
 	return (
 		<div className="row">
@@ -1152,14 +1369,34 @@ function Submit(p) {
 						Detailed
 					</Route>
 					<Route path="/submitplay/switch">
-						Switch
+						<h2>Nintendo Switch/Twitter Upload</h2>
+						Want to upload your scores to the website conveniently? Go to <Link to="/usersettings">Edit Profile Settings</Link> and enter your Twitter username, then follow the steps below!
+						<hr/>
+						<div className="row mb-4">
+							<div className="col-4 m-6">
+							<h4>Step 1</h4>
+							From your Nintendo Switch Album, select up to 4 results screenshots that you want the DivaRBot to parse.
+							</div>
+							<div className="col-8 m-6">
+							<img width="100%" className="border rounded shadow" src="http://projectdivar.com/files/switch1.png"/>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-8 m-6">
+							<img width="100%" className="border rounded shadow" src="http://projectdivar.com/files/switch2.png"/>
+							</div>
+							<div className="col-4 m-6">
+							<h4>Step 2</h4>
+							Make sure to include <b>@divarbot</b> so the bot can find your plays! Then submit and the bot will process them in just a few minutes! Check your scores out after they have been processed.
+							</div>
+						</div>
 					</Route>
 					<Route path="/submitplay/image">
 						<ImageUpload/>
 					</Route>
 					<Route path="/submitplay">
 						<h2>Select a submission method</h2>
-						<div className="card">
+						{false&&<><div className="card">
 							<Link to="/submitplay/simple" className="nostyle">
 								<div className="card-body">
 									<h5 className="card-title">Manual Submit</h5>
@@ -1168,7 +1405,7 @@ function Submit(p) {
 								</div>
 							</Link>
 						</div>
-						<br/>
+						<br/></>}
 						<div className="card">
 							<Link to="/submitplay/image" className="nostyle">
 								<div className="card-body">
@@ -1223,6 +1460,7 @@ function LoginInfo(p) {
 	const [username,setUsername] = useState(undefined)
 	const [authToken,setAuthToken] = useState(undefined)
 	const [loggedIn,setLoggedIn] = useState(false)
+	
 	//Load our storage data if exists.
 	useEffect(()=>{
 		try {
@@ -1239,6 +1477,7 @@ function LoginInfo(p) {
 			.then((data)=>{
 				setLoggedIn(true);
 				p.setUsername(username);
+				p.setUserSettings(data.data)
 			})
 			.catch((err)=>{
 				setLoggedIn(false);
@@ -1250,6 +1489,8 @@ function LoginInfo(p) {
 	<>
 	{loggedIn?<>
 		Welcome, <b>{username}</b>!<br/>
+		<Link to={"/user/"+username}>My Profile</Link><br/>
+		<Link to={"/usersettings"}>Edit Profile Settings</Link><br/>
 		<Link to="/auth">App Auth Code</Link><br/>
 		
 	</>:<>
@@ -1430,6 +1671,66 @@ function Register(p) {
 	)
 }
 
+function UserSettings(p) {
+	let history = useHistory();
+	const [playStyle,setPlayStyle] = useState(p.userSettings.playstyle)
+	const [playStyleHover,setPlayStyleHover] = useState(undefined)
+	const [twitter,setTwitter] = useState(p.userSettings.twitter_name)
+	const [twitterChange,setTwitterChange] = useState(false)
+	const [message,setMessage] = useState(false)
+	const [error,setError] = useState(false)
+	
+	if (p.username===undefined) {
+		history.push("/")
+	}
+	
+	return (
+	<>
+	<Form.Group controlId="playstyle" onMouseOut={()=>{setPlayStyleHover(undefined)}}>
+		<Form.Label>Favorite Playstyle</Form.Label> - <b>{playStyle}</b>
+		<br/>
+		<Button onClick={()=>{setPlayStyle("PS4 Controller")}} onMouseOver={()=>{setPlayStyleHover("PS4 Controller")}} variant={playStyle==="PS4 Controller"?"info":"outline-info"}><IMAGE_CONTROLLER width={36} height={36}/></Button>
+		<Button onClick={()=>{setPlayStyle("Joycons")}} onMouseOver={()=>{setPlayStyleHover("Joycons")}} variant={playStyle==="Joycons"?"primary":"outline-primary"}><IMAGE_JOYCONS width={36} height={36}/></Button>
+		<Button onClick={()=>{setPlayStyle("Mix Mode")}} onMouseOver={()=>{setPlayStyleHover("Mix Mode")}} variant={playStyle==="Mix Mode"?"secondary":"outline-secondary"}><IMAGE_MIXMODE width={36} height={36}/></Button>
+		<Button onClick={()=>{setPlayStyle("Arcade Controller")}} onMouseOver={()=>{setPlayStyleHover("Arcade Controller")}} variant={playStyle==="Arcade Controller"?"success":"outline-success"}><IMAGE_ARCADE width={36} height={36}/></Button>
+		<Button onClick={()=>{setPlayStyle("Touch Screen")}} onMouseOver={()=>{setPlayStyleHover("Touch Screen")}} variant={playStyle==="Touch Screen"?"warning":"outline-warning"}><IMAGE_TABLET width={36} height={36}/></Button>
+		<Form.Text className="text-muted">
+		{playStyleHover?<>Change playstyle to <b>{playStyleHover}</b></>:<>Your playstyle will be included in your submitted plays.</>}
+		</Form.Text>
+	</Form.Group>
+	<hr/>
+	<Form.Group controlId="twitter" onMouseOut={()=>{setPlayStyleHover(undefined)}}>
+		<Form.Label>Twitter Username:</Form.Label>
+		<Form.Control onChange={(e)=>{setTwitter(e.currentTarget.value);setTwitterChange(true)}} value={twitter} placeholder="MikuMiku"/>
+		<Form.Text className="text-muted">
+		If you input your Twitter username, you can submit screenshots to <b>@divarbot</b> (with "@divarbot" in the message) and your plays will auto-submit from Twitter at any time.
+		</Form.Text>
+	</Form.Group>
+	<Button onClick={()=>{
+		var obj = {username:localStorage.getItem("username"),
+			authCode:localStorage.getItem("authToken"),
+			playStyle:playStyle}
+		if (twitterChange) {
+			obj.twitterName=twitter;
+		}
+		setError(false)
+		setMessage(false)
+		axios.post("http://projectdivar.com/updateuser",obj)
+		.then((data)=>{
+			setMessage(data.data)
+			p.setUserSettings({...p.userSettings,playStyle:playStyle,twitter_name:twitter})
+			setTwitterChange(false)
+		})
+		.catch((err)=>{
+			setError(err.message)
+		})
+	}}>Save Changes</Button>
+	{message&&<h3 style={{color:"green"}}>{message}</h3>}
+	{error&&<h3 style={{color:"red"}}>{error}</h3>}
+	</>
+	)
+}
+
 function UserAuth(p) {
 	const[showAuthCode,setShowAuthCode] = useState(false)
 	const[authToken,setAuthToken] = useState("")
@@ -1468,7 +1769,7 @@ function ReleaseList(p) {
 		<ul className="list-group">
 		{p.releases.map((release,i)=>
 		<li key={i} className="list-group-item">
-		<b>{release[0]}</b> - <a href={release[1]}>{release[1].replace("http://projectdivar.com/files/releases/","")}</a> <i>(Released {release[2]})</i>
+		<b>{release[0]}</b> - <a href={release[1]}>{release[1].replace("http://projectdivar.com/files/releases/","")}</a> <i>(Released {release[2]})</i> - {release[3]}
 		</li>
 		)}
 		</ul>
@@ -1478,9 +1779,11 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020"],
-	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020"],
-	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020"]]
+	["02A","http://projectdivar.com/files/releases/DivaBot02A.zip","14 Sep 2020",<><b>Recommended!</b> <i>Label Headers and Redo Song Calibration features added</i></>],
+	["02","http://projectdivar.com/files/releases/DivaBot02.zip","14 Sep 2020",<>Stable</>],
+	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020",<><IMAGE_BUG/> <b>BUGGED! DO NOT USE!</b></>],
+	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020",<><IMAGE_BUG/> <b>BUGGED! DO NOT USE!</b> <i>Speed Improvements</i></>],
+	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020",<><IMAGE_BUG/> <b>BUGGED! DO NOT USE!</b> <i>Initial Release</i></>]]
 	
 	return (
 	<>
@@ -1497,6 +1800,12 @@ function DivaBot() {
 		<hr/>
 		<h3>Downloads</h3>
 		<ReleaseList releases={releases}/>
+		<hr/>
+		<h3>Repository - Open Source Software</h3>
+		I don't believe in keeping things secret and you shouldn't be open to just downloading whatever you find on the Internet.
+		<br/><br/><b>This app and Project DivaR</b> itself is open source. You can find its source code <a href="https://github.com/sigonasr2/DivaBot" target="_blank">at this link</a>.
+		<br/><br/>
+		If you need an open discussion about how this program works or have any feedbacks/concerns, please contact me via the <b>Project DivaR Discord</b> server (<b>@sigonasr2</b>).
 	</>
 	)
 }
@@ -1507,6 +1816,7 @@ function Website() {
 	const [tooltip,setTooltip] = useState("")
 	const [loginPanelUpdate,setLoginPanelUpdate] = useState(false)
 	const [username,setUsername] = useState(undefined)
+	const [userSettings,setUserSettings] = useState({})
 	
 	useEffect(()=>{
 		axios.get("http://www.projectdivar.com/songs")
@@ -1519,10 +1829,13 @@ function Website() {
 		<div className="row">
 			<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
 				<h3 className="d-none d-md-block">Menu</h3>
-					<LoginInfo setUsername={setUsername} update={loginPanelUpdate}/>
+					<LoginInfo setUserSettings={setUserSettings} setUsername={setUsername} update={loginPanelUpdate}/>
 					<br/><br/>
 					<Link to="/rankings/rating/desc">Rankings</Link><br/>
+					<Link to="/submitplay">Submit Scores</Link><br/>
 					<Link to="/divabot">DivaBot</Link><br/>
+					<hr/>
+					<a href="http://discord.gg/eJ3cMzM"><img src="http://projectdivar.com/files/discord_button_small.png"/></a>
 			</div>
 			<div className="col-md-10 pt-3 pb-3">
 				<Switch>
@@ -1532,6 +1845,11 @@ function Website() {
 					<Route path="/user/:username">
 						{(songs)?
 						<Profile songs={songs}/>:<></>
+						}
+					</Route>
+					<Route path="/usersettings">
+						{
+							<UserSettings setUserSettings={setUserSettings} userSettings={userSettings} username={username}/>
 						}
 					</Route>
 					<Route path="/submitplay">

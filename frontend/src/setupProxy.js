@@ -2,6 +2,20 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
 	app.use(
+	"/updateuser",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/findsong/:songname",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
 	"/authenticate/authToken",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
