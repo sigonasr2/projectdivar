@@ -1779,11 +1779,16 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["02A","http://projectdivar.com/files/releases/DivaBot02A.zip","14 Sep 2020",<><b>Recommended!</b> <i>Label Headers and Redo Song Calibration features added</i></>],
-	["02","http://projectdivar.com/files/releases/DivaBot02.zip","14 Sep 2020",<>Stable</>],
-	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020",<><IMAGE_BUG/> <b>BUGGED! DO NOT USE!</b></>],
-	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020",<><IMAGE_BUG/> <b>BUGGED! DO NOT USE!</b> <i>Speed Improvements</i></>],
-	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020",<><IMAGE_BUG/> <b>BUGGED! DO NOT USE!</b> <i>Initial Release</i></>]]
+	["03","http://projectdivar.com/files/releases/DivaBot03.zip","17 Sep 2020",<><b>Recommended!</b> <i>DLC Update - Compatibility with removed 'bpm' field from database. Fixed bug with ":" in song names.</i></>],
+	]
+	
+	const incompatiblereleases=[
+	["02A","http://projectdivar.com/files/releases/DivaBot02A.zip","14 Sep 2020",<><b style={{color:"red"}}>Incompatible!</b> <i>Label Headers and Redo Song Calibration features added</i></>],
+	["02","http://projectdivar.com/files/releases/DivaBot02.zip","14 Sep 2020",<><b style={{color:"red"}}>Incompatible!</b></>],
+	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020",<><IMAGE_BUG/> <b style={{color:"red"}}>Incompatible!</b> <b>BUGGED! DO NOT USE!</b></>],
+	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020",<><IMAGE_BUG/> <b style={{color:"red"}}>Incompatible!</b> <b>BUGGED! DO NOT USE!</b> <i>Speed Improvements</i></>],
+	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020",<><IMAGE_BUG/> <b style={{color:"red"}}>Incompatible!</b> <b>BUGGED! DO NOT USE!</b> <i>Initial Release</i></>]
+	]
 	
 	return (
 	<>
@@ -1806,6 +1811,11 @@ function DivaBot() {
 		<br/><br/><b>This app and Project DivaR</b> itself is open source. You can find its source code <a href="https://github.com/sigonasr2/DivaBot" target="_blank">at this link</a>.
 		<br/><br/>
 		If you need an open discussion about how this program works or have any feedbacks/concerns, please contact me via the <b>Project DivaR Discord</b> server (<b>@sigonasr2</b>).
+		<hr/>
+		<h3>Incompatible Downloads</h3>
+		Downloads stored below no longer work due to infrastructure changes or updates that break old apps.
+		<ReleaseList releases={incompatiblereleases}/>
+		<hr/>
 	</>
 	)
 }

@@ -76,6 +76,12 @@ app.get('/songs', (req, res) => {
 				data[song.id].notecount[song.difficulty]=song.notecount;
 			} else {
 				data[song.id]=song
+				if (data[song.id].rating===null) {
+					data[song.id].rating={}
+				}
+				if (data[song.id].notecount===null) {
+					data[song.id].notecount={};
+				}
 			}})
 		res.status(200).json(data)
 	  }
@@ -1008,7 +1014,7 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 
 setInterval(
 ()=>{
-	var uploadData=undefined;
+	var uploadData=undefined,user=undefined,auth=undefined;
 	db.query("select * from uploadedplays order by submissiondate asc limit 1;")
 	.then((data)=>{
 		if (data.rows.length>0) {
@@ -1018,16 +1024,21 @@ setInterval(
 	})
 	.then((data)=>{
 		if (uploadData && data.rows.length>0) {
-			return axios.post("http://projectdivar.com/image",
-			{url:uploadData.filename,user:data.rows[0].username,auth:data.rows[0].authentication_token})
+			user=data.rows[0].username
+			auth=data.rows[0].authentication_token
+			return db.query("delete from uploadedplays where id=$1",[uploadData.id])
+		} else {
+			throw new Error("Something went wrong!")
 		}
+	})
+	.then((data)=>{
+		return axios.post("http://projectdivar.com/image",
+		{url:uploadData.filename,user:user,auth:auth})
 	})
 	.then((data)=>{
 		if (uploadData) {
 			if (data.data==="Invalid parameters!") {
 				throw new Error("Invalid parameters while trying to submit play!")
-			} else {
-				return db.query("delete from uploadedplays where id=$1",[uploadData.id])
 			}
 		}
 	})

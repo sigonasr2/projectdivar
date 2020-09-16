@@ -1,0 +1,14 @@
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'ドラマツルギー',E'Dramaturgy',E'Doramatsurugii',E'Eve',E'Miku','http://projectdivar.com/files/album_art/252.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'グリーンライツセレナーデ',E'Greenlights Serenade',E'Guriinraitsu Sereneede',E'Omoi',E'Miku','http://projectdivar.com/files/album_art/253.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'マージナル',E'Marginal',E'Marginal',E'OSTER project',E'Miku','http://projectdivar.com/files/album_art/022.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'サウンド',E'sound',E'sound',E'baker',E'Miku','http://projectdivar.com/files/album_art/086.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'ファインダー (DSLR remix - re:edit)',E'finder (DSLR remix - re:edit)',E'',E'kz (livetune)',E'Miku','http://projectdivar.com/files/album_art/088.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'Nyanyanyanyanyanyanya!',E'Nyanyanyanyanyanyanya!',E'',E'daniwellP',E'Miku','http://projectdivar.com/files/album_art/168.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'巴里映画少女',E'Paris Eiga Shoujo',E'Paris Cinema Girl',E'apfel note',E'Miku','http://projectdivar.com/files/album_art/161.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'星屑ユートピア',E'Hoshikuzu Utopia',E'Stardust Utopia',E'otetsu',E'Luka','http://projectdivar.com/files/album_art/038.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'Last Night, Good Night',E'Last Night, Good Night',E'',E'kz (livetune)',E'Miku','http://projectdivar.com/files/album_art/028.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'フキゲンワルツ',E'Fukigen Waltz',E'Bad Mood Waltz',E'OSTER project',E'Miku','http://projectdivar.com/files/album_art/021.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'Promise',E'Promise',E'',E'samfree',E'Miku, Rin','http://projectdivar.com/files/album_art/061.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'アドレサンス',E'Adolescence',E'Adolescence',E'Signal-P',E'Rin, Len','http://projectdivar.com/files/album_art/227.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'Leia',E'Leia',E'',E'yuyoyuppe',E'Luka','http://projectdivar.com/files/album_art/106.jpg');
+insert into songs(name,english_name,romanized_name,artist,vocaloid,album_art) values(E'Stay with me',E'Stay with me',E'',E'shu-tP',E'MEIKO','http://projectdivar.com/files/album_art/151.jpg');
