@@ -14,7 +14,8 @@ import {
 import {
 	Modal,
 	Button,
-	Form
+	Form,
+	Badge
 } from "react-bootstrap";
 
 const REMOTE_ADDR = "http://45.33.13.215:4502";
@@ -1534,7 +1535,7 @@ function Login(p) {
 				<div className="col-4">
 				<Form.Group controlId="formCode">
 					<Form.Label>Authentication Code</Form.Label>
-					<Form.Control isInvalid={authCode.length!=5} onChange={(e)=>{setAuthCode(e.currentTarget.value)}} placeholder="XXXXX" value={authCode} />
+					<Form.Control type="password" isInvalid={authCode.length!=5} onChange={(e)=>{setAuthCode(e.currentTarget.value)}} placeholder="XXXXX" value={authCode} />
 					<Form.Text className="text-muted">
 						Please enter the code you received in your email here. Then submit again.
 					</Form.Text>
@@ -1619,7 +1620,7 @@ function Register(p) {
 				<div className="col-4">
 				<Form.Group controlId="formAuthCode">
 					<Form.Label>Authentication Code</Form.Label>
-					<Form.Control isInvalid={authCode.length!=5} onChange={(e)=>{setAuthCode(e.currentTarget.value)}} placeholder="XXXXX" value={authCode} />
+					<Form.Control type="password" isInvalid={authCode.length!=5} onChange={(e)=>{setAuthCode(e.currentTarget.value)}} placeholder="XXXXX" value={authCode} />
 					<Form.Text className="text-muted">
 						Please enter the code you received in your email here. Then submit again.
 					</Form.Text>
@@ -1710,6 +1711,10 @@ function UserSettings(p) {
 		var obj = {username:localStorage.getItem("username"),
 			authCode:localStorage.getItem("authToken"),
 			playStyle:playStyle}
+		if (playStyle===undefined||playStyle===null) {
+			setError("Please select a play style before saving!")
+			return;
+		}
 		if (twitterChange) {
 			obj.twitterName=twitter;
 		}
@@ -1779,15 +1784,15 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["03","http://projectdivar.com/files/releases/DivaBot03.zip","17 Sep 2020",<><b>Recommended!</b> <i>DLC Update - Compatibility with removed 'bpm' field from database. Fixed bug with ":" in song names.</i></>],
+	["03","http://projectdivar.com/files/releases/DivaBot03.zip","17 Sep 2020",<><Badge variant="info" pill>Recommended</Badge> <i>DLC Update - Compatibility with removed 'bpm' field from database. Fixed bug with ":" in song names.</i></>],
 	]
 	
 	const incompatiblereleases=[
-	["02A","http://projectdivar.com/files/releases/DivaBot02A.zip","14 Sep 2020",<><b style={{color:"red"}}>Incompatible!</b> <i>Label Headers and Redo Song Calibration features added</i></>],
-	["02","http://projectdivar.com/files/releases/DivaBot02.zip","14 Sep 2020",<><b style={{color:"red"}}>Incompatible!</b></>],
-	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020",<><IMAGE_BUG/> <b style={{color:"red"}}>Incompatible!</b> <b>BUGGED! DO NOT USE!</b></>],
-	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020",<><IMAGE_BUG/> <b style={{color:"red"}}>Incompatible!</b> <b>BUGGED! DO NOT USE!</b> <i>Speed Improvements</i></>],
-	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020",<><IMAGE_BUG/> <b style={{color:"red"}}>Incompatible!</b> <b>BUGGED! DO NOT USE!</b> <i>Initial Release</i></>]
+	["02A","http://projectdivar.com/files/releases/DivaBot02A.zip","14 Sep 2020",<><Badge variant="warning" pill>Incompatible</Badge> <i>Label Headers and Redo Song Calibration features added</i></>],
+	["02","http://projectdivar.com/files/releases/DivaBot02.zip","14 Sep 2020",<><Badge variant="warning" pill>Incompatible!</Badge></>],
+	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020",<><IMAGE_BUG/> <Badge variant="warning" pill>Incompatible</Badge> <Badge variant="success" pill>BUGGED</Badge> <b>DO NOT USE!</b></>],
+	["01A","http://projectdivar.com/files/releases/DivaBot01A.zip","13 Sep 2020",<><IMAGE_BUG/> <Badge variant="warning" pill>Incompatible</Badge> <Badge variant="success" pill>BUGGED</Badge> <b>DO NOT USE!</b> <i>Speed Improvements</i></>],
+	["01","http://projectdivar.com/files/releases/DivaBot01.zip","13 Sep 2020",<><IMAGE_BUG/> <Badge variant="warning" pill>Incompatible</Badge> <Badge variant="success" pill>BUGGED</Badge> <b>DO NOT USE!</b> <i>Initial Release</i></>]
 	]
 	
 	return (

@@ -220,11 +220,30 @@ app.post('/upload', function(req, res) {
 });
 
 app.post('/submit', (req, res) => {
+	function addToQueue(src,userid,songid) {
+		if (src) {
+			db.query("select * from uploadedplays where filename=$1",[req.body.src])
+			.then((data)=>{
+				if (data.rows.length>0) {
+					if (data.rows[0].tries>-5) {
+						db.query("update uploadedplays set filename=$1,userid=$2,submissiondate=$3,id=$4,tries=$5 returning *",
+							[src,userid,moment(),songid,(data.rows[0].tries*-1)+1])
+						.then((data)=>{
+							if (data.rows.length>0) {
+								console.log("Added back to queue: "+JSON.stringify(data.rows[0]))
+							}
+						})
+					}
+				}
+			})
+		}	
+	}
+	
 	if (req.body &&
 	req.body.username!==undefined && req.body.authentication_token!==undefined && req.body.song!==undefined && req.body.difficulty!==undefined && req.body.cool!==undefined && req.body.fine!==undefined && req.body.safe!==undefined && req.body.sad!==undefined && req.body.worst!==undefined && req.body.fail!==undefined && req.body.percent!==undefined) {
 		
 		if (req.body.cool==-1||req.body.fine==-1||req.body.safe==-1||req.body.sad==-1||req.body.worst==-1) {
-			fs.writeFileSync("invalidSongs",JSON.stringify(req.body)+"\n","a");
+			fs.writeFileSync("invalidSongs",JSON.stringify(req.body)+"\n",{flag:"a"});
 			res.status(400).json("Invalid note parameters!");
 		}
 		
@@ -237,9 +256,6 @@ app.post('/submit', (req, res) => {
 		if (req.body.submitDate!==undefined) {
 			submitDate=req.body.submitDate;
 		}
-		
-		if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
-		{throw new Error("Invalid difficulty!")}
 		var playstyle="",songsubmitdata={},mod="",combo=-1,gameScore=-1,isFC=false,songRating=-1,userId = -1,songId=-1,playcount=-1,fccount=-1,cool=-1,fine=-1,safe=-1,sad=-1,worst=-1,alreadyPassed=false,eclear=-1,nclear=-1,hclear=-1,exclear=-1,exexclear=-1;
 		
 		if (req.body.mod!==undefined) {
@@ -260,7 +276,12 @@ app.post('/submit', (req, res) => {
 			cool=data.rows[0].cool;fine=data.rows[0].fine;safe=data.rows[0].safe;sad=data.rows[0].sad;worst=data.rows[0].worst;
 			fccount=data.rows[0].fccount;playcount=data.rows[0].playcount;userId=data.rows[0].id;return db.query("select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1",[req.body.song])}else{throw new Error("Could not authenticate!")}}else{throw new Error("Could not find user.")}
 		})
-		.then((data)=>{if(data && data.rows.length>0){songId=data.rows[0].id; return db.query('select rating from songdata where songid=$1 and difficulty=$2 limit 1',[songId,req.body.difficulty])}else{throw new Error("Could not find song.")}})
+		.then((data)=>{if(data && data.rows.length>0){songId=data.rows[0].id; 
+			if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
+			{
+				throw new Error("Invalid difficulty!")
+			}
+		return db.query('select rating from songdata where songid=$1 and difficulty=$2 limit 1',[songId,req.body.difficulty])}else{throw new Error("Could not find song.")}})
 		.then((data)=>{songRating=data.rows[0].rating;return db.query("select id from plays where userid=$1 and score>0 and difficulty=$2 and songid=$3 limit 1",[userId,req.body.difficulty,songId])})
 		.then((data)=>{if(data && data.rows.length>0){alreadyPassed=true;/*console.log(data);*/};var score=CalculateSongScore({rating:songRating,cool:req.body.cool,fine:req.body.fine,safe:req.body.safe,sad:req.body.sad,worst:req.body.worst,percent:req.body.percent,difficulty:req.body.difficulty,fail:fail});return db.query("insert into plays(songId,userId,difficulty,cool,fine,safe,sad,worst,percent,date,score,fail,mod,combo,gamescore,src,playstyle) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) returning *",[songId,userId,req.body.difficulty,req.body.cool,req.body.fine,req.body.safe,req.body.sad,req.body.worst,req.body.percent,submitDate,score,fail,mod,combo,gameScore,(req.body.src)?req.body.src:"",(playstyle)?playstyle:""])})
 		.then((data)=>{if(data && data.rows.length>0){
@@ -271,10 +292,15 @@ app.post('/submit', (req, res) => {
 			return CalculateRating(req.body.username)}else{throw new Error("Could not submit song.")}})
 		.then((data)=>{return db.query("update users set rating=$1,last_played=$3,playcount=$4,fccount=$5,cool=$6,fine=$7,safe=$8,sad=$9,worst=$10,eclear=$11,nclear=$12,hclear=$13,exclear=$14,exexclear=$15 where username=$2",[data,req.body.username,new Date(),++playcount,fccount+((isFC)?1:0),cool+Number(req.body.cool),fine+Number(req.body.fine),safe+Number(req.body.safe),sad+Number(req.body.sad),worst+Number(req.body.worst),eclear,nclear,hclear,exclear,exexclear])})
 		.then((data)=>{return songsubmitdata;})
-		.then((data)=>{res.status(200).json(data);})
+		.then((data)=>{
+			if (req.body.src) {
+				db.query("delete from uploadedplays where filename=$1",[req.body.src])
+			}
+			res.status(200).json(data);})
 		.catch((err)=>{
 			//console.log(req.body);
-			//console.log(err);
+			console.log(err);
+			addToQueue(req.body.src,userId,songId)
 			res.status(500).send(err.message);})
 	} else {
 		console.log(req.body);
@@ -1014,11 +1040,24 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 
 setInterval(
 ()=>{
-	var uploadData=undefined,user=undefined,auth=undefined;
-	db.query("select * from uploadedplays order by submissiondate asc limit 1;")
+	function addToQueue(uploadData) {
+		if (uploadData.tries===undefined||uploadData.tries===null) {
+			uploadData.tries=1;
+		} else {
+			uploadData.tries+=1;
+		}
+		if (uploadData.tries<5) {
+			console.log("Failed to upload. Added back to queue. Tries: "+uploadData.tries+" / "+json.stringify(uploadData))
+			db.query("insert into uploadedplays(filename,userid,submissiondate,id,playid,tries) values($1,$2,$3,$4,$5,$6);",
+			[uploadData.filename,uploadData.userid,uploadData.submissiondate,uploadData.id,uploadData.playid,uploadData.tries])
+		}
+	}
+	var uploadData=undefined,user=undefined,auth=undefined,playData;
+	db.query("select * from uploadedplays where tries is null or tries>=0 order by submissiondate asc limit 1")
 	.then((data)=>{
 		if (data.rows.length>0) {
 			uploadData=data.rows[0];
+			//console.log(uploadData)
 			return db.query("select username,authentication_token from users where id=$1",[uploadData.userid])
 		}
 	})
@@ -1026,14 +1065,19 @@ setInterval(
 		if (uploadData && data.rows.length>0) {
 			user=data.rows[0].username
 			auth=data.rows[0].authentication_token
-			return db.query("delete from uploadedplays where id=$1",[uploadData.id])
-		} else {
-			throw new Error("Something went wrong!")
+			if (uploadData.tries!==undefined&&uploadData.tries!==null) {
+				return db.query("update uploadedplays set tries=$2 where id=$1",[uploadData.id,(uploadData.tries*-1)])
+			} else {
+				return db.query("update uploadedplays set tries=-1 where id=$1",[uploadData.id])
+			}
 		}
 	})
 	.then((data)=>{
-		return axios.post("http://projectdivar.com/image",
-		{url:uploadData.filename,user:user,auth:auth})
+		if (uploadData) {
+			//console.log(data.data)
+			return axios.post("http://projectdivar.com/image",
+			{url:uploadData.filename,user:user,auth:auth})
+		}
 	})
 	.then((data)=>{
 		if (uploadData) {
@@ -1042,7 +1086,11 @@ setInterval(
 			}
 		}
 	})
-	.catch((err)=>{console.log(err)})
+	.catch((err)=>{
+		if (uploadData) {
+			addToQueue(uploadData)
+		}
+	})
 }
 ,1000)
 
