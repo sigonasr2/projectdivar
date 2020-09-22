@@ -964,6 +964,12 @@ function HoverSongName(p) {
 	)
 }
 
+function HasSong(song,user) {
+	//console.log(JSON.stringify(song)+"/"+JSON.stringify(user))
+	return (song.mega39s&&user.megamix)||
+		(song.futuretone&&user.futuretone)
+}
+
 function CompletionPanel(p) {
 	const [report,setReport] = useState([])
 	const [song,setSong] = useState("")
@@ -1003,7 +1009,7 @@ function CompletionPanel(p) {
 				</tr>
 			</thead>
 			<tbody>
-				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return <HoverSongName setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>
+				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return (HasSong(song,p.user))?<HoverSongName setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>:<></>
 				})}
 			</tbody>
 			<tfoot>
@@ -1080,6 +1086,15 @@ function FavoritePlaystyle(p) {
 	}
 }
 
+function GamesPanel(p) {
+	return (
+		<div className="d-none d-sm-none d-md-block float-right">
+			{p.user.megamix&&<img style={{position:"absolute",right:"0px",top:"-8px"}} className="pr-2" src="http://projectdivar.com/files/mega39s.png"/>}
+			{p.user.futuretone&&<img style={{position:"absolute",right:(p.user.megamix)?"112px":"0px",top:"-8px"}} className="pl-2" src="http://projectdivar.com/files/futuretone.png"/>}
+		</div>
+	)
+}
+
 function Profile(p){
 	let { username } = useParams();
 	let match = useRouteMatch();
@@ -1129,6 +1144,7 @@ function Profile(p){
 	return (
 		<>
 			<ImageDisplayer username={username} songs={p.songs} play={modalsrc} modalVisible={modalVisible} setModalVisible={setModalVisible}></ImageDisplayer>
+			<GamesPanel name="Games" user={user}/>
 			<h2>{username+"'s Profile"}</h2>
 				{(render)?<>
 					{user.playstyle&&user.playstyle.length>0&&
@@ -1140,7 +1156,7 @@ function Profile(p){
 					<StatisticsPanel name="Statistics" setMouseOver={setMouseOver} username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
 					<BestPlaysPanel name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
-					<CompletionPanel name="Progress" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
+					<CompletionPanel name="Progress" user={user} setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
 					<Panel name="Activity" username={username}/>
 					</>
 					:<></>
@@ -1784,7 +1800,14 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["03","http://projectdivar.com/files/releases/DivaBot03.zip","17 Sep 2020",<><Badge variant="info" pill>Recommended</Badge> <i>DLC Update - Compatibility with removed 'bpm' field from database. Fixed bug with ":" in song names.</i></>],
+	["05B","http://projectdivar.com/files/releases/DivaBot05B.zip","22 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Improved song select recognition speed.</i></>],
+	["05A","http://projectdivar.com/files/releases/DivaBot05A.zip","21 Sep 2020",<> <i>Added multi-monitor support. Use calibration to switch monitors.</i></>],
+	["05","http://projectdivar.com/files/releases/DivaBot05.zip","21 Sep 2020",<> <i>Added Miku FC. Huge optimizations to result screen capture, improve menu detection algorithms.</i></>],
+	["04B","http://projectdivar.com/files/releases/DivaBot04A2.zip","20 Sep 2020",<> <i>Redo the calibrator and improve Future Tone recognition.</i></>],
+	["04A","http://projectdivar.com/files/releases/DivaBot04A1.zip","19 Sep 2020",<> <IMAGE_BUG/> <i>Fix issues with Future tone songs with *s in them.</i></>],
+	["04","http://projectdivar.com/files/releases/DivaBot04.zip","19 Sep 2020",<> <IMAGE_BUG/> <i>Update so everything's working! Future Tone compatibility live!</i></>],
+	["03-beta","http://projectdivar.com/files/releases/DivaBot03-beta.zip","19 Sep 2020",<><IMAGE_BUG/> <Badge variant="success" pill>BUGGED</Badge> <i>Added Future Tone compatibility. Works with Megamix or Future Tone.</i></>],
+	["03","http://projectdivar.com/files/releases/DivaBot03.zip","17 Sep 2020",<><Badge variant="warning" pill>Megamix ONLY</Badge> <i>DLC Update - Compatibility with removed 'bpm' field from database. Fixed bug with ":" in song names.</i></>],
 	]
 	
 	const incompatiblereleases=[
@@ -1803,7 +1826,7 @@ function DivaBot() {
 		The app works by monitoring your game's capture area as you are streaming in order to identify what song you are playing, and what scores you achieve. It is used with this website to make score
 		submitting and tracking easier.
 		<br/>
-		The app currently supports <b>Megamix</b>. Other games will be supported in the future.
+		The app currently supports <b>Megamix</b> and <b>Future Tone</b>. Other games will be supported in the future.
 		<hr/>
 		<h3>Setup Instructions</h3>
 		{<iframe width="100%" height="480" src="https://www.youtube.com/embed/IAPpbp5EFto" frameBorder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>}
@@ -1821,6 +1844,30 @@ function DivaBot() {
 		Downloads stored below no longer work due to infrastructure changes or updates that break old apps.
 		<ReleaseList releases={incompatiblereleases}/>
 		<hr/>
+	</>
+	)
+}
+
+function StreamData() {
+	const [imageSet,setImageSet] = useState(0);
+	const [rando1,setRando1] = useState(Date.now());
+	const [rando2,setRando2] = useState(Date.now());
+	
+	useEffect(()=>{
+		setTimeout(()=>{
+			if (imageSet===0) {
+				setImageSet(50)
+				setRando1(Date.now())
+			} else {
+				setImageSet(0)
+				setRando2(Date.now())
+			}
+		},5000)
+	},[imageSet])
+	
+	return(
+	<>
+	{(imageSet===0)?<><img style={{visibility:"visible"}} src={"http://projectdivar.com:8080/feed/output0.png?"+rando1} id={rando1}/><img style={{visibility:"hidden"}} id={rando2} src={"http://projectdivar.com:8080/feed/output2.png?"+rando2}/></>:<><img style={{visibility:"visible"}} id={rando2} src={"http://projectdivar.com:8080/feed/output2.png?"+rando2}/><img id={rando1} style={{visibility:"hidden"}} src={"http://projectdivar.com:8080/feed/output0.png?"+rando1}/></>}
 	</>
 	)
 }
@@ -1889,6 +1936,10 @@ function Website() {
 					<Route path="/register">
 						<h1 className="title">Register New Account</h1>
 						<Register isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
+					</Route>
+					<Route path="/stream">
+						<h1 className="title">Stream</h1>
+						<StreamData/>
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>

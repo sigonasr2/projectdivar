@@ -17,6 +17,7 @@
     "nodemailer": "^6.4.11",
     "pg": "^8.2.1",
     "request": "^2.88.2",
+    "twitch-get-stream": "^0.6.0",
     "twitter-autohook": "^1.7.1",
     "unzipper": "^0.10.11"
   },

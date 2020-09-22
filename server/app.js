@@ -1,5 +1,6 @@
 const express = require('express') 
 const axios = require('axios') 
+const twitchStreams = require('twitch-get-stream')
 const app = express() 
 const port = 4501
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
@@ -257,7 +258,7 @@ app.post('/submit', (req, res) => {
 			submitDate=req.body.submitDate;
 		}
 		var playstyle="",songsubmitdata={},mod="",combo=-1,gameScore=-1,isFC=false,songRating=-1,userId = -1,songId=-1,playcount=-1,fccount=-1,cool=-1,fine=-1,safe=-1,sad=-1,worst=-1,alreadyPassed=false,eclear=-1,nclear=-1,hclear=-1,exclear=-1,exexclear=-1;
-		
+		var songdata={},userObj={};
 		if (req.body.mod!==undefined) {
 			mod = req.body.mod;
 		}
@@ -268,15 +269,17 @@ app.post('/submit', (req, res) => {
 			gameScore = req.body.gameScore;
 		}
 		
-		db.query("select id,authentication_token,playcount,fccount,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear,playstyle from users where username=$1 limit 1",[req.body.username])
+		db.query("select id,authentication_token,playcount,fccount,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear,playstyle,megamix,futuretone from users where username=$1 limit 1",[req.body.username])
 		.then((data)=>{if(data && data.rows.length>0){if (data.rows[0].authentication_token===req.body.authentication_token){
 			var obj = data.rows[0];
+			userObj = data.rows[0];
 			playstyle=data.rows[0].playstyle;
 			eclear=obj.eclear;nclear=obj.nclear;hclear=obj.hclear;exclear=obj.exclear;exexclear=obj.exexclear;
 			cool=data.rows[0].cool;fine=data.rows[0].fine;safe=data.rows[0].safe;sad=data.rows[0].sad;worst=data.rows[0].worst;
-			fccount=data.rows[0].fccount;playcount=data.rows[0].playcount;userId=data.rows[0].id;return db.query("select id from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1",[req.body.song])}else{throw new Error("Could not authenticate!")}}else{throw new Error("Could not find user.")}
+			fccount=data.rows[0].fccount;playcount=data.rows[0].playcount;userId=data.rows[0].id;return db.query("select id,mega39s,futuretone from songs where name=$1 or romanized_name=$1 or english_name=$1 limit 1",[req.body.song])}else{throw new Error("Could not authenticate!")}}else{console.log(req.body); throw new Error("Could not find user.")}
 		})
 		.then((data)=>{if(data && data.rows.length>0){songId=data.rows[0].id; 
+			songdata=data.rows[0];
 			if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
 			{
 				throw new Error("Invalid difficulty!")
@@ -290,7 +293,7 @@ app.post('/submit', (req, res) => {
 			if(alreadyPassed===false && songsubmitdata.score>0){switch(req.body.difficulty){case"E":{eclear++}break;case"N":{nclear++}break;case"H":{hclear++}break;case"EX":{exclear++}break;case"EXEX":{exexclear++}break;}}
 			isFC = songsubmitdata.safe===0 && songsubmitdata.sad===0 && songsubmitdata.worst===0;
 			return CalculateRating(req.body.username)}else{throw new Error("Could not submit song.")}})
-		.then((data)=>{return db.query("update users set rating=$1,last_played=$3,playcount=$4,fccount=$5,cool=$6,fine=$7,safe=$8,sad=$9,worst=$10,eclear=$11,nclear=$12,hclear=$13,exclear=$14,exexclear=$15 where username=$2",[data,req.body.username,new Date(),++playcount,fccount+((isFC)?1:0),cool+Number(req.body.cool),fine+Number(req.body.fine),safe+Number(req.body.safe),sad+Number(req.body.sad),worst+Number(req.body.worst),eclear,nclear,hclear,exclear,exexclear])})
+		.then((data)=>{return db.query("update users set rating=$1,last_played=$3,playcount=$4,fccount=$5,cool=$6,fine=$7,safe=$8,sad=$9,worst=$10,eclear=$11,nclear=$12,hclear=$13,exclear=$14,exexclear=$15,megamix=$16,futuretone=$17 where username=$2",[data,req.body.username,new Date(),++playcount,fccount+((isFC)?1:0),cool+Number(req.body.cool),fine+Number(req.body.fine),safe+Number(req.body.safe),sad+Number(req.body.sad),worst+Number(req.body.worst),eclear,nclear,hclear,exclear,exexclear,(songdata.mega39s||userObj.megamix),(songdata.futuretone&&!songdata.mega39s)||userObj.futuretone])})
 		.then((data)=>{return songsubmitdata;})
 		.then((data)=>{
 			if (req.body.src) {
@@ -489,7 +492,7 @@ app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
 
 app.get('/userdata/:username',(req,res)=>{
 	var songId=-1,userId=-1,finalData={};
-	db.query('select playstyle,playcount,fccount,rating,last_played,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1',[req.params.username])
+	db.query('select megamix,futuretone,playstyle,playcount,fccount,rating,last_played,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1',[req.params.username])
 	.then((data)=>{if(data && data.rows.length>0){finalData=data.rows[0];return db.query("select t.difficulty,COUNT(t.difficulty) from (select distinct on(songid) songid,*,users.id from plays join users on userid=users.id where users.username=$1 and plays.safe=0 and plays.worst=0 and plays.sad=0)t group by t.difficulty",[req.params.username])}else{throw new Error("Could not retrieve user data!")}})
 	.then((data)=>{
 		if (data) {
@@ -986,6 +989,16 @@ app.post('/updateuser', function(req, res) {
 })
 
 
+app.get('/streamdata',function (req,res){
+	db.query("select * from streams where id=1")
+	.then((data)=>{
+		res.status(200).send(data.rows[0].stream)
+	})
+	.catch((err)=>{
+		res.status(500).send(err.message)
+	})
+})
+
 
 
 
@@ -1037,6 +1050,19 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 	return Process(data);
 })
 .then((data)=>{process_images.forEach((image)=>{console.log(image)})})*/
+/*setInterval(
+()=>{
+	twitchStreams.get('radi7002')
+		.then(function(streams) {
+			//console.log(streams)
+			if (streams.length>0) {
+				db.query("update streams set stream=$1 where id=1",[streams[0].url]);
+			}
+		})
+		.catch((err)=>{
+			console.log(err.message)
+		})
+},5000)*/
 
 setInterval(
 ()=>{
