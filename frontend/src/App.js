@@ -1800,7 +1800,8 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["05B","http://projectdivar.com/files/releases/DivaBot05B.zip","22 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Improved song select recognition speed.</i></>],
+	["05C","http://projectdivar.com/files/releases/DivaBot05C1.zip","23 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Fixed bug with Finder not being submitted, and fix 1000+ note counts for FT submissions.</i></>],
+	["05B","http://projectdivar.com/files/releases/DivaBot05B.zip","22 Sep 2020",<> <IMAGE_BUG/> <i>Improved song select recognition speed.</i></>],
 	["05A","http://projectdivar.com/files/releases/DivaBot05A.zip","21 Sep 2020",<> <i>Added multi-monitor support. Use calibration to switch monitors.</i></>],
 	["05","http://projectdivar.com/files/releases/DivaBot05.zip","21 Sep 2020",<> <i>Added Miku FC. Huge optimizations to result screen capture, improve menu detection algorithms.</i></>],
 	["04B","http://projectdivar.com/files/releases/DivaBot04A2.zip","20 Sep 2020",<> <i>Redo the calibrator and improve Future Tone recognition.</i></>],

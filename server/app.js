@@ -1011,7 +1011,7 @@ var MAX_INDEX = 12 //To prevent being rate-limited.
 function Process(data,ind){
 	for (var i in data.data.statuses) {
 		var tweet = data.data.statuses[i]
-		if (tweet.source && tweet.source.includes("Nintendo Switch Share")) {
+		if (tweet.source && tweet.source.includes("Nintendo Switch Share")||tweet.source.includes("PlayStation®Network")) {
 			if (tweet.extended_entities) {
 				//console.log(tweet.extended_entities.media)
 				for (var j=0;j<tweet.extended_entities.media.length;j++) {
@@ -1050,9 +1050,9 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 	return Process(data);
 })
 .then((data)=>{process_images.forEach((image)=>{console.log(image)})})*/
-/*setInterval(
+setInterval(
 ()=>{
-	twitchStreams.get('radi7002')
+	twitchStreams.get('smallant')
 		.then(function(streams) {
 			//console.log(streams)
 			if (streams.length>0) {
@@ -1062,7 +1062,7 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 		.catch((err)=>{
 			console.log(err.message)
 		})
-},5000)*/
+},5000)
 
 setInterval(
 ()=>{
@@ -1073,7 +1073,7 @@ setInterval(
 			uploadData.tries+=1;
 		}
 		if (uploadData.tries<5) {
-			console.log("Failed to upload. Added back to queue. Tries: "+uploadData.tries+" / "+json.stringify(uploadData))
+			console.log("Failed to upload. Added back to queue. Tries: "+uploadData.tries+" / "+JSON.stringify(uploadData))
 			db.query("insert into uploadedplays(filename,userid,submissiondate,id,playid,tries) values($1,$2,$3,$4,$5,$6);",
 			[uploadData.filename,uploadData.userid,uploadData.submissiondate,uploadData.id,uploadData.playid,uploadData.tries])
 		}
