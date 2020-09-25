@@ -988,11 +988,50 @@ app.post('/updateuser', function(req, res) {
 	}
 })
 
+app.post('/getUserAuthData', function(req, res) {
+	if (req.body&&req.body.password&&req.body.userId) {
+		if (req.body.password===process.env.GUARDIANPASSWORD) {
+			db.query("select username,authentication_token from users where id=$1",[req.body.userId])
+			.then((data)=>{
+				if (data.rows.length>0) {
+					res.status(400).json(data.rows[0])
+				} else {
+					res.status(400).send("No user found!")
+				}
+			}
+			)
+			.catch((err)=>{
+				res.status(500).send(err.message)
+			})
+		} else {
+			res.status(400).send("Authentication failed!")
+		}
+	} else {
+		res.status(400).send("Invalid credentials!");
+	}
+})
 
-app.get('/streamdata',function (req,res){
-	db.query("select * from streams where id=1")
+app.get('/streamdata/:id',function (req,res){
+	db.query("select twitch_name from users where id=$1",[req.params.id])
 	.then((data)=>{
-		res.status(200).send(data.rows[0].stream)
+		return twitchStreams.get(data.rows[0].twitch_name)
+	})
+	.then(function(streams) {
+		if (streams.length>0) {
+			var streamchoice = undefined
+			for (var i=0;i<streams.length;i++) {
+				if (streams[i].quality.includes("720p")) {
+					streamchoice = streams[i]
+					break;
+				}
+			}
+			if (streamchoice===undefined) {
+				streamchoice = streams[0];
+			}
+			res.status(200).send(streamchoice.url)
+		} else {
+			res.status(400).send("Not online!")
+		}
 	})
 	.catch((err)=>{
 		res.status(500).send(err.message)
@@ -1050,7 +1089,7 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 	return Process(data);
 })
 .then((data)=>{process_images.forEach((image)=>{console.log(image)})})*/
-setInterval(
+/*setInterval(
 ()=>{
 	twitchStreams.get('smallant')
 		.then(function(streams) {
@@ -1062,7 +1101,7 @@ setInterval(
 		.catch((err)=>{
 			console.log(err.message)
 		})
-},5000)
+},5000)*/
 
 setInterval(
 ()=>{

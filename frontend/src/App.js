@@ -1386,13 +1386,13 @@ function Submit(p) {
 						Detailed
 					</Route>
 					<Route path="/submitplay/switch">
-						<h2>Nintendo Switch/Twitter Upload</h2>
+						<h2>Playstation/Nintendo Switch/Twitter Upload</h2>
 						Want to upload your scores to the website conveniently? Go to <Link to="/usersettings">Edit Profile Settings</Link> and enter your Twitter username, then follow the steps below!
 						<hr/>
 						<div className="row mb-4">
 							<div className="col-4 m-6">
 							<h4>Step 1</h4>
-							From your Nintendo Switch Album, select up to 4 results screenshots that you want the DivaRBot to parse.
+							From your Nintendo Switch Album or Playstation Gallery, select up to 4 results screenshots that you want the DivaRBot to parse.
 							</div>
 							<div className="col-8 m-6">
 							<img width="100%" className="border rounded shadow" src="http://projectdivar.com/files/switch1.png"/>
@@ -1427,8 +1427,8 @@ function Submit(p) {
 							<Link to="/submitplay/image" className="nostyle">
 								<div className="card-body">
 									<h5 className="card-title">Image Upload</h5>
-									<p className="card-text">Upload images from your Nintendo Switch for automatic processing/scoring!</p>
-									<p className="card-text"><small className="text-muted">Put up to 50 images in a zip file to mass-upload your screenshotted plays to your profile. You will need to extract them from your microSD card from your Nintendo Switch.</small></p>
+									<p className="card-text">Upload images from your Playstation/Nintendo Switch for automatic processing/scoring!</p>
+									<p className="card-text"><small className="text-muted">Put up to 50 images in a zip file to mass-upload your screenshotted plays to your profile. You will need to extract them from your microSD card from your Nintendo Switch or using a USB for your Playstation.</small></p>
 								</div>
 							</Link>
 						</div>
@@ -1436,8 +1436,8 @@ function Submit(p) {
 						<div className="card">
 							<Link to="/submitplay/switch" className="nostyle">
 								<div className="card-body">
-									<h5 className="card-title">Nintendo Switch/Twitter Upload</h5>
-									<p className="card-text">Setup your account for uploading through Twitter using your Nintendo Switch!</p>
+									<h5 className="card-title">Playstation/Nintendo Switch/Twitter Upload</h5>
+									<p className="card-text">Setup your account for uploading through Twitter using your Playstation or Nintendo Switch!</p>
 									<p className="card-text"><small className="text-muted">You can select up to 4 images to post to Twitter at one time.</small></p>
 								</div>
 							</Link>
@@ -1800,7 +1800,7 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["05C","http://projectdivar.com/files/releases/DivaBot05C1.zip","23 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Fixed bug with Finder not being submitted, and fix 1000+ note counts for FT submissions.</i></>],
+	["05C","http://projectdivar.com/files/releases/DivaBot05C2.zip","24 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Fixed bug with Finder not being submitted, and fix 1000+ note counts for FT submissions. Improve difficulty detection.</i></>],
 	["05B","http://projectdivar.com/files/releases/DivaBot05B.zip","22 Sep 2020",<> <IMAGE_BUG/> <i>Improved song select recognition speed.</i></>],
 	["05A","http://projectdivar.com/files/releases/DivaBot05A.zip","21 Sep 2020",<> <i>Added multi-monitor support. Use calibration to switch monitors.</i></>],
 	["05","http://projectdivar.com/files/releases/DivaBot05.zip","21 Sep 2020",<> <i>Added Miku FC. Huge optimizations to result screen capture, improve menu detection algorithms.</i></>],
