@@ -991,10 +991,11 @@ app.post('/updateuser', function(req, res) {
 app.post('/getUserAuthData', function(req, res) {
 	if (req.body&&req.body.password&&req.body.userId) {
 		if (req.body.password===process.env.GUARDIANPASSWORD) {
-			db.query("select username,authentication_token from users where id=$1",[req.body.userId])
+			db.query("select uploads,username,authentication_token from users where id=$1",[req.body.userId])
 			.then((data)=>{
 				if (data.rows.length>0) {
 					res.status(400).json(data.rows[0])
+					db.query("update users set uploads=$1 where id=$2",[data.rows[0].uploads+1,req.body.userId])
 				} else {
 					res.status(400).send("No user found!")
 				}
@@ -1008,6 +1009,20 @@ app.post('/getUserAuthData', function(req, res) {
 		}
 	} else {
 		res.status(400).send("Invalid credentials!");
+	}
+})
+
+app.post('/passImageData',function(req,res) {
+	if (req.body&&req.body.user&&req.body.auth&&req.body.url) {
+		axios.post("http://projectdivar.com/image",{user:req.body.user,auth:req.body.auth,url:req.body.url})
+		.then((data)=>{
+			res.status(200).json(data.data)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else {
+		res.status(400).send("Invalid credentials!")
 	}
 })
 
