@@ -21,6 +21,7 @@ import {
 const REMOTE_ADDR = "http://45.33.13.215:4502";
 
 const axios = require('axios');
+const moment = require('moment');
 
 var IMAGE_CAMERA=(p)=>{
 	return(
@@ -688,6 +689,8 @@ function LoadMore(p) {
 	var [visible,setVisible] = useState(false)
 	var [update,setUpdate] = useState(false)
 	
+	const firstUpdate = useRef(true);
+	
 	useEffect(()=>{
 		axios.get(p.url+constructParams(params))
 		.then((data)=>{
@@ -695,7 +698,17 @@ function LoadMore(p) {
 				setVisible(true)
 			}
 		})
-	},[update])
+	},[update,p.profileUpdate])
+  
+	useEffect(()=>{
+		if (firstUpdate.current) {
+		  firstUpdate.current = false;
+		  return;
+		}
+		var obj = params
+		obj.offset=p.params.offset
+		setParams(obj)
+	},[p.profileUpdate,p.username])
 	
 	function constructParams(params) {
 		var st = Object.keys(params).reduce((str,key)=>{
@@ -791,14 +804,14 @@ function BestPlaysPanel(p) {
 	useEffect(()=>{
 		axios.get("http://www.projectdivar.com/bestplays/"+p.username+"?fails=false&limit=5&offset=0")
 		.then((data)=>{setBestPlays(data.data);})
-	},[update,p.username])
+	},[p.profileUpdate,update,p.username])
 	
 	var content=<div className="col-md-12 mt-3 mb-3">
 			<ul className="list-group list-group-flush border border-danger rounded-lg">
-			{bestPlays.map((play,i)=>{return <li key={play.id} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
+			{bestPlays.map((play,i)=>{return <li key={i} className={"list-group-item list-group-item-action "+(i%2==0?"background-list-1":"background-list-2")}>
 					<Play setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} index={i} play={play} song={p.songs[play.songid]}/>
 				</li>})}
-			<LoadMore listItem={true} url={"http://www.projectdivar.com/bestplays/"+p.username} params={{fails:false,limit:15,offset:5}} value={bestPlays} setValue={setBestPlays}/>
+			<LoadMore username={p.username} profileUpdate={p.profileUpdate} listItem={true} url={"http://www.projectdivar.com/bestplays/"+p.username} params={{fails:false,limit:15,offset:5}} value={bestPlays} setValue={setBestPlays}/>
 			</ul>
 		</div>
 	
@@ -887,7 +900,7 @@ function PlayData(p) {
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/plays/"+p.username+"/"+p.song.id)
 		.then((data)=>{setData(data.data);})
-	},[update])
+	},[p.profileUpdate,update])
 	
 	return (
 	<>
@@ -895,7 +908,7 @@ function PlayData(p) {
 			<h5>Individual Plays for {p.song.name} from {p.username}</h5>
 			<div className="border rounded">
 				{data.map((play,i)=><Play setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} key={i} play={play} mini={true} song={p.song}/>)}
-				<LoadMore url={"http://www.projectdivar.com/plays/"+p.username+"/"+p.song.id} params={{limit:15,offset:5}} value={data} setValue={setData}/>
+				<LoadMore profileUpdate={p.profileUpdate} url={"http://www.projectdivar.com/plays/"+p.username+"/"+p.song.id} params={{limit:15,offset:5}} value={data} setValue={setData}/>
 			</div>
 		</div>
 	</>
@@ -931,14 +944,16 @@ function HoverSongName(p) {
 		if ((p.song.report.ecount+p.song.report.ncount+p.song.report.hcount+p.song.report.excount+p.song.report.exexcount>0)) {
 			if (toggle) {
 			setExpand(<tr className="fadein">
-						<td colSpan="6"><PlayData setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} song={p.song} username={p.username}/></td>
+			<td colSpan="6"><PlayData profileUpdate={p.profileUpdate} setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} song={p.song} username={p.username}/></td>
 					</tr>)
-				window.scroll(0,cumulativeOffset(document.getElementById("songRow_"+p.song.name)).top-document.getElementById("songRow_"+p.song.name).getBoundingClientRect().height);
+					if (match!==null) {
+						window.scroll(0,cumulativeOffset(document.getElementById("songRow_"+p.song.name)).top-document.getElementById("songRow_"+p.song.name).getBoundingClientRect().height);
+					}
 					} else {
 			setExpand(<></>)
 					}
 		}
-	},[toggle])
+	},[p.profileUpdate,toggle])
 	
 	return (
 		<>
@@ -981,6 +996,15 @@ function CompletionPanel(p) {
 		.then((data)=>{setReport(data.data)})
 		.catch((err)=>{console.log(err.message)})
 	},[update,p.username])  
+	useEffect(()=>{
+		if (firstUpdate.current) {
+		  firstUpdate.current = false;
+		  return;
+		}
+		setUpdate(!update)
+	},[p.profileUpdate])
+  
+	const firstUpdate = useRef(true);
   
 	return (
 	<>
@@ -1009,7 +1033,7 @@ function CompletionPanel(p) {
 				</tr>
 			</thead>
 			<tbody>
-				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return (HasSong(song,p.user))?<HoverSongName setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>:<></>
+				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return (HasSong(song,p.user))?<HoverSongName profileUpdate={p.profileUpdate} setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>:<></>
 				})}
 			</tbody>
 			<tfoot>
@@ -1112,6 +1136,10 @@ function Profile(p){
 	var [modalsrc,setModalSrc] = useState({})
 	var [modalVisible,setModalVisible] = useState(false);
 	var [mouseOver,setMouseOver] = useState(false);
+	var [loadedTime,setLoadedTime] = useState(new Date());
+	
+	const firstUpdate = useRef(true);
+	let history = useHistory();
 	
 	function CalculateClear(easy,normal,hard,ex,exex,fcdata,pfcdata) {
 		return <>
@@ -1124,11 +1152,38 @@ function Profile(p){
 	}
 	
 	useEffect(()=>{
+		if (firstUpdate.current) {
+		  firstUpdate.current = false;
+		  return;
+		}
+		setUpdate(!update)
+	},[loadedTime])
+	
+	useEffect(()=>{
 		axios.get("http://projectdivar.com:4501/userdata/"+username)
 		.then((data)=>{setUserData(data.data);setPlayCount(data.data.playcount);setFCCount(data.data.fccount);setRating(data.data.rating);setLastPlayed(data.data.last_played);setAccuracy(CalculateAccuracy(data.data.cool,data.data.fine,data.data.safe,data.data.sad,data.data.worst))});
 		axios.get("http://projectdivar.com:4501/songdiffs")
 		.then((data)=>{setDiffs(data.data)})
 		setModalVisible(false);
+		const interval = setInterval(()=>{
+			axios.get("http://projectdivar.com/userdata/"+username)
+			.then((data)=>{
+				return axios.get("http://projectdivar.com/updates/"+data.data.id)
+			})
+			.then((data)=>{
+				//Positive number means new update is available for this profile.
+				//console.log(moment(data.data.date).diff(loadedTime))
+				if (moment(data.data.date).diff(loadedTime)>0) {
+					setLoadedTime(new Date())
+					history.push("/user/"+username)
+				}
+			})
+			.catch((err)=>{
+				//console.log(err.message)
+			})
+		},10000)
+		
+		return ()=>clearInterval(interval)
 	},[update,username])
 	
 	useEffect(()=>{
@@ -1155,8 +1210,8 @@ function Profile(p){
 					</div>}
 					<StatisticsPanel name="Statistics" setMouseOver={setMouseOver} username={username} playcount={playcount} fccount={fccount} cleared={cleared} accuracy={accuracy}/>
 					<HitCountsPanel name="Hit Counts" username={username} user={user}/>
-					<BestPlaysPanel name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
-					<CompletionPanel name="Progress" user={user} setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
+					<BestPlaysPanel profileUpdate={update} name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
+					<CompletionPanel profileUpdate={update} name="Progress" user={user} setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
 					<Panel name="Activity" username={username}/>
 					</>
 					:<></>
@@ -1508,6 +1563,7 @@ function LoginInfo(p) {
 		Welcome, <b>{username}</b>!<br/>
 		<Link to={"/user/"+username}>My Profile</Link><br/>
 		<Link to={"/usersettings"}>Edit Profile Settings</Link><br/>
+		<Link to={"/streampanel"}>My Stream Panel</Link><br/>
 		<Link to="/auth">App Auth Code</Link><br/>
 		
 	</>:<>
@@ -1849,6 +1905,17 @@ function DivaBot() {
 	)
 }
 
+function StreamPanel(p) {
+	
+	const [update,setUpdate] = useState(false);
+	
+	return (
+		<>
+			
+		</>
+	)
+}
+
 function StreamData() {
 	const [imageSet,setImageSet] = useState(0);
 	const [rando1,setRando1] = useState(Date.now());
@@ -1937,6 +2004,10 @@ function Website() {
 					<Route path="/register">
 						<h1 className="title">Register New Account</h1>
 						<Register isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
+					</Route>
+					<Route path="/streampanel">
+						<h1 className="title">Stream Panel</h1>
+						<StreamPanel setUserSettings={setUserSettings} userSettings={userSettings} isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
 					</Route>
 					<Route path="/stream">
 						<h1 className="title">Stream</h1>

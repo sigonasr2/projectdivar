@@ -117,7 +117,9 @@ app.delete('/remove',(req,res)=>{
 		.then((data)=>{if(data && data.rows.length>0){songObj=data.rows[0];return CalculateRating(req.body.username)}else{throw new Error("Could not find play!")}})
 		.then((data)=>{rating=data;return db.query("select * from plays where songid=$1 and userid=$2 and difficulty=$3 and score>0 limit 1",[songObj.songid,userObj.id,songObj.difficulty])})
 		.then((data)=>{if(data && data.rows.length===0){isFirstClear=true;}/*console.log([data,userObj.playcount-1,(songObj.safe==0&&songObj.sad==0&&songObj.worst==0)?userObj.fccount-1:userObj.fccount,userObj.cool-songObj.cool,userObj.fine-songObj.fine,userObj.safe-songObj.safe,userObj.sad-songObj.sad,userObj.worst-songObj.worst,(songObj.difficulty=="E")?userObj.ecount-1:userObj.ecount,(songObj.difficulty=="N")?userObj.ncount-1:userObj.ncount,(songObj.difficulty=="H")?userObj.hcount-1:userObj.hcount,(songObj.difficulty=="EX")?userObj.excount-1:userObj.excount,(songObj.difficulty=="EXEX")?userObj.exexcount-1:userObj.exexcount]);*/return db.query("update users set rating=$1,playcount=$2,fccount=$3,cool=$4,fine=$5,safe=$6,sad=$7,worst=$8,eclear=$9,nclear=$10,hclear=$11,exclear=$12,exexclear=$13 where id=$14 returning rating,playcount,fccount,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear",[rating,userObj.playcount-1,(songObj.safe==0&&songObj.sad==0&&songObj.worst==0)?userObj.fccount-1:userObj.fccount,userObj.cool-songObj.cool,userObj.fine-songObj.fine,userObj.safe-songObj.safe,userObj.sad-songObj.sad,userObj.worst-songObj.worst,(songObj.difficulty=="E" && isFirstClear)?userObj.eclear-1:userObj.eclear,(songObj.difficulty=="N" && isFirstClear)?userObj.nclear-1:userObj.nclear,(songObj.difficulty=="H" && isFirstClear)?userObj.hclear-1:userObj.hclear,(songObj.difficulty=="EX" && isFirstClear)?userObj.exclear-1:userObj.exclear,(songObj.difficulty=="EXEX" && isFirstClear)?userObj.exexclear-1:userObj.exexclear,userObj.id])})
-		.then((data)=>{if(data && data.rows.length>0){res.status(200).json({user:data.rows[0],song:songObj})}else{throw new Error("Could not update user information, but song is deleted!")}})
+		.then((data)=>{if(data && data.rows.length>0){res.status(200).json({user:data.rows[0],song:songObj})
+			axios.post("http://projectdivar.com/updates/"+userObj.id,{password:process.env.GMAIL,type:"delete"})	
+		}else{throw new Error("Could not update user information, but song is deleted!")}})
 		.catch((err)=>{res.status(500).json(err.message)})
 	} else {
 		res.status(400).send("Missing required parameters!");
@@ -296,10 +298,14 @@ app.post('/submit', (req, res) => {
 		.then((data)=>{return db.query("update users set rating=$1,last_played=$3,playcount=$4,fccount=$5,cool=$6,fine=$7,safe=$8,sad=$9,worst=$10,eclear=$11,nclear=$12,hclear=$13,exclear=$14,exexclear=$15,megamix=$16,futuretone=$17 where username=$2",[data,req.body.username,new Date(),++playcount,fccount+((isFC)?1:0),cool+Number(req.body.cool),fine+Number(req.body.fine),safe+Number(req.body.safe),sad+Number(req.body.sad),worst+Number(req.body.worst),eclear,nclear,hclear,exclear,exexclear,(songdata.mega39s||userObj.megamix),(songdata.futuretone&&!songdata.mega39s)||userObj.futuretone])})
 		.then((data)=>{return songsubmitdata;})
 		.then((data)=>{
+			//userId
+			//password, type
+			axios.post("http://projectdivar.com/updates/"+userId,{password:process.env.GMAIL,type:"submit"})
 			if (req.body.src) {
 				db.query("delete from uploadedplays where filename=$1",[req.body.src])
 			}
-			res.status(200).json(data);})
+			res.status(200).json(data);
+		})
 		.catch((err)=>{
 			//console.log(req.body);
 			console.log(err);
@@ -384,6 +390,42 @@ app.get('/accuracy/:username',(req,res)=>{
 	.catch((err)=>{res.status(500).send(err.message)})
 })
 
+app.get('/updates/:userid',(req,res)=>{
+	db.query('select * from userupdate where userid=$1',[req.params.userid])
+	.then((data)=>{
+		if (data.rows.length>0) {
+			res.status(200).json(data.rows[0])
+		} else {
+			res.status(400).send("No user update found!")
+		}
+	})
+	.catch((err)=>{
+		res.status(500).send(err.message)
+	})
+})
+
+app.post('/updates/:userid',(req,res)=>{
+	if (req.body&&req.body.password&&req.body.type) {
+		if (req.body.password===process.env.GMAIL) {
+			db.query("insert into userupdate(userid,update_type,date) values($1,$2,$3) on conflict(userid) do update set update_type=$2,date=$3 where userupdate.userid=$1 returning *",[req.params.userid,req.body.type,moment()])
+			.then((data)=>{
+				if (data.rows.length>=0) {
+					res.status(200).send(data.rows[0])
+				} else {
+					throw new Error("Could not update user.")
+				}
+			})
+			.catch((err)=>{
+				res.status(500).send(err.message)
+			})
+		} else {
+			res.status(403).send("Could not authenticate")
+		}
+	} else {
+		res.status(400).send("Invalid credentials!")
+	}
+})
+
 app.get('/recalculatescore/:playid',(req,res)=>{
 	var userId=-1;
 	var username=null;
@@ -400,6 +442,9 @@ app.get('/recalculatescore/:playid',(req,res)=>{
 	return db.query('select username from users where id=$1',[userId]).then((data)=>{username=data.rows[0].username; return CalculateRating(username)}).then((data)=>{db.query("update users set rating=$1 where username=$2",[data,username])})
 	.then(()=>{return scoreData;})
 	}else{throw new Error("Failed to update score!")}})
+	.then((data)=>{
+		axios.post("http://projectdivar.com/updates/"+userId,{password:process.env.GMAIL,type:"recalculate"})
+	})
 	.then((data)=>res.status(200).json(data)).catch((err)=>{console.log(err);res.status(500).send(err.message);})
 });
 
@@ -492,7 +537,7 @@ app.get('/bestplay/:username/:songname/:difficulty',(req,res)=>{
 
 app.get('/userdata/:username',(req,res)=>{
 	var songId=-1,userId=-1,finalData={};
-	db.query('select megamix,futuretone,playstyle,playcount,fccount,rating,last_played,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1',[req.params.username])
+	db.query('select id,megamix,futuretone,playstyle,playcount,fccount,rating,last_played,cool,fine,safe,sad,worst,eclear,nclear,hclear,exclear,exexclear from users where username=$1 limit 1',[req.params.username])
 	.then((data)=>{if(data && data.rows.length>0){finalData=data.rows[0];return db.query("select t.difficulty,COUNT(t.difficulty) from (select distinct on(songid) songid,*,users.id from plays join users on userid=users.id where users.username=$1 and plays.safe=0 and plays.worst=0 and plays.sad=0)t group by t.difficulty",[req.params.username])}else{throw new Error("Could not retrieve user data!")}})
 	.then((data)=>{
 		if (data) {
@@ -799,7 +844,7 @@ function GetUserInfo(username) {
 	return db.query("select id,username,email,code_time from users where username=$1 limit 1",[username])
 }
 function GetUserLoginAllowed(username,authCode) {
-	return db.query("select id,username,email,code_time,playstyle,twitter_name from users where username=$1 and code=$2 limit 1",[username,authCode])
+	return db.query("select id,username,email,code_time,playstyle,twitter_name,twitch_name from users where username=$1 and code=$2 limit 1",[username,authCode])
 }
 app.post('/authenticate/authToken',(req,res)=>{
 	if (req.body&&req.body.username&&req.body.authCode) {
