@@ -93,6 +93,28 @@ body {
 		0 0 8px #999
 }
 
+.superglow{
+	  color: #eee;
+	  text-shadow:
+		0 0 1px #999,
+		0 0 2px #999,
+		0 0 4px #999,
+		0 0 8px #fff
+}
+
+
+h1.superglow{
+	font-size:6vw;
+	font-weight: bold;
+	background-color:rgba(1,1,1,0.6);
+}
+
+p.superglow{
+	font-size:1.5vw;
+	font-weight: bold;
+	background-color:rgba(1,1,1,0.6);
+}
+
 .nostyle{
 	color: #333;
 }

@@ -5,17 +5,23 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
+  Redirect,
   useRouteMatch,
   useParams,
-  useHistory
+  useHistory,
+  useLocation
 } from "react-router-dom";
+
+import { HashLink as Link } from 'react-router-hash-link';
 
 import {
 	Modal,
 	Button,
 	Form,
-	Badge
+	Badge,
+	Card,
+	Spinner,
+	Carousel
 } from "react-bootstrap";
 
 const REMOTE_ADDR = "http://45.33.13.215:4502";
@@ -61,6 +67,26 @@ var IMAGE_TABLET=(p)=>{
 	<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi bi-tablet-landscape" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 	  <path fillRule="evenodd" d="M1 4v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1zm-1 8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8z"/>
 	  <path fillRule="evenodd" d="M14 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0z"/>
+	</svg>
+	)
+}
+var IMAGE_CHECKMARK=(p)=>{
+	return (<svg width="1em" height="1em" {...p} viewBox="0 0 16 16" className="bi bi-check-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path fillRule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+	</svg>
+	)
+}
+var IMAGE_X=(p)=>{
+	return (
+	<svg width="1em" height="1em" viewBox="0 0 16 16" {...p} className="bi bi-x-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path fillRule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+	</svg>
+	)
+}
+var IMAGE_ARROWUP=(p)=>{
+	return (
+	<svg width="1em" height="1em" viewBox="0 0 16 16" {...p} className="bi bi-arrow-up-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+	  <path fillRule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
 	</svg>
 	)
 }
@@ -688,6 +714,7 @@ function LoadMore(p) {
 	var [loading,setLoading] = useState(false)
 	var [visible,setVisible] = useState(false)
 	var [update,setUpdate] = useState(false)
+	var [reloadLoadMore,setReloadLoadMore] = useState(false)
 	
 	const firstUpdate = useRef(true);
 	
@@ -698,7 +725,7 @@ function LoadMore(p) {
 				setVisible(true)
 			}
 		})
-	},[update,p.profileUpdate])
+	},[update,p.profileUpdate,reloadLoadMore])
   
 	useEffect(()=>{
 		if (firstUpdate.current) {
@@ -708,6 +735,7 @@ function LoadMore(p) {
 		var obj = params
 		obj.offset=p.params.offset
 		setParams(obj)
+		setReloadLoadMore(!reloadLoadMore)
 	},[p.profileUpdate,p.username])
 	
 	function constructParams(params) {
@@ -1140,6 +1168,7 @@ function Profile(p){
 	
 	const firstUpdate = useRef(true);
 	let history = useHistory();
+	const location = useLocation();
 	
 	function CalculateClear(easy,normal,hard,ex,exex,fcdata,pfcdata) {
 		return <>
@@ -1213,6 +1242,7 @@ function Profile(p){
 					<BestPlaysPanel profileUpdate={update} name="Best Plays" setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
 					<CompletionPanel profileUpdate={update} name="Progress" user={user} setModalVisible={setModalVisible} setModalSrc={setModalSrc} username={username} songs={p.songs}/>
 					<Panel name="Activity" username={username}/>
+					<Link smooth to={location.pathname+"#content"}><IMAGE_ARROWUP style={{fontSize:"32px",position:"fixed",right:"18px",bottom:"18px"}}/></Link>
 					</>
 					:<></>
 				}
@@ -1469,7 +1499,7 @@ function Submit(p) {
 					<Route path="/submitplay">
 						<h2>Select a submission method</h2>
 						{false&&<><div className="card">
-							<Link to="/submitplay/simple" className="nostyle">
+							<Link smooth to="/submitplay/simple#content" className="nostyle">
 								<div className="card-body">
 									<h5 className="card-title">Manual Submit</h5>
 									<p className="card-text">Submit your plays by entering the clear % of a song</p>
@@ -1479,7 +1509,7 @@ function Submit(p) {
 						</div>
 						<br/></>}
 						<div className="card">
-							<Link to="/submitplay/image" className="nostyle">
+							<Link smooth to="/submitplay/image#content" className="nostyle">
 								<div className="card-body">
 									<h5 className="card-title">Image Upload</h5>
 									<p className="card-text">Upload images from your Playstation/Nintendo Switch for automatic processing/scoring!</p>
@@ -1489,11 +1519,31 @@ function Submit(p) {
 						</div>
 						<br/>
 						<div className="card">
-							<Link to="/submitplay/switch" className="nostyle">
+							<Link smooth to="/submitplay/switch#content" className="nostyle">
 								<div className="card-body">
 									<h5 className="card-title">Playstation/Nintendo Switch/Twitter Upload</h5>
 									<p className="card-text">Setup your account for uploading through Twitter using your Playstation or Nintendo Switch!</p>
 									<p className="card-text"><small className="text-muted">You can select up to 4 images to post to Twitter at one time.</small></p>
+								</div>
+							</Link>
+						</div>
+						<br/>
+						<div className="card">
+							<Link smooth to="/streampanel#content" className="nostyle">
+								<div className="card-body">
+									<h5 className="card-title">Stream Monitoring</h5>
+									<p className="card-text">Stream <b>Project Diva Future Tone</b> through your Playstation 4 to submit records!</p>
+									<p className="card-text"><small className="text-muted">Specify your Twitch account and then start up a stream monitor that will watch your game as you play, recording your results.</small></p>
+								</div>
+							</Link>
+						</div>
+						<br/>
+						<div className="card">
+							<Link smooth to="/divabot#content" className="nostyle">
+								<div className="card-body">
+									<h5 className="card-title">DivaBot</h5>
+									<p className="card-text">Use your capture card / stream setup to monitor your game screen as you play.</p>
+									<p className="card-text"><small className="text-muted">This uses software developed by <b>sigonasr2</b> that automatically records your results as you play.</small></p>
 								</div>
 							</Link>
 						</div>
@@ -1507,11 +1557,13 @@ function Submit(p) {
 function RecentPlays(p) {
 	const [update,setUpdate] = useState(false)
 	const [recentPlayData,setRecentPlayData] = useState([])
+	var [modalsrc,setModalSrc] = useState({})
+	var [modalVisible,setModalVisible] = useState(false);
 	
 	useEffect(()=>{
 		
 		const interval = setInterval(()=>{
-			axios.get("http://projectdivar.com/recentplays/sigonasr2")
+			axios.get("http://projectdivar.com/recentplays/"+p.username)
 			.then((data)=>{
 				setRecentPlayData(data.data);
 			})
@@ -1523,7 +1575,8 @@ function RecentPlays(p) {
 	
 	return (
 	<>
-		{recentPlayData.map((play,i)=><Play index={i} play={play} song={p.songs[play.songid]} title={true} mini={true}/>)}
+		<ImageDisplayer username={p.username} songs={p.songs} play={modalsrc} modalVisible={modalVisible} setModalVisible={setModalVisible}></ImageDisplayer>
+		{recentPlayData.map((play,i)=><Play setModalVisible={setModalVisible} setModalSrc={setModalSrc} index={i} play={play} song={p.songs[play.songid]} title={true} mini={true}/>)}
 	</>
 	)
 }
@@ -1561,14 +1614,12 @@ function LoginInfo(p) {
 	<>
 	{loggedIn?<>
 		Welcome, <b>{username}</b>!<br/>
-		<Link to={"/user/"+username}>My Profile</Link><br/>
-		<Link to={"/usersettings"}>Edit Profile Settings</Link><br/>
-		<Link to={"/streampanel"}>My Stream Panel</Link><br/>
-		<Link to="/auth">App Auth Code</Link><br/>
-		
+		<Link smooth to={"/user/"+username+"#content"}>My Profile</Link><br/>
+		<Link smooth to={"/usersettings#content"}>Edit Profile Settings</Link><br/>
+		<Link smooth to={"/streampanel#content"}>My Stream Panel</Link><br/>
 	</>:<>
-		<Link to="/login">Login</Link><br/>
-		<Link to="/register">Register</Link>
+		<Link smooth to="/login#content">Login</Link><br/>
+		<Link smooth to="/register#content">Register</Link>
 	</>}
 	</>
 	)
@@ -1584,7 +1635,7 @@ function Login(p) {
 	let history = useHistory();
 	
 	if (p.isLoggedIn) {
-		history.push("/")
+		return (<Redirect to="/"/>)
 	}
 	
 	return (
@@ -1678,7 +1729,7 @@ function Register(p) {
 			</>}
 			<Form.Group controlId="formUsername">
 				<Form.Label>Username</Form.Label>
-				<Form.Control disabled={authCodeVisible} isInvalid={username.length<1} onChange={(e)=>{setUsername(e.currentTarget.value)}} placeholder="MikuMiku" value={username} />
+				<Form.Control disabled={authCodeVisible} isInvalid={username.length<1||username.includes("/")||username.includes("\\")} onChange={(e)=>{setUsername(e.currentTarget.value)}} placeholder="MikuMiku" value={username} />
 			</Form.Group>
 			<Form.Group controlId="formEmail">
 				<Form.Label>Email Address</Form.Label>
@@ -1701,7 +1752,8 @@ function Register(p) {
 				</div></>
 				}
 			<Button disabled={disabled} variant="primary" type="submit" onClick={(e)=>{e.preventDefault()
-				if (username.length>=1&&email.length>=1) {
+				if (username.length>=1&&email.length>=1
+				&&!username.includes("/")&&!username.includes("\\")) {
 					setDisabled(true)
 					setError(false)
 					if (authCode.length===5) {
@@ -1750,11 +1802,13 @@ function UserSettings(p) {
 	const [playStyleHover,setPlayStyleHover] = useState(undefined)
 	const [twitter,setTwitter] = useState(p.userSettings.twitter_name)
 	const [twitterChange,setTwitterChange] = useState(false)
+	const [twitch,setTwitch] = useState(p.userSettings.twitch_name)
+	const [twitchChange,setTwitchChange] = useState(false)
 	const [message,setMessage] = useState(false)
 	const [error,setError] = useState(false)
 	
 	if (p.username===undefined) {
-		history.push("/")
+		return (<Redirect to="/"/>)
 	}
 	
 	return (
@@ -1772,11 +1826,18 @@ function UserSettings(p) {
 		</Form.Text>
 	</Form.Group>
 	<hr/>
-	<Form.Group controlId="twitter" onMouseOut={()=>{setPlayStyleHover(undefined)}}>
+	<Form.Group controlId="twitter">
 		<Form.Label>Twitter Username:</Form.Label>
 		<Form.Control onChange={(e)=>{setTwitter(e.currentTarget.value);setTwitterChange(true)}} value={twitter} placeholder="MikuMiku"/>
 		<Form.Text className="text-muted">
 		If you input your Twitter username, you can submit screenshots to <b>@divarbot</b> (with "@divarbot" in the message) and your plays will auto-submit from Twitter at any time.
+		</Form.Text>
+	</Form.Group>
+	<Form.Group controlId="twitch">
+		<Form.Label className="pt-4">Twitch Username:</Form.Label>
+		<Form.Control onChange={(e)=>{setTwitch(e.currentTarget.value);setTwitchChange(true)}} value={twitch} placeholder="MikuMikuStreams"/>
+		<Form.Text className="text-muted">
+		If you input your Twitch username, you can setup your stream using the <Link to="/streampanel">stream monitoring tool</Link>.
 		</Form.Text>
 	</Form.Group>
 	<Button onClick={()=>{
@@ -1790,13 +1851,17 @@ function UserSettings(p) {
 		if (twitterChange) {
 			obj.twitterName=twitter;
 		}
+		if (twitchChange) {
+			obj.twitchName=twitch;
+		}
 		setError(false)
 		setMessage(false)
 		axios.post("http://projectdivar.com/updateuser",obj)
 		.then((data)=>{
 			setMessage(data.data)
-			p.setUserSettings({...p.userSettings,playStyle:playStyle,twitter_name:twitter})
+			p.setUserSettings({...p.userSettings,playStyle:playStyle,twitter_name:twitter,twitch_name:twitch})
 			setTwitterChange(false)
+			setTwitchChange(false)
 		})
 		.catch((err)=>{
 			setError(err.message)
@@ -1804,6 +1869,8 @@ function UserSettings(p) {
 	}}>Save Changes</Button>
 	{message&&<h3 style={{color:"green"}}>{message}</h3>}
 	{error&&<h3 style={{color:"red"}}>{error}</h3>}
+	<hr/>
+	<UserAuth username={p.username} isLoggedIn={p.username!==undefined}/>
 	</>
 	)
 }
@@ -1811,11 +1878,6 @@ function UserSettings(p) {
 function UserAuth(p) {
 	const[showAuthCode,setShowAuthCode] = useState(false)
 	const[authToken,setAuthToken] = useState("")
-	let history = useHistory();
-	
-	if (!p.isLoggedIn) {
-		history.push("/")
-	}
 	
 	return(<>
 	Your <b>App Authentication Code</b> is used for verifying your identity when using apps such as <b>DivaBot</b>. By clicking the <b>{"<Reveal Code>"}</b> button, you understand that you should not share this code or show it to anyone!
@@ -1908,12 +1970,113 @@ function DivaBot() {
 function StreamPanel(p) {
 	
 	const [update,setUpdate] = useState(false);
+	const [monitor,setMonitor] = useState("LOADING");
+	const [image,setImage] = useState(<></>);
 	
-	return (
-		<>
-			
-		</>
-	)
+	let history = useHistory();
+	
+	useEffect(()=>{
+		//process.env.REACT_APP_FRONTEND_AUTH
+		const interval = setInterval(()=>{
+			if (monitor==="LOADING"||monitor==="RUNNING") {
+				axios.post("/streaminfo/"+p.userSettings.id,{username:p.userSettings.username,authentication_token:localStorage.getItem("authToken")})
+				.then((data)=>{
+					if (data.data>=2) {
+						setMonitor("RUNNING")
+						setImage(<img style={{width:"100%"}} src={"http://projectdivar.com:8080/divar/cropped/cropped"+p.userSettings.id+".png?"+Date.now()}/>)
+					} else {
+						setMonitor("WAITING")
+					}
+				})
+			}
+		},5000)
+		
+		return ()=>clearInterval(interval)
+	},[update,monitor])
+	
+	if (!p.isLoggedIn) {
+		return (<Redirect to="/"/>)
+	}
+	
+	
+	if (p.userSettings.twitch_name!==undefined&&p.userSettings.twitch_name!==null&&p.userSettings.twitch_name.length>0) {
+		return (
+			<>
+				This panel is used to monitor score submissions as you play and to monitor a <b>Playstation 4</b> stream of <b>Project Diva Future Tone</b>. Read the instructions below before using this tool for the first time to properly set it up.
+				<Card className="mt-4" body>
+				<h3>Stream Monitor: 
+				{monitor==="RUNNING"?<b style={{color:"green"}}>Online</b>:
+				monitor==="LOADING"?<b>Pending</b>:
+				<b style={{color:"red"}}>Offline</b>}</h3>
+				{monitor==="WAITING"?<Button onClick={()=>{
+					setMonitor("LOADING")
+					axios.post("http://projectdivar.com/streamstart/"+p.userSettings.id,{username:p.userSettings.username,authentication_token:localStorage.getItem("authToken")})
+				}}>Start Stream Monitor</Button>
+				:monitor==="LOADING"?<Button disabled><Spinner animation="border" size="sm"/> Checking Status...</Button>
+				:
+				<div className="row">
+					<div className="col-2">
+						<Button variant="info" onClick={()=>{
+							setMonitor("LOADING")
+							axios.post("http://projectdivar.com/streamkill/"+p.userSettings.id,{username:p.userSettings.username,authentication_token:localStorage.getItem("authToken")})
+						}}>Stop Stream Monitor</Button>
+					</div>
+					<div className="col-4">
+						{image}
+					</div>
+					<div className="col-6">
+						<RecentPlays username={p.userSettings.username} songs={p.songs}/>
+					</div>
+				</div>
+				}
+				</Card>
+				<h4 className="pt-4">Prerequisite</h4>
+				If you haven't done so already, <a href="https://www.playstation.com/en-gb/get-help/help-library/apps---features/playstation-apps---features/how-to-broadcast-using-youtube/">setup your PS4 for Twitch Streaming</a>.
+				<h2 className="pt-4">Step 1</h2>
+				<div className="row">
+					<div className="col-md-6">
+						While on the game's <b>Main Menu</b>, select the <b>SHARE</b> button on your PS4.
+					</div>
+				</div>
+				<h2 className="pt-4">Step 2</h2>
+				<div className="row">
+					<div className="col-md-6">
+					Setup your broadcasting settings and make sure you select <b>720p - High (60fps)</b> for best results. (Selecting a lower resolution will likely not work)
+					</div>
+					<div className="col-md-6">
+						<img style={{height:"320px"}} src="http://projectdivar.com/files/ps4startstream.png"/>
+					</div>
+				</div>
+				<h2 className="pt-4">Step 3</h2>
+				<div className="row">
+					<div className="col-md-6">
+						Once you are broadcasting on PS4, click the <b>Start Stream Monitor</b> button and let it calibrate your screen.
+					</div>
+				</div>
+				<h2 className="pt-4">Step 4</h2>
+				<div className="row">
+					<div className="col-md-6">
+						If the calibration looks good, then start playing! Otherwise stop the stream monitor, make sure you are on the main menu, then try starting it again.
+						 After each song, if you want the score to submit, make sure you are on the Result screen for a second. (You don't have to wait for it to pop up on the scores list unless you really want to make sure)
+					</div>
+				</div>
+				<hr/>
+				<h2 className="pt-4">Video</h2>
+				<div className="row">
+					<div className="col-md-12">
+						Alternatively, I explain how to use this feature in the below video:
+						{<iframe width="100%" height="480" src="https://www.youtube.com/embed/GhS8koB3N6s" frameBorder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>}
+					</div>
+				</div>
+			</>
+		)
+	} else {
+		return (
+			<>
+				You will need to go to your <Link to="/usersettings">Profile Settings</Link> and update your Twitch username before using this feature.
+			</>
+		)
+	}
 }
 
 function StreamData() {
@@ -1961,13 +2124,14 @@ function Website() {
 				<h3 className="d-none d-md-block">Menu</h3>
 					<LoginInfo setUserSettings={setUserSettings} setUsername={setUsername} update={loginPanelUpdate}/>
 					<br/><br/>
-					<Link to="/rankings/rating/desc">Rankings</Link><br/>
-					<Link to="/submitplay">Submit Scores</Link><br/>
-					<Link to="/divabot">DivaBot</Link><br/>
+					<Link to="/rankings/rating/desc#content">Rankings</Link><br/>
+					<Link to="/submitplay#content">Submit Scores</Link><br/>
+					<Link to="/divabot#content">DivaBot</Link><br/>
 					<hr/>
 					<a href="http://discord.gg/eJ3cMzM"><img src="http://projectdivar.com/files/discord_button_small.png"/></a>
 			</div>
 			<div className="col-md-10 pt-3 pb-3">
+				<div id="content"/>
 				<Switch>
 					<Route path="/rankings/:sort/:sortOrder">
 						<Rankings/>
@@ -1989,14 +2153,6 @@ function Website() {
 						<h1 className="title">DivaBot</h1>
 						<DivaBot/>
 					</Route>
-					<Route path="/auth">
-						<h1 className="title">App Authentication Token</h1>
-						<UserAuth username={username} isLoggedIn={username!==undefined}/>
-					</Route>
-					<Route path="/recentplays">
-						<h1 className="title">Project DivaR</h1>
-						<RecentPlays songs={songs}/>
-					</Route>
 					<Route path="/login">
 						<h1 className="title">Login to Project DivaR</h1>
 						<Login isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
@@ -2007,7 +2163,7 @@ function Website() {
 					</Route>
 					<Route path="/streampanel">
 						<h1 className="title">Stream Panel</h1>
-						<StreamPanel setUserSettings={setUserSettings} userSettings={userSettings} isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
+						<StreamPanel songs={songs} setUserSettings={setUserSettings} userSettings={userSettings} isLoggedIn={username!==undefined} setLoginPanelUpdate={setLoginPanelUpdate}/>
 					</Route>
 					<Route path="/stream">
 						<h1 className="title">Stream</h1>
@@ -2015,7 +2171,132 @@ function Website() {
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>
-						Under construction!
+						Welcome! This website is here to store and track all your Project Diva records for yours and others' enjoyment!
+						<div className="pt-4 d-flex justify-content-center">
+							<Carousel
+								  className="d-block w-75">
+							  <Carousel.Item>
+								<img
+								  className="d-block w-100"
+								  src="http://projectdivar.com/files/slide1.png"
+								  alt="First slide"
+								/>
+								<Carousel.Caption>
+								  <h1 className="superglow">Project Diva Records</h1>
+								  <p className="superglow">A home for all your best plays.</p>
+								</Carousel.Caption>
+							  </Carousel.Item>
+							  <Carousel.Item>
+								<img
+								  className="d-block w-100"
+								  src="http://projectdivar.com/files/slide2.png"
+								  alt="Third slide"
+								/>
+
+								<Carousel.Caption>
+								  <h1 className="superglow">Statistics</h1>
+								  <p className="superglow">Keep track of your all-time stats.</p>
+								</Carousel.Caption>
+							  </Carousel.Item>
+							  <Carousel.Item>
+								<img
+								  className="d-block w-100"
+								  src="http://projectdivar.com/files/slide3.png"
+								  alt="Third slide"
+								/>
+
+								<Carousel.Caption>
+								  <h1 className="superglow">Progression Tracking</h1>
+								  <p className="superglow">Watch as you improve and become greater over time.</p>
+								</Carousel.Caption>
+							  </Carousel.Item>
+							  <Carousel.Item>
+								<img
+								  className="d-block w-100"
+								  src="http://projectdivar.com/files/slide4.png"
+								  alt="Third slide"
+								/>
+
+								<Carousel.Caption>
+								  <h1 className="superglow">Many Ways to Submit</h1>
+								  <p className="superglow">Submit your scores by screenshots, Twitter, DivaBot, or streaming.</p>
+								</Carousel.Caption>
+							  </Carousel.Item>
+							</Carousel>
+						</div>
+							<hr/>
+							<h3>Support</h3>
+							<Card className="mt-4" body>
+							<div className="border rounded p-2 mt-4" style={{backgroundColor:"#eeeeee"}} >
+								<div className="row">
+									<div className="col-md-12">
+										<img className="mr-2 rounded" style={{float:"left"}} src="http://projectdivar.com/files/mega39s.png"/>
+										<h5>Project Diva Megamix</h5>
+										<div className="row rounded">
+											<div className="col-md-3">
+												<b>Image Submission: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Twitter: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>DivaBot: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Manual: </b> <IMAGE_X style={{color:"maroon"}}/>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div className="border rounded p-2 mt-4" style={{backgroundColor:"#eeeeee"}} >
+								<div className="row">
+									<div className="col-md-12">
+										<img className="mr-2 rounded" style={{float:"left"}} src="http://projectdivar.com/files/mixmode.png"/>
+										<h5>Project Diva Megamix Mix Mode</h5>
+										<div className="row rounded">
+											<div className="col-md-3">
+												<b>Image Submission: </b> <IMAGE_X style={{color:"maroon"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Twitter: </b> <IMAGE_X style={{color:"maroon"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>DivaBot: </b> <IMAGE_X style={{color:"maroon"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Manual: </b> <IMAGE_X style={{color:"maroon"}}/>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div className="border rounded p-2 mt-4" style={{backgroundColor:"#eeeeee"}} >
+								<div className="row">
+									<div className="col-md-12">
+										<img className="mr-2 rounded" style={{float:"left"}} src="http://projectdivar.com/files/futuretone.png"/>
+										<h5>Project Diva Future Tone</h5>
+										<div className="row rounded">
+											<div className="col-md-3">
+												<b>Image Submission: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Twitter: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>DivaBot: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Stream Monitor: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+											</div>
+											<div className="col-md-3">
+												<b>Manual: </b> <IMAGE_X style={{color:"maroon"}}/>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							</Card>
 					</Route>
 				</Switch>
 			</div>

@@ -2,6 +2,41 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
 	app.use(
+	"/recalculatePlayerData/:id",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/streamtop/:id",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/streamkill/:id",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/streamstart/:id",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/streaminfo/:id",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
 	"/updates/:userid",
 	createProxyMiddleware({
 	  target: 'http://server:4501',
