@@ -1,3 +1,5 @@
 .guardian_env
 streams
 processes
+*.log
+log

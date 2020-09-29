@@ -10,6 +10,8 @@ services:
     working_dir: /server
     volumes:
         - ./server:/server
+        - ./divabotguardian:/divabotguardian
+        - /var/www/html/divar:/divabotguardian/www
     env_file:
         - ./server/.env.twitter
     logging:

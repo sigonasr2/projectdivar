@@ -18,6 +18,7 @@ const fileUpload = require('express-fileupload');
 const unzipper = require('unzipper');
 const fs = require('fs');
 const moment = require('moment');
+const { exec,spawn } = require('child_process');
 app.use(
 	fileUpload({createParentPath:true,
 	limits: { fileSize: 15 * 1024 * 1024, files: 1 },
@@ -285,6 +286,9 @@ app.post('/submit', (req, res) => {
 			if (!(req.body.difficulty==="H"||req.body.difficulty==="N"||req.body.difficulty==="E"||req.body.difficulty==="EX"||req.body.difficulty==="EXEX"))
 			{
 				throw new Error("Invalid difficulty!")
+			}			
+			if (req.body.cool==-1||req.body.fine==-1||req.body.safe==-1||req.body.sad==-1||req.body.worst==-1) {
+				throw new Error("Invalid submission!")
 			}
 		return db.query('select rating from songdata where songid=$1 and difficulty=$2 limit 1',[songId,req.body.difficulty])}else{throw new Error("Could not find song.")}})
 		.then((data)=>{songRating=data.rows[0].rating;return db.query("select id from plays where userid=$1 and score>0 and difficulty=$2 and songid=$3 limit 1",[userId,req.body.difficulty,songId])})
@@ -437,15 +441,22 @@ app.get('/recalculatescore/:playid',(req,res)=>{
 		return db.query('select rating from songdata where songid=$1 and difficulty=$2 limit 1',[song.songid,song.difficulty])
 	}else{throw new Error("This play does not exist!")}})
 	.then((data)=>{if (data.rows.length>0){songRating=data.rows[0].rating;var score=CalculateSongScore({rating:songRating,cool:song.cool,fine:song.fine,safe:song.safe,sad:song.sad,worst:song.worst,percent:song.percent,difficulty:song.difficulty,fail:song.fail});return db.query('update plays set score=$1 where id=$2 returning *',[score,req.params.playid]);}else{throw new Error("Failed to retrieve song data!")}})
-	.then((data)=>{console.log(data);if (data.rows.length>0){
+	.then((data)=>{//console.log(data);
+	if (data.rows.length>0){
 	var scoreData=data.rows[0];
-	return db.query('select username from users where id=$1',[userId]).then((data)=>{username=data.rows[0].username; return CalculateRating(username)}).then((data)=>{db.query("update users set rating=$1 where username=$2",[data,username])})
+	return db.query('select username from users where id=$1',[userId])
+	.then((data)=>{username=data.rows[0].username; return CalculateRating(username)})
+	.then((data)=>{db.query("update users set rating=$1 where username=$2",[data,username])})
 	.then(()=>{return scoreData;})
+	.catch((err)=>{
+		throw new Error("Could not update score");
+	})
 	}else{throw new Error("Failed to update score!")}})
 	.then((data)=>{
+		res.status(200).json(data)
 		axios.post("http://projectdivar.com/updates/"+userId,{password:process.env.GMAIL,type:"recalculate"})
 	})
-	.then((data)=>res.status(200).json(data)).catch((err)=>{console.log(err);res.status(500).send(err.message);})
+	.catch((err)=>{console.log(err);res.status(500).send(err.message);})
 });
 
 /*
@@ -454,6 +465,23 @@ app.get('/playdata',(req,res)=>{
 	.then((data)=>{res.status(200).json(data.rows)})
 	.catch((err)=>res.status(500).json(err.message))
 })*/
+
+app.post('/recalculatePlayerData/:id',(req,res)=>{
+	if (req.body&&req.body.password) {
+		if (req.body.password===process.env.GMAIL) {
+			db.query(" select COUNT(*) as plays,SUM(cool) as coolsum,SUM(fine) as finesum,SUM(safe) as safesum,SUM(sad) as sadsum,SUM(worst) as worstsum,COUNT(*) filter(where safe=0 and sad=0 and worst=0) as fc from plays where userid=$1",[req.params.id])
+			.then((data)=>{
+				var d = data.rows[0];
+				return db.query("update users set playcount=$1,fccount=$2,cool=$3,fine=$4,safe=$5,sad=$6,worst=$7 where id=$8 returning playcount,fccount,cool,fine,safe,sad,worst,id",
+				[d.plays,d.fc,(d.coolsum!==null)?d.coolsum:0,(d.finesum!==null)?d.finesum:0,(d.safesum!==null)?d.safesum:0,(d.sadsum!==null)?d.sadsum:0,(d.worstsum!==null)?d.worstsum:0,req.params.id])
+			}
+			)
+			.then((data)=>{
+				res.status(200).json(data.rows[0])
+			})
+		}
+	}
+})
 
 app.get('/completionreport/:username',(req,res)=>{
 	//Number of passes,plays,fcs,pfcs, and the best play.
@@ -639,7 +667,7 @@ app.get('/rating/:username',(req,res)=>{
 
 app.get('/recentplays/:username',(req,res)=>{
 	if (req.params.username) {
-		db.query('select plays.* from plays join users on users.id=plays.userid where users.username=$1 order by plays.id desc limit 10',[req.params.username])
+		db.query('select plays.* from plays join users on users.id=plays.userid where users.username=$1 order by plays.id desc limit 5',[req.params.username])
 		.then((data)=>{if(data.rows.length>0){res.status(200).json(data.rows)}else{res.status(200).json([])}})
 	} else {
 		res.status(400).send("Invalid username!")
@@ -1002,13 +1030,19 @@ app.post('/updateuser', function(req, res) {
 		.then((data)=>{
 			if (data.rows.length>0) {
 				userId=data.rows[0].id
+				if (req.body.twitchName) {
+					db.query("update users set twitch_name=$1 where id=$2",[req.body.twitchName,userId])
+				}
+				
+				
 				if (req.body.twitterName) {
 					return axios.get('https://api.twitter.com/1.1/users/show.json?screen_name='+req.body.twitterName, {
 						headers: {
 							/*BEARER*/	Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
 						}
 					})
-				} else {
+				} else 
+				{
 					return {data:{}}
 				}
 			} else {
@@ -1062,6 +1096,95 @@ app.post('/passImageData',function(req,res) {
 		axios.post("http://projectdivar.com/image",{user:req.body.user,auth:req.body.auth,url:req.body.url})
 		.then((data)=>{
 			res.status(200).json(data.data)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else {
+		res.status(400).send("Invalid credentials!")
+	}
+})
+
+app.post('/streamstart/:id',function (req,res){
+	if (req.body&&req.body.username&&req.body.authentication_token) {
+		GetUserLoginAllowed(req.body.username.trim(),req.body.authentication_token.trim())
+		.then((data)=>{
+			if (data.rows.length>0) {
+				spawn("../divabotguardian/stream_monitor.sh",[Number(req.params.id)])
+				res.status(200).send("Monitor started")
+			} else {
+				res.status(400).send("Failed to authenticate")
+			}
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else {
+		res.status(400).send("Invalid credentials!")
+	}
+})
+
+app.post('/streamtop/:id',function (req,res){
+	exec("ps 43",(err,out,stderr)=>{
+		if (err) {
+			res.status(500).send(`${err.message}`);
+			return;
+		}
+		if (stderr) {
+			res.status(500).send(`${stderr}`);
+			return;
+		}
+		res.status(200).send(`${out}`);
+	})
+})
+
+app.post('/streaminfo/:id',function (req,res){
+	if (req.body&&req.body.username&&req.body.authentication_token) {
+		GetUserLoginAllowed(req.body.username.trim(),req.body.authentication_token.trim())
+		.then((data)=>{
+			if (data.rows.length>0) {
+				exec("ps $(cat ../divabotguardian/processes/"+Number(req.params.id)+".ffmpeg)|wc -l",(err,out,stderr)=>{
+					if (err) {
+						res.status(500).send(`${err.message}`);
+						return;
+					}
+					if (stderr) {
+						res.status(500).send(`${stderr}`);
+						return;
+					}
+					res.status(200).send(`${out}`);
+				})
+			} else {
+				res.status(400).send("Failed to authenticate")
+			}
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else {
+		res.status(400).send("Invalid credentials!")
+	}
+})
+
+app.post('/streamkill/:id',function (req,res){
+	if (req.body&&req.body.username&&req.body.authentication_token) {
+		GetUserLoginAllowed(req.body.username.trim(),req.body.authentication_token.trim())
+		.then((data)=>{
+			if (data.rows.length>0) {
+				exec("kill $(cat ../divabotguardian/processes/"+Number(req.params.id)+".ffmpeg)|wc -l",(err,out,stderr)=>{
+					if (err) {
+						res.status(500).send(`${err.message}`);
+						return;
+					}
+					if (stderr) {
+						res.status(500).send(`${stderr}`);
+						return;
+					}
+					res.status(200).send(`${out}`);
+				})
+			} else {
+				res.status(400).send("Failed to authenticate")
+			}
 		})
 		.catch((err)=>{
 			res.status(500).send(err.message)
@@ -1229,7 +1352,7 @@ setInterval(()=>{db.query("select * from twitter_bot limit 1")
 			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
 		}
 	})*/
-	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
+	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=%23divarbot', {
 		headers: {
 			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
 		}
@@ -1249,7 +1372,7 @@ setInterval(()=>{db.query("select * from twitter_bot limit 1")
 	if (filterId<obj.id) {
 		if (largestId<obj.id) {largestId=obj.id}
 		processPromises.push(new Promise((resolve,reject)=>{
-		//console.log("Process Twitter Post: "+obj.id);	
+		console.log("Process Twitter Post: "+obj.id);	
 		return db.query("select id from users where twitter=$1",[obj.user])
 		.then((data)=>{
 			if (data.rows.length>0) {

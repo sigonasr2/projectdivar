@@ -725,7 +725,7 @@ function LoadMore(p) {
 				setVisible(true)
 			}
 		})
-	},[update,p.profileUpdate,reloadLoadMore])
+	},[update,p.username,p.profileUpdate,reloadLoadMore])
   
 	useEffect(()=>{
 		if (firstUpdate.current) {
@@ -928,7 +928,7 @@ function PlayData(p) {
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/plays/"+p.username+"/"+p.song.id)
 		.then((data)=>{setData(data.data);})
-	},[p.profileUpdate,update])
+	},[p.profileUpdate,p.username,update])
 	
 	return (
 	<>
@@ -936,7 +936,7 @@ function PlayData(p) {
 			<h5>Individual Plays for {p.song.name} from {p.username}</h5>
 			<div className="border rounded">
 				{data.map((play,i)=><Play setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} key={i} play={play} mini={true} song={p.song}/>)}
-				<LoadMore profileUpdate={p.profileUpdate} url={"http://www.projectdivar.com/plays/"+p.username+"/"+p.song.id} params={{limit:15,offset:5}} value={data} setValue={setData}/>
+				<LoadMore profileUpdate={p.profileUpdate} username={p.username} url={"http://www.projectdivar.com/plays/"+p.username+"/"+p.song.id} params={{limit:15,offset:5}} value={data} setValue={setData}/>
 			</div>
 		</div>
 	</>
@@ -981,7 +981,7 @@ function HoverSongName(p) {
 			setExpand(<></>)
 					}
 		}
-	},[p.profileUpdate,toggle])
+	},[p.profileUpdate,p.username,toggle])
 	
 	return (
 		<>
@@ -1267,21 +1267,28 @@ function Rankings(){
 	return (
 		<>
 			<table>
+				<colgroup>
+				   <col span="1" style={{width:"20%"}}/>
+				   <col span="1" style={{width:"15%"}}/>
+				   <col span="1" style={{width:"35%"}}/>
+				   <col span="1" style={{width:"20%"}}/>
+				   <col span="1" style={{width:"10%"}}/>
+				</colgroup>
 				<thead>
 					<tr>
 						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Username" order="username"/></th>
-						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Last Played" order="last_played"/></th>
 						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} setUpdateUsers={setUpdateUsers} label="Rating" order="rating"/></th>
+						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Last Played" order="last_played"/></th>
 						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="Play Count" order="playcount"/></th>
 						<th className="header"><Sort setIsLoading={setIsLoading} updateUsers={updateUsers} setUpdateUsers={setUpdateUsers} label="FC Count" order="fccount"/></th>
 					</tr>
 				</thead>
 			{users.map((user,i)=>
-				<tbody key={i}>
+				<tbody key={i} style={{backgroundColor:(i%2===0)?"rgba(255,255,255,0)":"rgba(0,0,0,0.05)"}}>
 					<tr>
 						<td className={(isLoading)?"loading":""}><Link to={"/user/"+user.username}>{user.username}</Link></td>
-						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{user.last_played}</td>
 						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{user.rating}</td>
+						<td className={(isLoading)?"loading":""} className={(isLoading)?"loading":""} className={(isLoading)?"loading":""}>{moment(user.last_played).format("ddd, MMM Do h:mm a")}</td>
 						<td className={(isLoading)?"loading":""}>{user.playcount}</td>
 						<td className={(isLoading)?"loading":""}>{user.fccount}</td>
 					</tr>
@@ -1462,7 +1469,7 @@ function SimpleUpload(p){
 function Submit(p) {
 	return (
 		<div className="row">
-			<div className="col-12 col-md-8">
+			<div className="col-12 col-md-10">
 				<Switch>
 					<Route path="/submitplay/simple">
 						<SimpleUpload songs={p.songs}/>
@@ -1485,11 +1492,13 @@ function Submit(p) {
 						</div>
 						<div className="row">
 							<div className="col-8 m-6">
-							<img width="100%" className="border rounded shadow" src="http://projectdivar.com/files/switch2.png"/>
+							<img width="100%" className="border rounded shadow" src="http://projectdivar.com/files/switch3.png"/>
+							<br/>
+							<img width="100%" className="border rounded shadow" src="http://projectdivar.com/files/20200930021246.jpg"/>
 							</div>
 							<div className="col-4 m-6">
 							<h4>Step 2</h4>
-							Make sure to include <b>@divarbot</b> so the bot can find your plays! Then submit and the bot will process them in just a few minutes! Check your scores out after they have been processed.
+							Make sure to include <b>#divarbot</b> so the bot can find your plays! Then submit and the bot will process them in just a few minutes! Check your scores out after they have been processed.
 							</div>
 						</div>
 					</Route>
@@ -1830,7 +1839,7 @@ function UserSettings(p) {
 		<Form.Label>Twitter Username:</Form.Label>
 		<Form.Control onChange={(e)=>{setTwitter(e.currentTarget.value);setTwitterChange(true)}} value={twitter} placeholder="MikuMiku"/>
 		<Form.Text className="text-muted">
-		If you input your Twitter username, you can submit screenshots to <b>@divarbot</b> (with "@divarbot" in the message) and your plays will auto-submit from Twitter at any time.
+		If you input your Twitter username, you can submit screenshots to <b>#divarbot</b> (with "#divarbot" in the message) and your plays will auto-submit from Twitter at any time.
 		</Form.Text>
 	</Form.Group>
 	<Form.Group controlId="twitch">
@@ -1918,7 +1927,11 @@ function ReleaseList(p) {
 
 function DivaBot() {
 	const releases=[
-	["05C","http://projectdivar.com/files/releases/DivaBot05C2.zip","24 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Fixed bug with Finder not being submitted, and fix 1000+ note counts for FT submissions. Improve difficulty detection.</i></>],
+	["05D","http://projectdivar.com/files/releases/DivaBot05D.zip","29 Sep 2020",<> <Badge variant="info" pill>Recommended</Badge> <i>Maintenance build. Moved song select detection point for FT. Added "EYE_TRACKING_TOGGLE" config parameter.</i></>],
+	["05C","http://projectdivar.com/files/releases/DivaBot05C2.zip","24 Sep 2020",<> <i>Fixed bug with Finder not being submitted, and fix 1000+ note counts for FT submissions. Improve difficulty detection.</i></>],
+	]
+	
+	const incompatiblereleases=[
 	["05B","http://projectdivar.com/files/releases/DivaBot05B.zip","22 Sep 2020",<> <IMAGE_BUG/> <i>Improved song select recognition speed.</i></>],
 	["05A","http://projectdivar.com/files/releases/DivaBot05A.zip","21 Sep 2020",<> <i>Added multi-monitor support. Use calibration to switch monitors.</i></>],
 	["05","http://projectdivar.com/files/releases/DivaBot05.zip","21 Sep 2020",<> <i>Added Miku FC. Huge optimizations to result screen capture, improve menu detection algorithms.</i></>],
@@ -1927,9 +1940,6 @@ function DivaBot() {
 	["04","http://projectdivar.com/files/releases/DivaBot04.zip","19 Sep 2020",<> <IMAGE_BUG/> <i>Update so everything's working! Future Tone compatibility live!</i></>],
 	["03-beta","http://projectdivar.com/files/releases/DivaBot03-beta.zip","19 Sep 2020",<><IMAGE_BUG/> <Badge variant="success" pill>BUGGED</Badge> <i>Added Future Tone compatibility. Works with Megamix or Future Tone.</i></>],
 	["03","http://projectdivar.com/files/releases/DivaBot03.zip","17 Sep 2020",<><Badge variant="warning" pill>Megamix ONLY</Badge> <i>DLC Update - Compatibility with removed 'bpm' field from database. Fixed bug with ":" in song names.</i></>],
-	]
-	
-	const incompatiblereleases=[
 	["02A","http://projectdivar.com/files/releases/DivaBot02A.zip","14 Sep 2020",<><Badge variant="warning" pill>Incompatible</Badge> <i>Label Headers and Redo Song Calibration features added</i></>],
 	["02","http://projectdivar.com/files/releases/DivaBot02.zip","14 Sep 2020",<><Badge variant="warning" pill>Incompatible!</Badge></>],
 	["01B","http://projectdivar.com/files/releases/DivaBot01B.zip","13 Sep 2020",<><IMAGE_BUG/> <Badge variant="warning" pill>Incompatible</Badge> <Badge variant="success" pill>BUGGED</Badge> <b>DO NOT USE!</b></>],
