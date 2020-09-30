@@ -18,6 +18,19 @@ services:
       options:
         max-size: "1m"
         max-file: "3"
+        
+  imgparser:
+    build: imgparser
+    restart: always
+    ports:
+      - "4503:4503"
+    volumes:
+        - ./imgparser:/imgparser
+    working_dir: /imgparser/projectDivaImgParser
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
 
   postgres:
     image: postgres:10.4

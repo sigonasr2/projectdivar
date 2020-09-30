@@ -1007,10 +1007,19 @@ function HoverSongName(p) {
 	)
 }
 
-function HasSong(song,user) {
-	//console.log(JSON.stringify(song)+"/"+JSON.stringify(user))
-	return (song.mega39s&&user.megamix)||
-		(song.futuretone&&user.futuretone)
+function HasSong(song,user,filter) {
+	//console.log(JSON.stringify(song)+"/"+JSON.stringify(user)+"/"+JSON.stringify(filter))
+	//console.log(song.report.ehdcount+song.report.nhdcount+song.report.hhdcount+song.report.exhdcount+song.report.exexhdcount+song.report.ehscount+song.report.nhscount+song.report.hhscount+song.report.exhscount+song.report.exexhscount+song.report.esdcount+song.report.nsdcount+song.report.hsdcount+song.report.exsdcount+song.report.exexsdcount)
+	return ((song.mega39s&&user.megamix)||
+		(song.futuretone&&user.futuretone))
+		&&(filter==="All Songs"||
+			(filter==="Cleared Songs"&&(Number(song.report.eclearcount)+Number(song.report.nclearcount)+Number(song.report.hclearcount)+Number(song.report.exclearcount)+Number(song.report.exexclearcount>0)))||
+			(filter==="FCs"&&(Number(song.report.efccount)+Number(song.report.nfccount)+Number(song.report.hfccount)+Number(song.report.exfccount)+Number(song.report.exexfccount>0)))||
+			(filter==="Perfect FCs"&&(Number(song.report.epfccount)+Number(song.report.npfccount)+Number(song.report.hpfccount)+Number(song.report.expfccount)+Number(song.report.exexpfccount>0)))||
+			(filter==="Modded"&&(Number(song.report.ehdcount)+Number(song.report.nhdcount)+Number(song.report.hhdcount)+Number(song.report.exhdcount)+Number(song.report.exexhdcount)+Number(song.report.ehscount)+Number(song.report.nhscount)+Number(song.report.hhscount)+Number(song.report.exhscount)+Number(song.report.exexhscount)+Number(song.report.esdcount)+Number(song.report.nsdcount)+Number(song.report.hsdcount)+Number(song.report.exsdcount)+Number(song.report.exexsdcount>0)))||
+			(filter==="In Progress"&&(Number(song.report.eclearcount)+Number(song.report.nclearcount)+Number(song.report.hclearcount)+Number(song.report.exclearcount)+Number(song.report.exexclearcount)===0))||
+			(filter==="Not Cleared"&&(((song.report.eclearcount)?Number(song.report.eclearcount):0)+((song.report.nclearcount)?Number(song.report.nclearcount):0)+((song.report.hclearcount)?Number(song.report.hclearcount):0)+((song.report.exclearcount)?Number(song.report.exclearcount):0)+((song.report.exexclearcount)?Number(song.report.exexclearcount):0)===0))
+		)
 }
 
 function CompletionPanel(p) {
@@ -1019,6 +1028,7 @@ function CompletionPanel(p) {
 	const [filter,setFilter] = useState({})
 	const [style,setStyle] = useState(true)
 	const [update,setUpdate] = useState(false)
+	const [songFilter,setSongFilter] = useState("All Songs")
 	useEffect(()=>{
 		axios.get("http://projectdivar.com/completionreport/"+p.username)
 		.then((data)=>{setReport(data.data)})
@@ -1037,6 +1047,22 @@ function CompletionPanel(p) {
 	return (
 	<>
 		<SongSearch songs={p.songs} song={song} setSong={setSong} setStyle={setStyle} filteredSongs={filter} setFilteredSongs={setFilter}/>
+	  <div className="mt-3 float-right">
+			<Form inline>
+			  <Form.Group controlId="filterSong">
+				<Form.Label className="pr-3">Filter</Form.Label>
+				<Form.Control as="select" value={songFilter} onChange={(e)=>{setSongFilter(e.currentTarget.value)}}>
+				  <option>All Songs</option>
+				  <option>Cleared Songs</option>
+				  <option>In Progress</option>
+				  <option>FCs</option>
+				  <option>Perfect FCs</option>
+				  <option>Modded</option>
+				  <option>Not Cleared</option>
+				</Form.Control>
+			  </Form.Group>
+			</Form>
+	  </div>
 		<table className="table table-sm">
 			<thead>
 				<tr id="headerbar">
@@ -1061,7 +1087,7 @@ function CompletionPanel(p) {
 				</tr>
 			</thead>
 			<tbody>
-				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return (HasSong(song,p.user))?<HoverSongName profileUpdate={p.profileUpdate} setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>:<></>
+				{report.filter((report)=>Object.keys(filter).length==0||report.id in filter).map((song,i)=>{return (HasSong(song,p.user,songFilter))?<HoverSongName profileUpdate={p.profileUpdate} setModalSrc={p.setModalSrc} setModalVisible={p.setModalVisible} to={song.name} song={song} key={song.id} username={p.username}/>:<></>
 				})}
 			</tbody>
 			<tfoot>
@@ -1428,8 +1454,6 @@ function SongSearch(p) {
 			</div>
 			</div>
 			</div>})}</div>:<></>}
-			
-			More stuff goes here.
 		</>
 	)
 }
