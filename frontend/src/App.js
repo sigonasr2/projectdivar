@@ -24,10 +24,20 @@ import {
 	Carousel
 } from "react-bootstrap";
 
+import {Line} from 'react-chartjs-2';
+
 const REMOTE_ADDR = "http://45.33.13.215:4502";
 
 const axios = require('axios');
 const moment = require('moment');
+
+var IMAGE_EXCLAMATION=(p)=>{
+	return(
+		<svg {...p} width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-exclamation-diamond-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+		  <path fillRule="evenodd" d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098L9.05.435zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+		</svg>
+	)
+}
 
 var IMAGE_CAMERA=(p)=>{
 	return(
@@ -1092,7 +1102,7 @@ function CompletionPanel(p) {
 			</tbody>
 			<tfoot>
 			<tr><td colSpan="8" id="footer" className={(style)?"scrollingFooter":""}>
-				<span className="badge badge-primary">Easy</span> <span className="badge badge-info">Normal</span> <span className="badge badge-success">Hard</span> <span className="badge badge-warning">Extreme</span> <span className="badge badge-danger">Extra Extreme</span> <span className="badge badge-light">★ = FC</span>  <span className="badge badge-light">✪ = Perfect FCs</span>
+				<span className="badge badge-primary">Easy</span> <span className="badge badge-info">Normal</span> <span className="badge badge-success">Hard</span> <span className="badge badge-warning">Extreme</span> <span className="badge badge-danger">EX Extreme</span> <span className="badge badge-light">★ = FC</span>  <span className="badge badge-light">✪ = Perfect FCs</span>
 			</td></tr>
 			</tfoot>
 		</table>
@@ -2137,6 +2147,412 @@ function StreamData() {
 	)
 }
 
+function EventData() {
+	const [score,currentScore] = useState(0);
+	const [value,setValue] = useState(0);
+	const [value2,setValue2] = useState(0);
+	
+	return(
+	<>
+		<h3>
+			My Points: {score}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Target:
+		</h3>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		
+		<Form.Group>
+			<Form.Control onKeyDown={(e)=>{
+			if (e.key==='Enter') {
+				currentScore(score+Number(value));
+				setValue("")
+			}
+		}
+		}
+		onChange={(val)=>{setValue(val.currentTarget.value)}} value={value}></Form.Control>
+		</Form.Group>
+		<Button onClick={(input)=>{currentScore(score+Number(value));setValue("")}}>+</Button>
+		<Form.Group>
+			<Form.Control onKeyDown={(e)=>{
+			if (e.key==='Enter') {
+				currentScore(Number(value2));
+				setValue2("")
+			}
+		}
+		}
+		onChange={(val)=>{setValue2(val.currentTarget.value)}} value={value2}></Form.Control>
+		</Form.Group>
+		<Button onClick={(input)=>{currentScore(Number(value2));setValue("")}}>Reset</Button>
+	</>
+	)
+}
+const EVENTSTART=moment('2021-01-12 12:00:00+09:00');
+const EVENTEND=moment('2021-01-21 20:59:59+09:00');
+
+function GetChartData(chartData,rank) {
+	//console.log(chartData)
+	if (!chartData||chartData.length===0) {
+		return [{x:0,y:0}]
+	}
+	if (rank<=20) {
+		return [...chartData[rank].map((data)=>{return {x:data.date,y:data.points}}),{x:moment().isBefore(EVENTEND)?moment():EVENTEND,y:chartData[rank][chartData[rank].length-1].points}]
+	} else {
+		return chartData[rank].map((data)=>{return {x:data.date,y:data.points}})
+	}
+}
+
+function EventPoint(p) {
+	return <>
+		<tr>
+		  <th scope="row">{p.data.id}</th>
+		  <td>{p.data.date}</td>
+		  <td>{p.data.name}</td>
+		  <td>{p.data.description}</td>
+		  <td>{p.data.points}</td>
+		</tr>
+	</>
+}
+
+function EventEditor() {
+	const[tier,setTier] = useState(undefined)
+	const[event,setEvent] = useState(7)
+	const[tierData,setTierData] = useState([])
+	const[update,setUpdate] = useState(undefined)
+	const[date,setDate] = useState(moment().format("YYYY-MM-DDTHH:mm"))
+	const[points,setPoints] = useState(0)
+	const[send,setSend] = useState(false)
+	const[message,setMessage] = useState("")
+	
+	const EVENTID = 10;
+	
+	//console.log(moment().format("YYYY-MM-DDTHH:mm"))
+	
+	const tierList = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,50,100,500,1000,2000,5000,10000,20000,30000,50000]
+	
+	useEffect(()=>{
+		//console.log(moment(date))
+		if (send) {
+			axios.post("http://projectdivar.com/eventsubmit",{eventid:EVENTID,date:moment(date),rank:Number(tier),name:"",description:"",points:points})
+			.then((data)=>{
+				setMessage(data.data)
+				setUpdate(true)
+				setSend(false)
+			})
+			.catch((err)=>{
+				setMessage("Failed to submit")
+				setUpdate(true)
+				setSend(false)
+			})
+		}
+	},[send])
+	
+	useEffect(()=>{
+		//console.log(tier)
+		if (update) {
+			if (tier) {
+				axios.get("http://projectdivar.com/eventdata/t20?tier="+tier+"&event="+EVENTID)
+				.then((data)=>{
+					setTierData(data.data)
+				})
+			}
+			setUpdate(undefined)
+		}
+	},[tier,update])
+	
+	return <>
+		<select onChange={(t)=>{setUpdate(true);setTier(t.currentTarget.value)}} className="form-select" aria-label="Default select example">
+		  <option value={tier}>Select a tier</option>
+		  {tierList.map((tier,i)=><option value={tier} key={i}>{tier}</option>)}
+		</select>
+		<br/>
+		<br/>
+		
+		{message.length>0?<h2 style={message==="Submitted."?{color:"green"}:{color:"red"}}>{message}</h2>:<></>}
+		{tier?<>
+			<h3>T{tier} Data</h3>
+			<br/>
+			<br/>
+			<h4>Add New Entry:</h4>
+			<div className="row">
+				<div className="col-md-5">
+					<label htmlFor="date" className="form-label">Date</label>
+					<input value={date} onChange={(t)=>{setDate(t.currentTarget.value)}} type="datetime-local" id="date" className="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1"/>
+				</div>
+				<div className="col-md-3">
+					<label htmlFor="points" className="form-label">Event Points</label>
+					<input value={points} onChange={(t)=>{setPoints(t.currentTarget.value)}} type="number" id="points" className="form-control" placeholder="0000" aria-label="Event Points" aria-describedby="basic-addon1"/>
+				</div>
+			</div>
+			<div className="row">
+				<div className="col-md-3">
+					<button type="submit" disabled={send} onClick={(t)=>{setSend(true)}}>Submit</button>
+				</div>
+				<div className="col-md-3">
+					<button onClick={(t)=>{setDate(moment().format("YYYY-MM-DDTHH:mm"))}}>Set Time to Now</button>
+				</div>
+			</div>
+			<hr/>
+			</>:<></>}
+		<table className="table">
+		  <thead>
+			<tr>
+			  <th scope="col">id</th>
+			  <th scope="col">date</th>
+			  <th scope="col">name</th>
+			  <th scope="col">description</th>
+			  <th scope="col">points</th>
+			</tr>
+		  </thead>
+		  <tbody>
+		{tierData.map((point,i)=><EventPoint setUpdate={setUpdate} data={point} key={i}></EventPoint>)}
+		  </tbody>
+		</table>
+	</>
+}
+
+function ChartData() {
+	const[eventData,setEventData] = useState([])
+	const[update,setUpdate] = useState(false)
+	const [chartData,setChartData] = useState([])
+	
+	useEffect(()=>{
+		const interval = setInterval(()=>{
+			axios.get("http://projectdivar.com/eventdata/t20")
+			.then((data)=>{
+				var values;
+				data.data.map((obj)=>{if (values[obj.rank]) {values[obj.rank]=[...values[obj.rank],obj]} else {values[obj.rank]=[obj]}})
+				setEventData(values);
+				console.log(data.data)
+			})
+			.catch((err)=>{})
+		},30000);
+		return ()=>{clearInterval(interval)}
+	},[update])
+	
+	useEffect(()=>{
+		console.log(eventData)
+		setChartData(
+			{
+			  datasets: [{
+					label: 'T1',
+					data: GetChartData(eventData,1),
+					backgroundColor: [
+						'rgba(255, 99, 132, 0.05)',
+						'rgba(54, 162, 235, 0.05)',
+						'rgba(255, 206, 86, 0.05)',
+						'rgba(75, 192, 192, 0.05)',
+						'rgba(153, 102, 255, 0.05)',
+						'rgba(255, 159, 64, 0.05)'
+					],
+					borderColor: [
+						'rgba(255, 99, 132, 1)',
+						'rgba(54, 162, 235, 1)',
+						'rgba(255, 206, 86, 1)',
+						'rgba(75, 192, 192, 1)',
+						'rgba(153, 102, 255, 1)',
+						'rgba(255, 159, 64, 1)'
+					]
+				},{
+					label: 'T2',
+					data: GetChartData(eventData,2),
+					backgroundColor: [
+						'rgba(54, 162, 235, 0.05)'
+					],
+					borderColor: [
+						'rgba(54, 162, 235, 1)'
+					]
+				},{
+					label: 'T3',
+					data: GetChartData(eventData,3),
+					backgroundColor: [
+						'rgba(255, 206, 86, 0.05)',
+					],
+					borderColor: [
+						'rgba(255, 206, 86, 1)',
+					]
+				},{
+					label: 'T4',
+					data: GetChartData(eventData,4),
+					backgroundColor: [
+						'rgba(75, 192, 192, 0.05)',
+					],
+					borderColor: [
+						'rgba(75, 192, 192, 1)',
+					]
+				},{
+					label: 'T5',
+					data: GetChartData(eventData,5),
+					backgroundColor: [
+						'rgba(153, 102, 255, 0.05)',
+					],
+					borderColor: [
+						'rgba(153, 102, 255, 1)',
+					]
+				},{
+					label: 'T6',
+					data: GetChartData(eventData,6),
+					backgroundColor: [
+						'rgba(255, 159, 64, 0.05)'
+					],
+					borderColor: [
+						'rgba(255, 159, 64, 1)'
+					]
+				},{
+					label: 'T7',
+					data: GetChartData(eventData,7),
+					backgroundColor: [
+						'rgba(255, 99, 132, 0.05)'
+					],
+					borderColor: [
+						'rgba(255, 99, 132, 1)'
+					]
+				},{
+					label: 'T8',
+					data: GetChartData(eventData,8),
+					backgroundColor: [
+						'rgba(54, 162, 235, 0.05)'
+					],
+					borderColor: [
+						'rgba(54, 162, 235, 1)'
+					]
+				},{
+					label: 'T9',
+					data: GetChartData(eventData,9),
+					backgroundColor: [
+						'rgba(255, 206, 86, 0.05)'
+					],
+					borderColor: [
+						'rgba(255, 206, 86, 1)'
+					]
+				},{
+					label: 'T10',
+					data: GetChartData(eventData,10),
+					backgroundColor: [
+						'rgba(75, 192, 192, 0.05)'
+					],
+					borderColor: [
+						'rgba(75, 192, 192, 1)'
+					]
+				},{
+					label: 'T20',
+					data: GetChartData(eventData,20),
+					backgroundColor: [
+						'rgba(0, 0, 0, 0.05)'
+					],
+					borderColor: [
+						'rgba(0, 0, 0, 1)'
+					]
+				},{
+					label: 'T50',
+					data: GetChartData(eventData,50),
+					backgroundColor: [
+						'rgba(255, 255, 255, 0.5)'
+					],
+					borderColor: [
+						'rgba(255, 255, 255, 1)'
+					]
+				}
+				,{
+					label: 'T100',
+					data: GetChartData(eventData,100),
+					backgroundColor: [
+						'rgba(150, 255, 150, 0.5)'
+					],
+					borderColor: [
+						'rgba(150, 255, 150, 1)'
+					]
+				},{
+					label: 'T500',
+					data: GetChartData(eventData,500),
+					backgroundColor: [
+						'rgba(160, 0, 0, 0.5)'
+					],
+					borderColor: [
+						'rgba(160, 0, 0, 1)'
+					]
+				},{
+					label: 'T1000',
+					data: GetChartData(eventData,1000),
+					backgroundColor: [
+						'rgba(255, 150, 150, 0.5)'
+					],
+					borderColor: [
+						'rgba(255, 150, 150, 1)'
+					]
+				},{
+					label: 'T5000',
+					data: GetChartData(eventData,5000),
+					backgroundColor: [
+						'rgba(0, 140, 0, 0.5)'
+					],
+					borderColor: [
+						'rgba(0, 140, 0, 1)'
+					]
+				},{
+					label: 'T10000',
+					data: GetChartData(eventData,10000),
+					backgroundColor: [
+						'rgba(30, 30, 255, 0.5)'
+					],
+					borderColor: [
+						'rgba(30, 30, 255, 1)'
+					]
+				}/*,{
+					label: 'T100 HAPPY FORTUNE NEW YEAR',
+					data: [
+						{x:moment('2021-01-12 12:00:00+09:00').add(0,'days').add(0,'hours'),y:0},
+						{x:moment('2021-01-12 12:00:00+09:00').add(0,'days').add(7,'hours'),y:54036},
+						{x:moment('2021-01-12 12:00:00+09:00').add(4,'days').add(23,'hours'),y:451398},
+						{x:moment('2021-01-12 12:00:00+09:00').add(5,'days').add(3,'hours'),y:470204},
+						{x:moment('2021-01-12 12:00:00+09:00').add(7,'days').add(18,'hours'),y:671150},
+						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(15,'hours'),y:915147},
+						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(17,'hours'),y:952330},
+						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(19,'hours'),y:988548},
+						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(21,'hours'),y:1027488},
+					],
+					backgroundColor: [
+						'rgba(255, 255, 150, 0.5)'
+					],
+					borderColor: [
+						'rgba(255, 255, 150, 1)'
+					]
+				}*/],
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: true,
+							}
+						}],
+						xAxes: [{
+							type: 'time',
+							time: {
+								unit: 'hours',
+								displayFormats: {
+									hours: 'MMM D hA'
+								}
+							},
+							ticks: {
+								min:EVENTSTART,
+								max:EVENTEND
+							},
+							distribution: 'linear'
+						}]
+					}
+				}
+			}
+		)
+	},[eventData])
+
+	return (
+		<>
+			<h1>繋ぎ手たちは導かれ～前編～</h1>
+			<Line data={chartData} />
+		</>
+	)
+}
+
 function Website() {
 	const [songs,setSongs] = useState([])
 	const [update,setUpdate] = useState(false)
@@ -2154,7 +2570,7 @@ function Website() {
 	
 	return (
 		<div className="row">
-			<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
+		{/*<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
 				<h3 className="d-none d-md-block">Menu</h3>
 					<LoginInfo setUserSettings={setUserSettings} setUsername={setUsername} update={loginPanelUpdate}/>
 					<br/><br/>
@@ -2163,7 +2579,7 @@ function Website() {
 					<Link to="/divabot#content">DivaBot</Link><br/>
 					<hr/>
 					<a href="http://discord.gg/eJ3cMzM"><img src="http://projectdivar.com/files/discord_button_small.png"/></a>
-			</div>
+		</div>*/}
 			<div className="col-md-10 pt-3 pb-3">
 				<div id="content"/>
 				<Switch>
@@ -2202,6 +2618,14 @@ function Website() {
 					<Route path="/stream">
 						<h1 className="title">Stream</h1>
 						<StreamData/>
+					</Route>
+					<Route path="/event">
+						<h1 className="title">Event Data</h1>
+						<ChartData/>
+					</Route>
+					<Route path="/eventedit">
+						<h1 className="title">Event Editor</h1>
+						<EventEditor/>
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>
@@ -2271,10 +2695,10 @@ function Website() {
 												<b>Image Submission: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
 											</div>
 											<div className="col-md-3">
-												<b>Twitter: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+												<b>Twitter: </b> <IMAGE_X style={{color:"maroon"}}/> <i>Twitter bot is currently suspended</i>
 											</div>
 											<div className="col-md-3">
-												<b>DivaBot: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+												<b>DivaBot: </b> <IMAGE_EXCLAMATION style={{color:"orange"}}/> <i>Megamix detection may require adjusting.</i>
 											</div>
 											<div className="col-md-3">
 												<b>Manual: </b> <IMAGE_X style={{color:"maroon"}}/>
@@ -2315,10 +2739,10 @@ function Website() {
 												<b>Image Submission: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
 											</div>
 											<div className="col-md-3">
-												<b>Twitter: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+												<b>Twitter: </b> <IMAGE_X style={{color:"maroon"}}/> <i>Twitter bot is currently suspended</i>
 											</div>
 											<div className="col-md-3">
-												<b>DivaBot: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
+												<b>DivaBot: </b> <IMAGE_EXCLAMATION style={{color:"orange"}}/> <i>The newest FT DLC is not compatible</i>
 											</div>
 											<div className="col-md-3">
 												<b>Stream Monitor: </b> <IMAGE_CHECKMARK style={{color:"darkgreen"}}/>
@@ -2352,7 +2776,7 @@ function App() {
 	return (
 	<Router>
 		<div className="container-fluid content">
-			<div className="row">
+		{/*<div className="row">
 				<div className="topbar col-md-12 pt-1 overflow-hidden border rounded text-center">
 					<div>
 						<Link to="/">
@@ -2360,7 +2784,7 @@ function App() {
 						</Link>
 					</div>
 				</div>
-			</div>
+		</div>*/}
 			<Website/>
 		</div>
 	</Router>

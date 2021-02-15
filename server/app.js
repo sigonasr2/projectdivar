@@ -25,7 +25,7 @@ app.use(
 	safeFileNames: true, preserveExtension: true,
 	abortOnLimit:true, uploadTimeout:0})
 )
-
+const QuickChart = require('quickchart-js');
 
   
 let allowCrossDomain = function(req, res, next) {
@@ -1166,6 +1166,401 @@ app.post('/streaminfo/:id',function (req,res){
 	}
 })
 
+const lastscores={}
+
+app.post('/eventsubmit',function(req,res) {
+	const EVENTID=10;
+	
+	function submit() {
+		lastscores[req.body.rank]=Number(req.body.points)
+		db.query("insert into eventdata(eventid,rank,date,name,description,points) values($1,$2,$3,$4,$5,$6) returning *;",
+		[req.body.eventid,req.body.rank,req.body.date?req.body.date:new Date(),req.body.name,req.body.description,req.body.points])
+		.then((data)=>{
+			if (data.rows.length>0) {
+				res.status(200).send("Submitted.")
+			} else {
+				res.status(500).send("Failed to submit.")
+			}
+		})
+		.catch((err)=>{
+			res.status(500).send(`${err.message}`);
+		})
+	}
+	
+	//add to table.
+	
+	//Try to update last scores.
+	db.query('select distinct on (rank) rank,eventid,date,name,description,points from eventdata where eventid='+EVENTID+' order by rank,date desc;')
+	.then((data) =>
+		{
+			if (data.rows.length>0) {
+				data.rows.map((row)=>{lastscores[row.rank]=row.points})
+				
+			}
+			
+			if (!lastscores[req.body.rank]||(lastscores[req.body.rank]<req.body.points&&
+				(req.body.rank>20||req.body.points<lastscores[req.body.rank]+30000)
+			)) {
+				submit()
+			} else {
+				if (lastscores[req.body.rank]!==undefined&&req.body.rank<=20&&(lastscores[req.body.rank]<req.body.points&&req.body.points<lastscores[req.body.rank]+30000)) {
+					res.status(200).send("An invalid score attempted to be uploaded. Expected "+(lastscores[req.body.rank]+30000)+" or less but got "+req.body.points+".")
+				} else {
+					if (req.body.rank<=20) {
+						res.status(200).send("No update required.")
+					} else {
+						submit()
+					}
+				}
+			}
+		}
+	)
+})
+
+var chartData={}
+var predictionChartData={}
+var EVENTSTART=moment('2021-02-14 12:00:00+09:00');
+var EVENTEND=moment('2021-02-22 20:59:59+09:00');
+
+var diffData=[]
+
+const PREDICTIONS=true
+
+var lastCachedDate=EVENTSTART
+
+
+const nyoomfactor={//Percentage of original speed to use when nyoom'ing
+	1:1.0,
+	2:1.0,
+	3:1.0,
+	4:1.0,
+	5:1.0,
+	6:1.0,
+	7:1.0,
+	8:1.0,
+	9:1.0,
+	10:1.0,
+	11:1.0,
+	12:0.9,
+	13:0.7,
+	14:0.5,
+	15:0.3,
+	16:0.3,
+	17:0.3,
+	18:0.3,
+	19:0.3,
+	20:0.3,
+	50:0.79,
+	100:0.72,
+	500:0.25,
+	1000:0.2,
+	2000:0.06,
+	5000:0.055,
+	10000:0.015,
+	20000:0.01
+}
+
+const slowdownFactor={//Percentage of slowdown per hour.
+	1:0.00001,
+	2:0.00003,
+	3:0.00003,
+	4:0.00005,
+	5:0.00005,
+	6:0.00005,
+	7:0.00005,
+	8:0.00005,
+	9:0.00005,
+	10:0.00005,
+	11:0.00005,
+	12:0.00006,
+	13:0.00007,
+	14:0.00008,
+	15:0.00009,
+	16:0.0001,
+	17:0.0001,
+	18:0.0001,
+	19:0.0001,
+	20:0.0001,
+	50:0.0002,
+	100:0.0003,
+	500:0.0004,
+	1000:0.0005,
+	2000:0.0007,
+	5000:0.001,
+	10000:0.002,
+	20000:0.003
+}
+
+var MAXSPEED=0
+
+function SetupPredictionModel() {
+	if (chartData['1']&&chartData['1'].length>100) {
+		MAXSPEED=Math.floor(chartData['1'][100].points/(moment(chartData['1'][100].date).diff(EVENTSTART,'minutes')/60))
+	} else 
+	if (chartData['1']&&chartData['1'].length>0){
+		MAXSPEED=Math.floor(chartData['1'][chartData['1'].length-1].points/(moment(chartData['1'][chartData['1'].length-1].date).diff(EVENTSTART,'minutes')/60))
+	} else {
+		MAXSPEED=0
+	}
+}
+function GetRate(rank) {
+	if (chartData[rank].length>2) {
+		var lastpoint=chartData[rank][chartData[rank].length-2]
+		for (var i=chartData[rank].length-1;i>=0;i--) {
+			if (moment(chartData[rank][chartData[rank].length-1].date).diff(chartData[rank][i].date,'hours')>=1) {
+				lastpoint=chartData[rank][i]
+				break;
+			}
+		}
+		return (chartData[rank][chartData[rank].length-1].points-lastpoint.points)/moment(chartData[rank][chartData[rank].length-1].date).diff(lastpoint.date,'hours')
+	} else {
+		return GetRank(rank)/(moment(startPoint.date).diff(EVENTSTART,'minutes')/60)
+	}
+}
+
+function CreatePrediction(precision,rank) {
+	if (!chartData[rank]) {
+		return []
+	}
+	var startPoint=chartData[rank][chartData[rank].length-1]
+	if (rank<=20) {
+		startPoint={points:startPoint.points,date:moment()}
+	}
+	var startTime=moment(startPoint.date)
+	if (PREDICTIONS&&startTime.diff(EVENTSTART,'hours')>24&&moment(startPoint.date).diff(EVENTSTART,'hours')>=24) {
+		//console.log(MAXSPEED)
+		//Precision is in hours. 1 is default
+		var finalChart=[{y:chartData[rank][chartData[rank].length-1].points,x:chartData[rank][chartData[rank].length-1].date}]
+		//Start from the time of the last reported rank.
+		var myPoints = startPoint.points
+		var pointSpeed = GetRate(rank)
+		var speedGoal = MAXSPEED*nyoomfactor[rank]
+		while (startTime<EVENTEND) {
+			startTime.add(precision,'hours')
+			myPoints+=Math.floor(pointSpeed)
+			if (EVENTEND.diff(startTime,'hours')>11) {
+				pointSpeed-=pointSpeed*(slowdownFactor[rank]*10/*CONSTANT for adjustment*/)
+			} else {
+				pointSpeed=Math.max(
+					GetRank(rank)/(moment(startPoint.date).diff(EVENTSTART,'minutes')/60),
+					Math.min((12-EVENTEND.diff(startTime,'hours'))*(speedGoal/5),speedGoal))
+				//pointSpeed+=(speedGoal-pointSpeed) //Increase towards final goal.
+				//console.log(pointSpeed)
+			}
+			finalChart=[...finalChart,{y:myPoints,x:moment(startTime)}]
+		}
+		predictionChartData[rank]=finalChart
+		return finalChart
+	} else {
+		return []
+	}
+}
+
+function numberWithCommas(x) {
+	if (Number.isInteger(x)) {
+		 return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+	} else {
+		return x
+	}
+}
+function ChartData(rank) {
+	if (!chartData[rank]) {
+		return [{x:0,y:0}]
+	}
+	if (rank<=20) {
+		return [...chartData[rank].map((data)=>{return {x:data.date,y:data.points}}),{x:moment().isBefore(EVENTEND)?moment():EVENTEND,y:chartData[rank][chartData[rank].length-1].points}]
+	} else {
+		return [{x:EVENTSTART,y:0},...chartData[rank].map((data)=>{return {x:data.date,y:data.points}})]
+	}
+}
+
+function GetRank(rank) {
+	if (chartData[rank]) {
+		return chartData[rank][chartData[rank].length-1].points
+	} else {
+		return "???"
+	}
+}
+
+function GetEstimate(rank) {
+	if (predictionChartData[rank]) {
+		var currentEstimate = 0
+		if (rank>20 && moment().diff(moment(chartData[rank][chartData[rank].length-1].date),'hours')>0.5) {
+			for (var i=predictionChartData[rank].length-1;i>=0;i--) {
+				if (moment(predictionChartData[rank][i].x).isAfter(moment())) {
+					currentEstimate=predictionChartData[rank][i].y
+				} else {
+					break;
+				}
+			}
+		
+			return currentEstimate
+		} else {
+			if (rank>20) {
+				return GetRank(rank)
+			} else {
+				return "---"
+			}
+		}
+	} else {
+		return "???"
+	}
+}
+
+function GetTime(rank) {
+	if (chartData[rank]) {
+		return moment(chartData[rank][chartData[rank].length-1].date).fromNow()
+	} else {
+		return ""
+	}
+}
+function GetUpdateColor(rank) {
+	if (chartData[rank]) {
+		return "rgba(255,"+Math.max(255-moment().diff(moment(chartData[rank][chartData[rank].length-1].date),'hours')*3,0)+","+Math.max(255-moment().diff(moment(chartData[rank][chartData[rank].length-1].date),'hours')*3,0)+",1)"
+	} else {
+		return ""
+	}
+}
+
+var tableValues={}
+
+app.get('/eventdata',function(req,res){
+	var eventinfo = []
+	db.query('select * from event order by id desc limit 1')
+	.then((data)=>{
+		eventinfo = data.rows;
+		if (!req.query.event) {
+			return db.query('select distinct on (rank) rank,eventid,date,name,description,points from eventdata where eventid=$1 order by rank,date desc',[moment(eventinfo[0].startdate).isBefore(moment())?eventinfo[0].eventid:eventinfo[0].eventid-1])
+		} else {
+			
+		}
+	})
+	.then((data)=>{
+		var finaldata = data.rows
+		var tiers= [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,50,100,500,1000,2000,5000,10000,20000,30000,50000]
+		for (t of tiers) {
+			//console.log(t)
+			//if (finaldata[String(t)]===undefined) {finaldata[String(t)]={"rank":t,"eventid":eventinfo[0].eventid,"name":"","description":"","date":eventinfo[0].startdate,"points":0}}
+			var found=false
+			for (i in finaldata) {
+				//console.log(finaldata[i].rank)
+				if (finaldata[i].rank===t) {
+					found=true
+					break;
+				}
+			}
+			if (!found) {
+				finaldata=[...finaldata,{"rank":t,"eventid":eventinfo[0].eventid,"name":"","description":"","date":eventinfo[0].startdate,"points":0}]
+			}
+		}
+		res.status(200).json(finaldata)
+	})
+	.catch((err)=>{
+		res.status(500).send(err.message)
+	})
+})
+
+app.get('/eventdata/t20',function(req,res){
+	var eventinfo = []
+	if (req.query.date&&req.query.rank) {
+		db.query('select * from eventdata where date<=$1 and rank=$2 and eventid=$3 order by date desc limit 1;',[req.query.date,req.query.rank,8])
+		.then((data)=>{
+			res.status(200).json(data.rows)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else 
+	if (req.query.all&&req.query.event) {
+		db.query('select * from eventdata where eventid=$1 order by date asc;',[req.query.event])
+		.then((data)=>{
+			res.status(200).json(data.rows)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else 
+	if (req.query.tier&&req.query.event) {
+		db.query('select * from eventdata where eventid=$1 and rank=$2 order by date desc',[req.query.event,req.query.tier])
+		.then((data)=>{
+			res.status(200).json(data.rows)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else 
+	if (req.query.chart){
+		if (req.query.event||moment().diff(lastCachedDate,'minutes')>=1||(req.query.force&&moment().diff(lastCachedDate,'seconds')>=10)) {
+			chartData={}
+			predictionChartData={}
+			diffData=[]
+			db.query('select * from event order by id desc limit 1')
+			.then((data)=>{
+				eventinfo = data.rows;
+				return db.query('select * from eventdata where eventid=$1 order by date asc',[(req.query.event)?req.query.event:eventinfo[0].eventid])
+			})
+			.then((data)=>{
+				if (data&&data.rows&&data.rows.length>0) {
+					data.rows.map((obj)=>{if (chartData[obj.rank]) {chartData[obj.rank]=[...chartData[obj.rank],obj]} else {chartData[obj.rank]=[obj]}})
+					SetupPredictionModel()
+					var tiers= [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,50,100,500,1000,2000,5000,10000,20000,30000,50000]
+					for (t of tiers) {
+						CreatePrediction(1,t)
+						var est = GetEstimate(t)
+						var temprate = (chartData[t])?Math.ceil(GetRank(t)/(moment(chartData[t][chartData[t].length-1].date).diff(EVENTSTART,'minutes')/60)):undefined
+						tableValues[t]={
+							points:GetRank(t),
+							lastUpdate:GetTime(t),
+							lastUpdateColor:GetUpdateColor(t),
+							rate:temprate?temprate:"???",
+							estimate:Number.isInteger(est)?Math.ceil(est):est,
+							prediction:(predictionChartData[t])?predictionChartData[t][predictionChartData[t].length-1].y:"???"
+						}
+					}
+					lastCachedDate=moment()
+					res.status(200).send({predictionData:predictionChartData,statistics:tableValues})
+				} else {
+					res.status(200).send({predictionData:predictionChartData,statistics:tableValues})
+				}
+			})
+			.catch((err)=>{
+				res.status(500).send(err.message)
+			})
+		} else {
+			res.status(200).send({predictionData:predictionChartData,statistics:tableValues})
+		}
+	} else {
+		db.query('select * from event order by id desc limit 1')
+		.then((data)=>{
+			eventinfo = data.rows;
+			return db.query('select distinct on (rank) rank,eventid,date,name,description,points from eventdata where rank<=20 and eventid=$1 order by rank,date desc',[moment(eventinfo[0].startdate).isBefore(moment())?eventinfo[0].eventid:eventinfo[0].eventid-1])
+		})
+		.then((data)=>{
+			var finaldata = data.rows
+			var tiers= [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+			for (t of tiers) {
+			//console.log(t)
+			//if (finaldata[String(t)]===undefined) {finaldata[String(t)]={"rank":t,"eventid":eventinfo[0].eventid,"name":"","description":"","date":eventinfo[0].startdate,"points":0}}
+			var found=false
+			for (i in finaldata) {
+				//console.log(finaldata[i].rank)
+				if (finaldata[i].rank===t) {
+					found=true
+					break;
+				}
+			}
+			if (!found) {
+				finaldata=[...finaldata,{"rank":t,"eventid":eventinfo[0].eventid,"name":"","description":"","date":eventinfo[0].startdate,"points":0}]
+			}
+		}
+			res.status(200).json(finaldata)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	}
+})
+
 app.post('/streamkill/:id',function (req,res){
 	if (req.body&&req.body.username&&req.body.authentication_token) {
 		GetUserLoginAllowed(req.body.username.trim(),req.body.authentication_token.trim())
@@ -1221,6 +1616,20 @@ app.get('/streamdata/:id',function (req,res){
 	})
 })
 
+app.get('/eventchart',function (req,res){
+	const myChart = new QuickChart();
+	myChart
+	  .setConfig({
+		type: 'bar',
+		data: { labels: ['Hello world', 'Foo bar'], datasets: [{ label: 'Foo', data: [1, 2] }] },
+	  })
+	  .setWidth(300)
+	  .setHeight(150);
+
+	// You can send the URL to someone...
+	const chartImageUrl = myChart.getUrl();
+	res.status(200).send('<img src="'+chartImageUrl+'">')
+})
 
 
 
@@ -1286,6 +1695,7 @@ axios.get('https://api.twitter.com/1.1/search/tweets.json?q=@divarbot', {
 		})
 },5000)*/
 
+/*
 setInterval(
 ()=>{
 	function addToQueue(uploadData) {
@@ -1341,57 +1751,61 @@ setInterval(
 	})
 }
 ,1000)
+*/
 
+//setInterval(()=>{db.query("select * from twitter_bot limit 1")
+//.then((data)=>{
+//	largestId=filterId=data.rows[0].lastpost;
+//	//console.log("Filter Id: "+filterId);
+//	/*return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=%23mega39s', {
+//		headers: {
+//			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
+//		}
+//	})*/
+//	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=%23divarbot', {
+//		headers: {
+//			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
+//		}
+//	})
+//})
+//.then((data)=>{
+//	//console.log(data.data.statuses)
+//	//console.log(data.data)
+//	//data.data.s
+//	//console.log("Reading Twitter Data...")
+//	return Process(data,0);
+//})
+//.then((data)=>{
+//	//console.log(process_images)
+//	var promisesDone=0;
+//	process_images.forEach((obj)=>{
+//	if (filterId<obj.id) {
+//		if (largestId<obj.id) {largestId=obj.id}
+//		processPromises.push(new Promise((resolve,reject)=>{
+//		console.log("Process Twitter Post: "+obj.id);	
+//		return db.query("select id from users where twitter=$1",[obj.user])
+//		.then((data)=>{
+//			if (data.rows.length>0) {
+//				console.log("Process new play for User id "+data.rows[0].id+"...")
+//				return db.query("insert into uploadedplays values($1,$2,$3)",[obj.image,data.rows[0].id,new Date()])
+//				.then(()=>{resolve("Done!")})
+//			} else {
+//				reject("Not associated with an Id!")
+//			}
+//		})
+//		.catch((err)=>{console.log(err.message);reject("Failed!")})}))
+//	}
+//})
+////setTimeout(()=>{console.dir(processPromises, {'maxArrayLength': null})},2000)
+//return Promise.allSettled(processPromises)
+//})
+//.then((data)=>{
+//	//console.log(largestId)
+//	return db.query("update twitter_bot set lastpost=$1 returning *",[largestId])
+//})
+//.catch((err)=>{console.log(err.message)})
+//},60000)
 
-setInterval(()=>{db.query("select * from twitter_bot limit 1")
-.then((data)=>{
-	largestId=filterId=data.rows[0].lastpost;
-	//console.log("Filter Id: "+filterId);
-	/*return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=%23mega39s', {
-		headers: {
-			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
-		}
-	})*/
-	return axios.get('https://api.twitter.com/1.1/search/tweets.json?q=%23divarbot', {
-		headers: {
-			Authorization: 'Bearer '+process.env.TWITTER_BEARER  //the token is a variable which holds the token
-		}
-	})
-})
-.then((data)=>{
-	//console.log(data.data.statuses)
-	//console.log(data.data)
-	//data.data.s
-	//console.log("Reading Twitter Data...")
-	return Process(data,0);
-})
-.then((data)=>{
-	//console.log(process_images)
-	var promisesDone=0;
-	process_images.forEach((obj)=>{
-	if (filterId<obj.id) {
-		if (largestId<obj.id) {largestId=obj.id}
-		processPromises.push(new Promise((resolve,reject)=>{
-		console.log("Process Twitter Post: "+obj.id);	
-		return db.query("select id from users where twitter=$1",[obj.user])
-		.then((data)=>{
-			if (data.rows.length>0) {
-				console.log("Process new play for User id "+data.rows[0].id+"...")
-				return db.query("insert into uploadedplays values($1,$2,$3)",[obj.image,data.rows[0].id,new Date()])
-				.then(()=>{resolve("Done!")})
-			} else {
-				reject("Not associated with an Id!")
-			}
-		})
-		.catch((err)=>{console.log(err.message);reject("Failed!")})}))
-	}
-})
-//setTimeout(()=>{console.dir(processPromises, {'maxArrayLength': null})},2000)
-return Promise.allSettled(processPromises)
-})
-.then((data)=>{
-	//console.log(largestId)
-	return db.query("update twitter_bot set lastpost=$1 returning *",[largestId])
-})
-.catch((err)=>{console.log(err.message)})
-},60000)
+setInterval(()=>{
+	axios.get("http://www.projectdivar.com/eventdata/t20?chart=true&force=true")
+},20000)

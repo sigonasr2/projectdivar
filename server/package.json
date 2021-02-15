@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
+    "canvas": "^2.6.1",
     "child_process": "^1.0.2",
     "connect-timeout": "^1.9.0",
     "express": "^4.17.1",
@@ -17,6 +18,7 @@
     "moment": "^2.27.0",
     "nodemailer": "^6.4.11",
     "pg": "^8.2.1",
+    "quickchart-js": "^1.0.6",
     "request": "^2.88.2",
     "twitch-get-stream": "^0.6.0",
     "twitter-autohook": "^1.7.1",
