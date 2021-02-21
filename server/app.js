@@ -1303,18 +1303,63 @@ function SetupPredictionModel() {
 		MAXSPEED=0
 	}
 }
+const RATEDURATION=2 //In hours. How much EP/hr is shown.
+
 function GetRate(rank) {
 	if (chartData[rank].length>2) {
-		var lastpoint=chartData[rank][chartData[rank].length-2]
+		var lastpoint=chartData[rank][chartData[rank].length-1]
 		for (var i=chartData[rank].length-1;i>=0;i--) {
-			if (moment(chartData[rank][chartData[rank].length-1].date).diff(chartData[rank][i].date,'hours')>=1) {
-				lastpoint=chartData[rank][i]
+			var diff = moment().diff(chartData[rank][i].date,'hours')
+			if (diff>=RATEDURATION) {
 				break;
+			} else {
+				lastpoint=chartData[rank][i]
 			}
 		}
-		return (chartData[rank][chartData[rank].length-1].points-lastpoint.points)/moment(chartData[rank][chartData[rank].length-1].date).diff(lastpoint.date,'hours')
+		var timediff = moment(chartData[rank][chartData[rank].length-1].date).diff(moment(lastpoint.date),'minutes')
+		if (timediff<120) {
+			if (lastpoint===chartData[rank][chartData[rank].length-1]) {
+				return "???"
+			} else 
+			return (chartData[rank][chartData[rank].length-1].points-lastpoint.points)/RATEDURATION
+		} else {
+			return Math.ceil((chartData[rank][chartData[rank].length-1].points-lastpoint.points)/
+				(moment(chartData[rank][chartData[rank].length-1].date).diff(moment(lastpoint.date),'minutes')/60)
+			)
+		}
 	} else {
-		return GetRank(rank)/(moment(startPoint.date).diff(EVENTSTART,'minutes')/60)
+		if (chartData[rank].length>0) {
+			var startPoint=chartData[rank][chartData[rank].length-1]
+			return Math.ceil(GetRank(rank)/(moment(startPoint.date).diff(EVENTSTART,'minutes')/60))
+		} else {
+			return 0
+		}
+	}
+}
+
+function GetPointCount(rank) {
+	var pointCount=1;
+	if (!chartData[rank]) {
+		return pointCount;
+	}
+	if (chartData[rank].length>2) {
+		var lastpoint=chartData[rank][chartData[rank].length-1]
+		for (var i=chartData[rank].length-1;i>=0;i--) {
+			var diff = moment().diff(chartData[rank][i].date,'hours')
+			if (diff>=RATEDURATION) {
+				break;
+			} else {
+				lastpoint=chartData[rank][i]
+				pointCount++;
+			}
+		}
+		return pointCount;
+	} else {
+		if (chartData[rank].length>0) {
+			return chartData[rank].length;
+		} else {
+			return pointCount;
+		}
 	}
 }
 
@@ -1327,6 +1372,31 @@ function CreatePrediction(precision,rank) {
 		startPoint={points:startPoint.points,date:moment()}
 	}
 	var startTime=moment(startPoint.date)
+	if (PREDICTIONS&&startTime.diff(EVENTSTART,'hours')>36&&moment(startPoint.date).diff(EVENTSTART,'hours')>=36) {
+		//console.log(MAXSPEED)
+		//Precision is in hours. 1 is default
+		var finalChart=[{y:chartData[rank][chartData[rank].length-1].points,x:chartData[rank][chartData[rank].length-1].date}]
+		//Start from the time of the last reported rank.
+		var myPoints = startPoint.points
+		var pointSpeed = Math.ceil(GetRank(rank)/(moment(startPoint.date).diff(EVENTSTART,'minutes')/60))
+		var speedGoal = MAXSPEED*nyoomfactor[rank]
+		while (startTime<EVENTEND) {
+			startTime.add(precision,'hours')
+			myPoints+=Math.floor(pointSpeed)
+			if (EVENTEND.diff(startTime,'hours')>11) {
+				pointSpeed-=pointSpeed*(slowdownFactor[rank]*10/*CONSTANT for adjustment*/)
+			} else {
+				pointSpeed=Math.max(
+					GetRank(rank)/(moment(startPoint.date).diff(EVENTSTART,'minutes')/60),
+					Math.min((12-EVENTEND.diff(startTime,'hours'))*(speedGoal/5),speedGoal))
+				//pointSpeed+=(speedGoal-pointSpeed) //Increase towards final goal.
+				//console.log(pointSpeed)
+			}
+			finalChart=[...finalChart,{y:Number.isInteger(myPoints)?myPoints:"???",x:moment(startTime)}]
+		}
+		predictionChartData[rank]=finalChart
+		return finalChart
+	} else
 	if (PREDICTIONS&&startTime.diff(EVENTSTART,'hours')>24&&moment(startPoint.date).diff(EVENTSTART,'hours')>=24) {
 		//console.log(MAXSPEED)
 		//Precision is in hours. 1 is default
@@ -1347,7 +1417,7 @@ function CreatePrediction(precision,rank) {
 				//pointSpeed+=(speedGoal-pointSpeed) //Increase towards final goal.
 				//console.log(pointSpeed)
 			}
-			finalChart=[...finalChart,{y:myPoints,x:moment(startTime)}]
+			finalChart=[...finalChart,{y:Number.isInteger(myPoints)?myPoints:"???",x:moment(startTime)}]
 		}
 		predictionChartData[rank]=finalChart
 		return finalChart
@@ -1358,11 +1428,14 @@ function CreatePrediction(precision,rank) {
 
 function numberWithCommas(x) {
 	if (Number.isInteger(x)) {
-		 return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+		var num_parts = x.toString().split(".");
+		num_parts[0] = num_parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		return num_parts.join(".");
 	} else {
 		return x
 	}
 }
+
 function ChartData(rank) {
 	if (!chartData[rank]) {
 		return [{x:0,y:0}]
@@ -1463,7 +1536,7 @@ app.get('/eventdata',function(req,res){
 app.get('/eventdata/t20',function(req,res){
 	var eventinfo = []
 	if (req.query.date&&req.query.rank) {
-		db.query('select * from eventdata where date<=$1 and rank=$2 and eventid=$3 order by date desc limit 1;',[req.query.date,req.query.rank,8])
+		db.query('select * from eventdata where date<=$1 and rank=$2 and eventid=$3 order by date desc limit 1;',[req.query.date,req.query.rank,10])
 		.then((data)=>{
 			res.status(200).json(data.rows)
 		})
@@ -1471,6 +1544,15 @@ app.get('/eventdata/t20',function(req,res){
 			res.status(500).send(err.message)
 		})
 	} else 
+	if (req.query.luminous) {
+		db.query("select * from eventdata where (date>='2021-02-17 23:36:16.383+00' and date<'2021-02-19 15:35:16.716+00' and rank=12) or (date>='2021-02-19 15:35:16.716+00' and rank=11) and eventid=10 order by id asc;")
+		.then((data)=>{
+			res.status(200).json(data.rows)
+		})
+		.catch((err)=>{
+			res.status(500).send(err.message)
+		})
+	} else
 	if (req.query.all&&req.query.event) {
 		db.query('select * from eventdata where eventid=$1 order by date asc;',[req.query.event])
 		.then((data)=>{
@@ -1507,12 +1589,16 @@ app.get('/eventdata/t20',function(req,res){
 					for (t of tiers) {
 						CreatePrediction(1,t)
 						var est = GetEstimate(t)
-						var temprate = (chartData[t])?Math.ceil(GetRank(t)/(moment(chartData[t][chartData[t].length-1].date).diff(EVENTSTART,'minutes')/60)):undefined
+						var temprate = 0
+						if (chartData[t]) {
+							temprate=(t<=20)?(chartData[t])?Math.ceil(GetRate(t)):undefined:Math.ceil(GetRank(t)/(moment(chartData[t][chartData[t].length-1].date).diff(EVENTSTART,'minutes')/60))
+						}
 						tableValues[t]={
 							points:GetRank(t),
 							lastUpdate:GetTime(t),
 							lastUpdateColor:GetUpdateColor(t),
-							rate:temprate?temprate:"???",
+							rate:temprate?temprate:0,
+							count:GetPointCount(t),
 							estimate:Number.isInteger(est)?Math.ceil(est):est,
 							prediction:(predictionChartData[t])?predictionChartData[t][predictionChartData[t].length-1].y:"???"
 						}
@@ -1546,11 +1632,17 @@ app.get('/eventdata/t20',function(req,res){
 				//console.log(finaldata[i].rank)
 				if (finaldata[i].rank===t) {
 					found=true
+					var temprate = (chartData[t])?Math.ceil(GetRate(t)):undefined
+					if (!temprate) {
+						finaldata[i].rate="???"
+					} else {
+						finaldata[i].rate=temprate
+					}
 					break;
 				}
 			}
 			if (!found) {
-				finaldata=[...finaldata,{"rank":t,"eventid":eventinfo[0].eventid,"name":"","description":"","date":eventinfo[0].startdate,"points":0}]
+				finaldata=[...finaldata,{"rate":0,"rank":t,"eventid":eventinfo[0].eventid,"name":"","description":"","date":eventinfo[0].startdate,"points":0}]
 			}
 		}
 			res.status(200).json(finaldata)
