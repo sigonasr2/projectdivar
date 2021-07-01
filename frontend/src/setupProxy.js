@@ -1,6 +1,27 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
+	/*app.use(
+        "/event/query",
+        createProxyMiddleware({
+          target: 'http://server:4501',
+          changeOrigin: true,
+        })
+        );*/
+	app.use(
+	"/ev",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
+	app.use(
+	"/cans",
+	createProxyMiddleware({
+	  target: 'http://server:4501',
+	  changeOrigin: true,
+	})
+	);
 	app.use(
 	"/eventchart",
 	createProxyMiddleware({

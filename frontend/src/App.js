@@ -1,3 +1,5 @@
+
+import { Chart } from 'react-charts'
 import React, {useState,useEffect,useRef} from 'react';
 import logo from './logo.svg';
 import './App.css';
@@ -2224,7 +2226,7 @@ function EventEditor() {
 	const[send,setSend] = useState(false)
 	const[message,setMessage] = useState("")
 	
-	const EVENTID = 10;
+	const EVENTID = 17;
 	
 	//console.log(moment().format("YYYY-MM-DDTHH:mm"))
 	
@@ -2311,246 +2313,89 @@ function EventEditor() {
 	</>
 }
 
-function ChartData() {
-	const[eventData,setEventData] = useState([])
-	const[update,setUpdate] = useState(false)
-	const [chartData,setChartData] = useState([])
+function CanEditor() {
+	const [password,setPassword] = useState("");
+	const [cans,setCans] = useState(0);
+	const [games,setGames] = useState(0);
+	const [update,setUpdate] = useState(false)
 	
 	useEffect(()=>{
+		refreshCount()
 		const interval = setInterval(()=>{
-			axios.get("http://projectdivar.com/eventdata/t20")
-			.then((data)=>{
-				var values;
-				data.data.map((obj)=>{if (values[obj.rank]) {values[obj.rank]=[...values[obj.rank],obj]} else {values[obj.rank]=[obj]}})
-				setEventData(values);
-				console.log(data.data)
-			})
-			.catch((err)=>{})
-		},30000);
+			refreshCount()
+		},5000);
 		return ()=>{clearInterval(interval)}
 	},[update])
 	
 	useEffect(()=>{
-		console.log(eventData)
-		setChartData(
-			{
-			  datasets: [{
-					label: 'T1',
-					data: GetChartData(eventData,1),
-					backgroundColor: [
-						'rgba(255, 99, 132, 0.05)',
-						'rgba(54, 162, 235, 0.05)',
-						'rgba(255, 206, 86, 0.05)',
-						'rgba(75, 192, 192, 0.05)',
-						'rgba(153, 102, 255, 0.05)',
-						'rgba(255, 159, 64, 0.05)'
-					],
-					borderColor: [
-						'rgba(255, 99, 132, 1)',
-						'rgba(54, 162, 235, 1)',
-						'rgba(255, 206, 86, 1)',
-						'rgba(75, 192, 192, 1)',
-						'rgba(153, 102, 255, 1)',
-						'rgba(255, 159, 64, 1)'
-					]
-				},{
-					label: 'T2',
-					data: GetChartData(eventData,2),
-					backgroundColor: [
-						'rgba(54, 162, 235, 0.05)'
-					],
-					borderColor: [
-						'rgba(54, 162, 235, 1)'
-					]
-				},{
-					label: 'T3',
-					data: GetChartData(eventData,3),
-					backgroundColor: [
-						'rgba(255, 206, 86, 0.05)',
-					],
-					borderColor: [
-						'rgba(255, 206, 86, 1)',
-					]
-				},{
-					label: 'T4',
-					data: GetChartData(eventData,4),
-					backgroundColor: [
-						'rgba(75, 192, 192, 0.05)',
-					],
-					borderColor: [
-						'rgba(75, 192, 192, 1)',
-					]
-				},{
-					label: 'T5',
-					data: GetChartData(eventData,5),
-					backgroundColor: [
-						'rgba(153, 102, 255, 0.05)',
-					],
-					borderColor: [
-						'rgba(153, 102, 255, 1)',
-					]
-				},{
-					label: 'T6',
-					data: GetChartData(eventData,6),
-					backgroundColor: [
-						'rgba(255, 159, 64, 0.05)'
-					],
-					borderColor: [
-						'rgba(255, 159, 64, 1)'
-					]
-				},{
-					label: 'T7',
-					data: GetChartData(eventData,7),
-					backgroundColor: [
-						'rgba(255, 99, 132, 0.05)'
-					],
-					borderColor: [
-						'rgba(255, 99, 132, 1)'
-					]
-				},{
-					label: 'T8',
-					data: GetChartData(eventData,8),
-					backgroundColor: [
-						'rgba(54, 162, 235, 0.05)'
-					],
-					borderColor: [
-						'rgba(54, 162, 235, 1)'
-					]
-				},{
-					label: 'T9',
-					data: GetChartData(eventData,9),
-					backgroundColor: [
-						'rgba(255, 206, 86, 0.05)'
-					],
-					borderColor: [
-						'rgba(255, 206, 86, 1)'
-					]
-				},{
-					label: 'T10',
-					data: GetChartData(eventData,10),
-					backgroundColor: [
-						'rgba(75, 192, 192, 0.05)'
-					],
-					borderColor: [
-						'rgba(75, 192, 192, 1)'
-					]
-				},{
-					label: 'T20',
-					data: GetChartData(eventData,20),
-					backgroundColor: [
-						'rgba(0, 0, 0, 0.05)'
-					],
-					borderColor: [
-						'rgba(0, 0, 0, 1)'
-					]
-				},{
-					label: 'T50',
-					data: GetChartData(eventData,50),
-					backgroundColor: [
-						'rgba(255, 255, 255, 0.5)'
-					],
-					borderColor: [
-						'rgba(255, 255, 255, 1)'
-					]
-				}
-				,{
-					label: 'T100',
-					data: GetChartData(eventData,100),
-					backgroundColor: [
-						'rgba(150, 255, 150, 0.5)'
-					],
-					borderColor: [
-						'rgba(150, 255, 150, 1)'
-					]
-				},{
-					label: 'T500',
-					data: GetChartData(eventData,500),
-					backgroundColor: [
-						'rgba(160, 0, 0, 0.5)'
-					],
-					borderColor: [
-						'rgba(160, 0, 0, 1)'
-					]
-				},{
-					label: 'T1000',
-					data: GetChartData(eventData,1000),
-					backgroundColor: [
-						'rgba(255, 150, 150, 0.5)'
-					],
-					borderColor: [
-						'rgba(255, 150, 150, 1)'
-					]
-				},{
-					label: 'T5000',
-					data: GetChartData(eventData,5000),
-					backgroundColor: [
-						'rgba(0, 140, 0, 0.5)'
-					],
-					borderColor: [
-						'rgba(0, 140, 0, 1)'
-					]
-				},{
-					label: 'T10000',
-					data: GetChartData(eventData,10000),
-					backgroundColor: [
-						'rgba(30, 30, 255, 0.5)'
-					],
-					borderColor: [
-						'rgba(30, 30, 255, 1)'
-					]
-				}/*,{
-					label: 'T100 HAPPY FORTUNE NEW YEAR',
-					data: [
-						{x:moment('2021-01-12 12:00:00+09:00').add(0,'days').add(0,'hours'),y:0},
-						{x:moment('2021-01-12 12:00:00+09:00').add(0,'days').add(7,'hours'),y:54036},
-						{x:moment('2021-01-12 12:00:00+09:00').add(4,'days').add(23,'hours'),y:451398},
-						{x:moment('2021-01-12 12:00:00+09:00').add(5,'days').add(3,'hours'),y:470204},
-						{x:moment('2021-01-12 12:00:00+09:00').add(7,'days').add(18,'hours'),y:671150},
-						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(15,'hours'),y:915147},
-						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(17,'hours'),y:952330},
-						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(19,'hours'),y:988548},
-						{x:moment('2021-01-12 12:00:00+09:00').add(8,'days').add(21,'hours'),y:1027488},
-					],
-					backgroundColor: [
-						'rgba(255, 255, 150, 0.5)'
-					],
-					borderColor: [
-						'rgba(255, 255, 150, 1)'
-					]
-				}*/],
-				options: {
-					scales: {
-						yAxes: [{
-							ticks: {
-								beginAtZero: true,
-							}
-						}],
-						xAxes: [{
-							type: 'time',
-							time: {
-								unit: 'hours',
-								displayFormats: {
-									hours: 'MMM D hA'
-								}
-							},
-							ticks: {
-								min:EVENTSTART,
-								max:EVENTEND
-							},
-							distribution: 'linear'
-						}]
-					}
-				}
+		
+	},[password])
+	
+	function refreshCount() {
+		axios.get("http://projectdivar.com/cans")
+		.then((data)=>{
+			if (data.data.cans>cans) {
+				setCans(data.data.cans)
 			}
-		)
-	},[eventData])
-
-	return (
-		<>
-			<h1>繋ぎ手たちは導かれ～前編～</h1>
-			<Line data={chartData} />
-		</>
-	)
+			if (data.data.cans+data.data.notcan>games) {
+				setGames(Number(data.data.cans)+Number(data.data.notcan))
+				}
+		})
+	}
+	
+	function sendRequest(cans) {
+		axios.post("http://projectdivar.com/cans",{cans:cans})
+		.then((data)=>{
+			refreshCount()
+		})
+	}
+	
+	function addCan(t) {
+		setCans(Number(cans)+1)
+		setGames(Number(games)+1)
+		sendRequest(true)
+	}
+	function addGame(t) {
+		setGames(Number(games)+1)
+		sendRequest(false)
+	}
+	
+	return <>
+		<div className="container">
+			<div className="row">
+				<div className="col-12 text-center">
+					<h3>Can %</h3>
+					<h1>{((cans/games)*100).toFixed(2)+"%"}</h1>
+				</div>
+			</div>
+			<div className="row">
+				<div className="col-6 text-center">
+					<h5>Cans</h5>
+					<h1>{cans}</h1>
+				</div>
+				<div className="col-6 text-center">
+					<h5>Total Games</h5>
+					<h1>{games}</h1>
+				</div>
+			</div>
+		</div>
+		{/*{password!=="muni_62"&&<>
+		<b>Password to Edit:</b>
+		<input type="password" placeholder="Password" onChange={(t)=>{
+			setPassword(t.currentTarget.value)
+		}}
+		/></>}
+		{password=="muni_62"&&<>
+			<div className="row">
+				<div className="col-6 text-center">
+					<button onClick={(t)=>{addGame(t)}}>No Can</button>
+				</div>
+				<div className="col-6 text-center">
+					<button onClick={(t)=>{addCan(t)}}>Can</button>
+				</div>
+			</div>
+		</>}*/}
+	</>
 }
 
 function Website() {
@@ -2570,16 +2415,16 @@ function Website() {
 	
 	return (
 		<div className="row">
-		{/*<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
-				<h3 className="d-none d-md-block">Menu</h3>
-					<LoginInfo setUserSettings={setUserSettings} setUsername={setUsername} update={loginPanelUpdate}/>
-					<br/><br/>
-					<Link to="/rankings/rating/desc#content">Rankings</Link><br/>
-					<Link to="/submitplay#content">Submit Scores</Link><br/>
-					<Link to="/divabot#content">DivaBot</Link><br/>
-					<hr/>
-					<a href="http://discord.gg/eJ3cMzM"><img src="http://projectdivar.com/files/discord_button_small.png"/></a>
-		</div>*/}
+			<div className="col-md-2 pt-3 pb-3 overflow-hidden text-center">
+					<h3 className="d-none d-md-block">Menu</h3>
+						<LoginInfo setUserSettings={setUserSettings} setUsername={setUsername} update={loginPanelUpdate}/>
+						<br/><br/>
+						<Link to="/rankings/rating/desc#content">Rankings</Link><br/>
+						<Link to="/submitplay#content">Submit Scores</Link><br/>
+						<Link to="/divabot#content">DivaBot</Link><br/>
+						<hr/>
+						<a href="http://discord.gg/eJ3cMzM"><img src="http://projectdivar.com/files/discord_button_small.png"/></a>
+			</div>
 			<div className="col-md-10 pt-3 pb-3">
 				<div id="content"/>
 				<Switch>
@@ -2621,11 +2466,15 @@ function Website() {
 					</Route>
 					<Route path="/event">
 						<h1 className="title">Event Data</h1>
-						<ChartData/>
+						<EventData/>
 					</Route>
 					<Route path="/eventedit">
 						<h1 className="title">Event Editor</h1>
 						<EventEditor/>
+					</Route>
+					<Route path="/cancount">
+						<h1 className="title">Can or no Can?</h1>
+						<CanEditor/>
 					</Route>
 					<Route path="/">
 						<h1 className="title">Project DivaR</h1>
@@ -2776,7 +2625,7 @@ function App() {
 	return (
 	<Router>
 		<div className="container-fluid content">
-		{/*<div className="row">
+		<div className="row">
 				<div className="topbar col-md-12 pt-1 overflow-hidden border rounded text-center">
 					<div>
 						<Link to="/">
@@ -2784,7 +2633,7 @@ function App() {
 						</Link>
 					</div>
 				</div>
-		</div>*/}
+		</div>
 			<Website/>
 		</div>
 	</Router>
