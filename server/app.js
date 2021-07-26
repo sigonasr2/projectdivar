@@ -56,115 +56,115 @@ new Pool({
 
 const ENDPOINTDATA=[
 	{
-		endpoint:"ngsplanner/class",
+		endpoint:"class",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/class_level_data",
+		endpoint:"class_level_data",
 		requiredfields:["class_id","level","hp","atk","def"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/class_weapon_type_data",
+		endpoint:"class_weapon_type_data",
 		requiredfields:["class_id","weapon_type_id"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/weapon",
+		endpoint:"weapon",
 		requiredfields:["name","rarity","level_req","atk"],
 		optionalfields:["potential_id","variance","base_affix_slots","drop_info","pb_gauge_build","icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/weapon_existence_data",
+		endpoint:"weapon_existence_data",
 		requiredfields:["weapon_type_id","weapon_id"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/weapon_type",
+		endpoint:"weapon_type",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/armor",
+		endpoint:"armor",
 		requiredfields:["name","rarity","level_req","def"],
 		optionalfields:["hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build","icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/potential",
+		endpoint:"potential",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/potential_data",
+		endpoint:"potential_data",
 		requiredfields:["potential_id","level"],
 		optionalfields:["mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/builds",
+		endpoint:"builds",
 		requiredfields:["user_id","creator","build_name","class1","created_on","last_modified","data"],
 		optionalfields:["class2","likes"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/skill",
+		endpoint:"skill",
 		requiredfields:["name","skill_type_id"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/skill_type",
+		endpoint:"skill_type",
 		requiredfields:["name"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/skill_data",
+		endpoint:"skill_data",
 		requiredfields:["skill_id","level"],
 		optionalfields:["variance","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/augment",
+		endpoint:"augment",
 		requiredfields:["augment_type_id","level"],
 		optionalfields:["variance","hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","affix_success_rate","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/augment_type",
+		endpoint:"augment_type",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/food",
+		endpoint:"food",
 		requiredfields:["material"],
 		optionalfields:["potency","pp","dmg_res","hp","pp_consumption","pp_recovery","weak_point_dmg","hp_recovery"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/food_mult",
+		endpoint:"food_mult",
 		requiredfields:["amount"],
 		optionalfields:["potency","pp","dmg_res","hp","pp_consumption","pp_recovery","weak_point_dmg","hp_recovery"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/roles",
+		endpoint:"roles",
 		requiredfields:["name"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"ngsplanner/users",
+		endpoint:"users",
 		requiredfields:["username","email","created_on","role_id"],
 		optionalfields:["avatar"],
 		excludedfields:["password_hash"] //Fields to not output in GET.
@@ -173,21 +173,18 @@ const ENDPOINTDATA=[
 
 function CreateDynamicEndpoints() {
 	ENDPOINTDATA.map((endpoint)=>{
-		console.log("Created endpoints for /"+endpoint.endpoint)
-		app.get("/"+endpoint.endpoint,(req,res)=>{
+		app.get("/ngsplanner/"+endpoint.endpoint,(req,res)=>{
 			db2.query('select * from '+endpoint.endpoint+" order by id desc")
 			.then((data)=>{
 				res.status(200).json({fields:data.fields,rows:data.rows})
-				console.log({fields:data.fields,rows:data.rows})
 			})
 			.catch((err)=>{
 				res.status(500).send(err.message)
-				console.log(err.message)
 			})
 		})
 		
 		
-		app.post("/"+endpoint.endpoint,(req,res)=>{
+		app.post("/ngsplanner/"+endpoint.endpoint,(req,res)=>{
 			
 			var allExist=true
 			endpoint.requiredfields.forEach((field)=>{
@@ -213,7 +210,7 @@ function CreateDynamicEndpoints() {
 			})
 		})
 		
-		app.patch("/"+endpoint.endpoint,(req,res)=>{
+		app.patch("/ngsplanner/"+endpoint.endpoint,(req,res)=>{
 			if (req.body.id) {
 				var combinedfields = [...endpoint.requiredfields,...endpoint.optionalfields,...endpoint.excludedfields]
 				//console.log(combinedfields)
@@ -231,7 +228,7 @@ function CreateDynamicEndpoints() {
 			}
 		})
 		
-		app.delete("/"+endpoint.endpoint,(req,res)=>{
+		app.delete("/ngsplanner/"+endpoint.endpoint,(req,res)=>{
 			if (req.body.id) {
 				db2.query('delete from '+endpoint.endpoint+'  where id=$1 returning *',[req.body.id])
 				.then((data)=>{
