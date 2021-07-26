@@ -173,6 +173,7 @@ const ENDPOINTDATA=[
 
 function CreateDynamicEndpoints() {
 	ENDPOINTDATA.map((endpoint)=>{
+		console.log("Created endpoints for /"+endpoint.endpoint)
 		app.get("/"+endpoint.endpoint,(req,res)=>{
 			db2.query('select * from '+endpoint.endpoint+" order by id desc")
 			.then((data)=>{
