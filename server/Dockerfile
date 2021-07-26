@@ -54,8 +54,6 @@ ENV JAVA_HOME=/opt/java/openjdk \
 RUN apt-get update && \
     apt-get install -y ffmpeg && \
     apt-get clean;
-	
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
 	echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
@@ -71,7 +69,7 @@ RUN yarn global add nodemon
 # update 
 RUN apt-get update
 # install curl 
-RUN apt-get install curl
+RUN apt-get install -y curl
 # get install script and pass it to execute: 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
 # and install node 

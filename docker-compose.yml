@@ -18,6 +18,23 @@ services:
       options:
         max-size: "1m"
         max-file: "3"
+
+  server2:
+    build: server2
+    depends_on:
+      - postgres
+    ports:
+      - "4504:4504"
+    working_dir: /server2
+    volumes:
+        - ./server2:/server2
+    env_file:
+        - ./server/.env.twitter
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+
         
   imgparser:
     build: imgparser
@@ -47,7 +64,7 @@ services:
       options:
         max-size: "1m"
         max-file: "3"
-      
+
   frontend:
     build: 
         context: frontend

@@ -1,4 +1,4 @@
- const express = require('express') 
+const express = require('express') 
 const axios = require('axios') 
 const twitchStreams = require('twitch-get-stream')
 const app = express() 
@@ -1189,10 +1189,10 @@ app.post('/streaminfo/:id',function (req,res){
 	}
 })
 
-var lastscores={}
-const EVENTID=23;
-var EVENTSTART=moment('2021-06-28 03:00:00+00');
-var EVENTEND=moment('2021-07-06 11:59:59+00');
+var lastscores_JP={}
+const EVENTID=26;
+var EVENTSTART=moment('2021-07-25 03:00:00+00');
+var EVENTEND=moment('2021-07-29 11:59:59+00');
 
 var lastscores_EN={}
 const EVENTID_EN=23;
@@ -1206,9 +1206,13 @@ app.get("/helpmetestwithoutbreakingshit", (req,res) => {
 
 app.post('/eventsubmit',function(req,res) {
 	
-	lastscores={}
+	const lastscores = req.query.en ? lastscores_EN: lastscores_JP;
 	function submit() {
-		lastscores[req.body.rank]=Number(req.body.points)
+		if (req.query.en) {
+			lastscores_EN[req.body.rank]=Number(req.body.points)
+		} else {
+			lastscores_JP[req.body.rank]=Number(req.body.points)
+		}
 		db.query("insert into "+(req.query.en?"en_":"")+"eventdata(eventid,rank,date,name,description,points) values($1,$2,$3,$4,$5,$6) returning *;",
 		[req.body.eventid,req.body.rank,req.body.date?req.body.date:req.body.fin?moment(EVENTEND).add(5,'minutes').format("YYYY-MM-DD HH:mm:ssZ"):new Date(),req.body.name,req.body.description,req.body.points])
 		.then((data)=>{
@@ -1280,10 +1284,6 @@ app.post('/eventsubmit',function(req,res) {
 	db.query('select distinct on (rank) rank,eventid,date,name,description,points,difference from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from '+(req.query.en?"en_":"")+'eventdata where eventid='+EVENTID+' order by rank,date desc)t order by rank,date desc')
 	.then((data) =>
 		{
-			if (data.rows.length>0) {
-				data.rows.map((row)=>{lastscores[row.rank]=row.points})
-				
-			}
 			
 			if (!lastscores[req.body.rank]
 				|| (/*FurtherTierIsOkay(req.body.rank,lastscores,req.body.points)&&*/lastscores[req.body.rank]<req.body.points
@@ -1293,6 +1293,10 @@ app.post('/eventsubmit',function(req,res) {
 				submit()
 			} else {
 				res.status(200).send("No update required.")
+			}
+			if (data.rows.length>0) {
+				data.rows.map((row)=>{lastscores[row.rank]=row.points})
+				
 			}
 		}
 	)
@@ -1891,6 +1895,7 @@ app.get('/eventdata/t50',function(req,res){
 
 app.get('/eventdata/t20',function(req,res){
 	var eventinfo = []
+	var eventinfo_en = []
 	if (req.query.date&&req.query.rank) {
 		db.query('select * from '+(req.query.en?"en_":"")+'eventdata where date<=$1 and rank=$2 and eventid=$3 order by date desc limit 1;',[req.query.date,req.query.rank,req.query.eventid])
 		.then((data)=>{

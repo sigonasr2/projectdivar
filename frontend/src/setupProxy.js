@@ -8,6 +8,14 @@ module.exports = function(app) {
           changeOrigin: true,
         })
         );*/
+	
+	app.use(
+	"/ngsplanner",
+	createProxyMiddleware({
+	  target: 'https://server2:4504',
+	  changeOrigin: true,
+	})
+	);
 	app.use(
 	"/ev",
 	createProxyMiddleware({

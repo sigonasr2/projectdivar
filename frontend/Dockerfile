@@ -9,7 +9,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 COPY . /app
 
-RUN npm install --silent
+RUN npm install -y --silent
 RUN npm rebuild node-sass
 
 CMD ["npm", "start"]
