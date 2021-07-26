@@ -9,9 +9,9 @@ module.exports = function(app) {
         })
         );*/
 	app.use(
-		"/ngsplanner/food",
+		"/ngsplanner/*",
 		createProxyMiddleware({
-			target: 'https://server:4501',
+			target: 'http://server:4501',
 			changeOrigin: true,
 		})
 		);
