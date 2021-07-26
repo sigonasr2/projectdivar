@@ -9,7 +9,133 @@ module.exports = function(app) {
         })
         );*/
 	app.use(
-		"/ngsplanner/*",
+		"/ngsplanner/class",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+		app.use(
+			"/ngsplanner/class_level_data",
+			createProxyMiddleware({
+				target: 'http://server:4501',
+				changeOrigin: true,
+			})
+			);
+	app.use(
+		"/ngsplanner/class_weapon_type_data",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+		app.use(
+			"/ngsplanner/weapon",
+			createProxyMiddleware({
+				target: 'http://server:4501',
+				changeOrigin: true,
+			})
+			);
+			app.use(
+				"/ngsplanner/weapon_existence_data",
+				createProxyMiddleware({
+					target: 'http://server:4501',
+					changeOrigin: true,
+				})
+				);
+	app.use(
+		"/ngsplanner/weapon_type",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+		app.use(
+			"/ngsplanner/armor",
+			createProxyMiddleware({
+				target: 'http://server:4501',
+				changeOrigin: true,
+			})
+			);
+			app.use(
+				"/ngsplanner/potential",
+				createProxyMiddleware({
+					target: 'http://server:4501',
+					changeOrigin: true,
+				})
+				);
+				app.use(
+					"/ngsplanner/potential_data",
+					createProxyMiddleware({
+						target: 'http://server:4501',
+						changeOrigin: true,
+					})
+					);
+	app.use(
+		"/ngsplanner/builds",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+		app.use(
+			"/ngsplanner/skill",
+			createProxyMiddleware({
+				target: 'http://server:4501',
+				changeOrigin: true,
+			})
+			);
+	app.use(
+		"/ngsplanner/skill_type",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+		app.use(
+			"/ngsplanner/skill_data",
+			createProxyMiddleware({
+				target: 'http://server:4501',
+				changeOrigin: true,
+			})
+			);
+			app.use(
+				"/ngsplanner/augment",
+				createProxyMiddleware({
+					target: 'http://server:4501',
+					changeOrigin: true,
+				})
+				);
+	app.use(
+		"/ngsplanner/augment_type",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+	app.use(
+		"/ngsplanner/food_mult",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+		app.use(
+			"/ngsplanner/roles",
+			createProxyMiddleware({
+				target: 'http://server:4501',
+				changeOrigin: true,
+			})
+			);
+	app.use(
+		"/ngsplanner/users",
+		createProxyMiddleware({
+			target: 'http://server:4501',
+			changeOrigin: true,
+		})
+		);
+	app.use(
+		"/ngsplanner/food",
 		createProxyMiddleware({
 			target: 'http://server:4501',
 			changeOrigin: true,
