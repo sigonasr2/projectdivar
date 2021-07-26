@@ -177,6 +177,7 @@ function CreateDynamicEndpoints() {
 			db2.query('select * from '+endpoint.endpoint+" order by id desc")
 			.then((data)=>{
 				res.status(200).json({fields:data.fields,rows:data.rows})
+				co
 			})
 			.catch((err)=>{
 				res.status(500).send(err.message)

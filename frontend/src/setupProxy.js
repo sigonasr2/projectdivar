@@ -9,7 +9,7 @@ module.exports = function(app) {
         })
         );*/
 	app.use(
-		"/ngsplanner/*",
+		"/ngsplanner/food",
 		createProxyMiddleware({
 			target: 'https://server:4501',
 			changeOrigin: true,
