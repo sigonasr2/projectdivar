@@ -56,115 +56,115 @@ new Pool({
 
 const ENDPOINTDATA=[
 	{
-		endpoint:"class",
+		endpoint:"ngsplanner/class",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"class_level_data",
+		endpoint:"ngsplanner/class_level_data",
 		requiredfields:["class_id","level","hp","atk","def"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"class_weapon_type_data",
+		endpoint:"ngsplanner/class_weapon_type_data",
 		requiredfields:["class_id","weapon_type_id"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"weapon",
+		endpoint:"ngsplanner/weapon",
 		requiredfields:["name","rarity","level_req","atk"],
 		optionalfields:["potential_id","variance","base_affix_slots","drop_info","pb_gauge_build","icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"weapon_existence_data",
+		endpoint:"ngsplanner/weapon_existence_data",
 		requiredfields:["weapon_type_id","weapon_id"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"weapon_type",
+		endpoint:"ngsplanner/weapon_type",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"armor",
+		endpoint:"ngsplanner/armor",
 		requiredfields:["name","rarity","level_req","def"],
 		optionalfields:["hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build","icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"potential",
+		endpoint:"ngsplanner/potential",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"potential_data",
+		endpoint:"ngsplanner/potential_data",
 		requiredfields:["potential_id","level"],
 		optionalfields:["mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"builds",
+		endpoint:"ngsplanner/builds",
 		requiredfields:["user_id","creator","build_name","class1","created_on","last_modified","data"],
 		optionalfields:["class2","likes"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"skill",
+		endpoint:"ngsplanner/skill",
 		requiredfields:["name","skill_type_id"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"skill_type",
+		endpoint:"ngsplanner/skill_type",
 		requiredfields:["name"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"skill_data",
+		endpoint:"ngsplanner/skill_data",
 		requiredfields:["skill_id","level"],
 		optionalfields:["variance","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"augment",
+		endpoint:"ngsplanner/augment",
 		requiredfields:["augment_type_id","level"],
 		optionalfields:["variance","hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","affix_success_rate","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"augment_type",
+		endpoint:"ngsplanner/augment_type",
 		requiredfields:["name"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"food",
+		endpoint:"ngsplanner/food",
 		requiredfields:["material"],
 		optionalfields:["potency","pp","dmg_res","hp","pp_consumption","pp_recovery","weak_point_dmg","hp_recovery"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"food_mult",
+		endpoint:"ngsplanner/food_mult",
 		requiredfields:["amount"],
 		optionalfields:["potency","pp","dmg_res","hp","pp_consumption","pp_recovery","weak_point_dmg","hp_recovery"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"roles",
+		endpoint:"ngsplanner/roles",
 		requiredfields:["name"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
-		endpoint:"users",
+		endpoint:"ngsplanner/users",
 		requiredfields:["username","email","created_on","role_id"],
 		optionalfields:["avatar"],
 		excludedfields:["password_hash"] //Fields to not output in GET.
