@@ -1,11 +1,11 @@
 {
 	"folders": [
 		{
-			"name": "ngsplanner",
-			"path": "../ngsplanner"
+			"path": "."
 		},
 		{
-			"path": "."
+			"name": "ngsplanner",
+			"path": "../ngsplanner"
 		},
 		{
 			"name": "ngsplanner_backend",
