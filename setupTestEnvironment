@@ -1,4 +1,7 @@
-cd ~/projectdivar
+cd ..
+git clone https://github.com/sigonasr2/ngsplanner.git
+git clone https://github.com/sigonasr2/ngsplanner_backend.git
+cd projectdivar
 touch server/.env.twitter
 touch frontend/.env
 cp -r ../ngsplanner_backend/* server2

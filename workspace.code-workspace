@@ -1,7 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "../../../workspace/ngsplanner"
+			"name": "ngsplanner",
+			"path": "../ngsplanner"
 		},
 		{
 			"path": "."
