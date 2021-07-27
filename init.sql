@@ -1,3 +1,4 @@
+
 create table songs(id serial,name text, romanized_name text, english_name text, artist text, vocaloid text);
 create table users(id serial,username text,email text,authentication_token text,user_data text,code integer,registered boolean);
 create table plays(id serial,songId integer, userId integer, difficulty text, cool integer, fine integer, safe integer, sad integer, worst integer, percent numeric(5,2), date timestamp with time zone, score real);
@@ -142,4 +143,3 @@ insert into songs(name,romanized_name,english_name,artist,vocaloid) values (E'�
 insert into songs(name,romanized_name,english_name,artist,vocaloid) values (E'ココロ',E'Kokoro',E'Heart',E'Toraboruta-P',E'Rin');
 insert into songs(name,romanized_name,english_name,artist,vocaloid) values (E'夢喰い白黒バク',E'Yumekui Shirokuro Baku',E'Dream-Eating Monochrome Baku',E'Nem',E'Len');
 insert into songs(name,romanized_name,english_name,artist,vocaloid) values (E'Knife',E'',E'Knife',E'rerulili, mal',E'Rin, Miku, Len');
-

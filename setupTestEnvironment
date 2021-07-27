@@ -5,7 +5,9 @@ cd projectdivar
 touch server/.env.twitter
 touch frontend/.env
 cp -r ../ngsplanner_backend/* server2
-echo "">init2.sql
-cp ../ngsplanner_backend/ngsplanner_schema.sql init2.sql
+cp init.sql init2.sql
+echo "create database ngsplanner2;">>init2.sql
+echo "\c ngsplanner2">>init2.sql
+cat ../ngsplanner_backend/ngsplanner_schema.sql>>init2.sql
 cat ../ngsplanner_backend/ngsplanner_seed.sql>>init2.sql
 docker-compose up -d
