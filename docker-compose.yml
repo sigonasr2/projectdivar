@@ -64,6 +64,21 @@ services:
       options:
         max-size: "1m"
         max-file: "3"
+  
+  postgres-test:
+    image: postgres:10.4
+    restart: always
+    ports:
+      - "4505:5432"
+    volumes:
+        - ./init2.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: ngsplanner2
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
 
   frontend:
     build: 
