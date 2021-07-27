@@ -1,7 +1,14 @@
 {
 	"folders": [
 		{
-			"path": ".."
+			"path": "../../../workspace/ngsplanner"
+		},
+		{
+			"path": "."
+		},
+		{
+			"name": "ngsplanner_backend",
+			"path": "../ngsplanner_backend"
 		}
 	],
 	"settings": {}
