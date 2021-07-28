@@ -111,7 +111,7 @@ const ENDPOINTDATA=[
 	},
 	{
 		endpoint:"builds",
-		requiredfields:["user_id","creator","build_name","class1","created_on","last_modified","data"],
+		requiredfields:["users_id","creator","build_name","class1","created_on","last_modified","data"],
 		optionalfields:["class2","likes"],
 		excludedfields:[] //Fields to not output in GET.
 	},
@@ -165,7 +165,7 @@ const ENDPOINTDATA=[
 	},
 	{
 		endpoint:"users",
-		requiredfields:["username","email","created_on","role_id"],
+		requiredfields:["username","email","created_on","roles_id"],
 		optionalfields:["avatar"],
 		excludedfields:["password_hash"] //Fields to not output in GET.
 	}

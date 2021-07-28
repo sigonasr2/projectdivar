@@ -1,0 +1,4 @@
+sudo docker image prune
+sudo docker container prune
+sudo docker volume prune
+sudo docker system prune --volumes
