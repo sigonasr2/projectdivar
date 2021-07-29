@@ -180,13 +180,23 @@ const ENDPOINTDATA=[
 function CreateDynamicEndpoints() {
 	ENDPOINTDATA.map((endpoint)=>{
 		app.get("/ngsplanner/"+endpoint.endpoint,(req,res)=>{
-			db2.query('select * from '+endpoint.endpoint+" order by id desc")
-			.then((data)=>{
-				res.status(200).json({fields:data.fields,rows:data.rows})
-			})
-			.catch((err)=>{
-				res.status(500).send(err.message)
-			})
+			if (endpoint.requiredfields.includes("name")) {
+				db2.query('select distinct on (name) name,* from '+endpoint.endpoint+' order by name,id desc')
+				.then((data)=>{
+					res.status(200).json({fields:data.fields,rows:data.rows})
+				})
+				.catch((err)=>{
+					res.status(500).send(err.message)
+				})
+			} else {
+				db2.query('select * from '+endpoint.endpoint+" order by id desc")
+				.then((data)=>{
+					res.status(200).json({fields:data.fields,rows:data.rows})
+				})
+				.catch((err)=>{
+					res.status(500).send(err.message)
+				})
+			}
 		})
 		
 		
