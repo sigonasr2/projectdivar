@@ -63,7 +63,7 @@ const ENDPOINTDATA=[
 	},
 	{
 		endpoint:"class_level_data",
-		requiredfields:["class_id","level","hp","atk","def"],
+		requiredfields:["class_id","level","hp","atk","def","name"],
 		optionalfields:[],
 		excludedfields:[] //Fields to not output in GET.
 	},
@@ -82,19 +82,19 @@ const ENDPOINTDATA=[
 	{
 		endpoint:"weapon_existence_data",
 		requiredfields:["weapon_type_id","weapon_id"],
-		optionalfields:[],
+		optionalfields:["popularity","editors_choice"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
 		endpoint:"weapon_type",
-		requiredfields:["name"],
+		requiredfields:["name","dmg_type"],
 		optionalfields:["icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
 		endpoint:"armor",
 		requiredfields:["name","rarity","level_req","def"],
-		optionalfields:["hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build","icon"],
+		optionalfields:["hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build","icon","popularity","editors_choice"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
@@ -105,14 +105,14 @@ const ENDPOINTDATA=[
 	},
 	{
 		endpoint:"potential_data",
-		requiredfields:["potential_id","level"],
+		requiredfields:["potential_id","level","name"],
 		optionalfields:["mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
 		endpoint:"builds",
 		requiredfields:["users_id","creator","build_name","class1","created_on","last_modified","data"],
-		optionalfields:["class2","likes"],
+		optionalfields:["class2","likes","editors_choice"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
@@ -129,14 +129,14 @@ const ENDPOINTDATA=[
 	},
 	{
 		endpoint:"skill_data",
-		requiredfields:["skill_id","level"],
-		optionalfields:["variance","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res"],
+		requiredfields:["skill_id","level","name"],
+		optionalfields:["variance","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","popularity","editors_choice"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
 		endpoint:"augment",
-		requiredfields:["augment_type_id","level"],
-		optionalfields:["variance","hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","affix_success_rate","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build"],
+		requiredfields:["augment_type_id","name"],
+		optionalfields:["variance","hp","pp","mel_dmg","rng_dmg","tec_dmg","crit_rate","crit_dmg","pp_cost_reduction","active_pp_recovery","natural_pp_recovery","dmg_res","affix_success_rate","all_down_res","burn_res","freeze_res","blind_res","shock_res","panic_res","poison_res","battle_power_value","pb_gauge_build","popularity","editors_choice"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
@@ -147,8 +147,8 @@ const ENDPOINTDATA=[
 	},
 	{
 		endpoint:"food",
-		requiredfields:["material"],
-		optionalfields:["potency","pp","dmg_res","hp","pp_consumption","pp_recovery","weak_point_dmg","hp_recovery"],
+		requiredfields:["name"],
+		optionalfields:["potency","pp","dmg_res","hp","pp_consumption","pp_recovery","weak_point_dmg","hp_recovery","popularity","editors_choice"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
@@ -166,8 +166,14 @@ const ENDPOINTDATA=[
 	{
 		endpoint:"users",
 		requiredfields:["username","email","created_on","roles_id"],
-		optionalfields:["avatar"],
+		optionalfields:["avatar","editors_choice"],
 		excludedfields:["password_hash"] //Fields to not output in GET.
+	},
+	{
+		endpoint:"database_audit",
+		requiredfields:["action","table_name","row_name","row_id","new_value","date","users_id"],
+		optionalfields:["old_value"],
+		excludedfields:[] //Fields to not output in GET.
 	}
 ]
 
