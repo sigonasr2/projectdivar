@@ -1405,9 +1405,9 @@ app.post('/streaminfo/:id',function (req,res){
 })
 
 var lastscores_JP={}
-const EVENTID=26;
-var EVENTSTART=moment('2021-07-25 03:00:00+00');
-var EVENTEND=moment('2021-07-29 11:59:59+00');
+const EVENTID=27;
+var EVENTSTART=moment('2021-07-31 03:00:00+00');
+var EVENTEND=moment('2021-08-07 11:59:59+00');
 
 var lastscores_EN={}
 const EVENTID_EN=23;
