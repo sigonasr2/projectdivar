@@ -114,7 +114,7 @@ let allowCrossDomain = function(req, res, next) {
 	{
 		endpoint:"photon_art",
 		requiredfields:["name","weapon_type_id","potency","dps"],
-		optionalfields:["power_distribution","pp","frames"],
+		optionalfields:["power_distribution","pp","frames","icon"],
 		excludedfields:[] //Fields to not output in GET.
 	},
 	{
