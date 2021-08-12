@@ -210,7 +210,7 @@ let allowCrossDomain = function(req, res, next) {
 	{
 		endpoint:"users",
 		requiredfields:["username","email","created_on","roles_id"],
-		optionalfields:["avatar","editors_choice"],
+		optionalfields:["avatar","editors_choice","recovery_hash"],
 		excludedfields:["password_hash"] //Fields to not output in GET.
 	},
 	{
