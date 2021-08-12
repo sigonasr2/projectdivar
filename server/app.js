@@ -72,9 +72,9 @@ let allowCrossDomain = function(req, res, next) {
 	port: 5432,
   })
   
-  const PREFIX="/ngsplanner"
-  
-  const ENDPOINTDATA=[
+const PREFIX="/ngsplanner"
+
+const ENDPOINTDATA=[
 	{
 		endpoint:"class",
 		requiredfields:["name"],
@@ -786,6 +786,21 @@ app.get(PREFIX+'/test/dataid',async(req,res)=>{
 		})
 	}
 	res.status(200).json(finalresult)
+})
+
+app.post(PREFIX+"/validUser",(req,res)=>{
+	console.log(process.env.SALT)
+	db.query('select * from users where username=$1 and password_hash=$2 limit 1',[req.body.username,req.body.password])
+	.then((data)=>{
+		if (data.rows.length>0) {
+			res.status(200).json({verified:true})
+		} else {
+			res.status(200).json({verified:false})
+		}
+	})
+	.catch((err)=>{
+		res.status(500).send(err.message)
+	})
 })
 
 //Generates our table schema:
