@@ -7,7 +7,11 @@ touch frontend/.env
 cp -r ../ngsplanner_backend/* server2
 cp init.sql init2.sql
 echo "create database ngsplanner2;">>init2.sql
+echo "create database ngsplanner;">>init2.sql
 echo "\c ngsplanner2">>init2.sql
+cat ../ngsplanner_backend/ngsplanner_schema.sql>>init2.sql
+cat ../ngsplanner_backend/ngsplanner_seed.sql>>init2.sql
+echo "\c ngsplanner">>init2.sql
 cat ../ngsplanner_backend/ngsplanner_schema.sql>>init2.sql
 cat ../ngsplanner_backend/ngsplanner_seed.sql>>init2.sql
 echo REACT_APP_GITPOD_WORKSPACE_URL=$GITPOD_WORKSPACE_URL/ngsplanner >> ../ngsplanner/.env
