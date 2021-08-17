@@ -1424,3 +1424,4 @@ insert into class_skill_data(name,class_skill_id,dependency,level,effect,duratio
 
 insert into skill_tree_data(class_id,data,skill_data,line_color,line_width,gridsizex,gridsizey,gridpaddingx,gridpaddingy,halflineheight)
 	values((select id from class where name='Hunter'),'□  □  ,└□─┘□□, │  ││, │  □│, □─□┼□,    □ ','','#000000',3,80,60,10,10,60);
+

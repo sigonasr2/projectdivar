@@ -6,6 +6,12 @@ touch server/.env.twitter
 touch frontend/.env
 cp -r ../ngsplanner_backend/* server2
 cp init.sql init2.sql
+echo "" >> init2.sql
+echo "\c postgres">>init2.sql
+echo "" >> init2.sql
+echo "create table password(password text);" >> init2.sql
+echo "insert into password(password) values('admin')" >> init2.sql
+echo "" >> init2.sql
 echo "create database ngsplanner2;">>init2.sql
 echo "create database ngsplanner;">>init2.sql
 echo "\c ngsplanner2">>init2.sql
