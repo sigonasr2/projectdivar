@@ -1,0 +1,7 @@
+cd /workspace/projectdivar
+docker-compose down
+docker-compose up -d
+cd ../ngsplanner
+npm install
+npm start
+cd /workspace/projectdivar
