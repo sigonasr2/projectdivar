@@ -9,6 +9,13 @@ module.exports = function(app) {
         })
         );*/
 	app.use(
+		"/sigcrafting",
+		createProxyMiddleware({
+			target: 'http://server:3001',
+			changeOrigin: true,
+		})
+		);
+	app.use(
 		"/ngsplanner/class",
 		createProxyMiddleware({
 			target: 'http://server:4501',

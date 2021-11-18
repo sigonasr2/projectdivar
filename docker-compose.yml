@@ -35,6 +35,22 @@ services:
         max-size: "1m"
         max-file: "3"
 
+  server3:
+    build: server3
+    depends_on:
+      - postgres
+    ports:
+      - "4505:4505"
+    working_dir: /server3
+    volumes:
+        - ./server3:/server3
+    env_file:
+        - ./server/.env.twitter
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+
         
   imgparser:
     build: imgparser
@@ -84,6 +100,30 @@ services:
     volumes:
         - /app/node_modules
         - ./frontend:/frontend
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+
+  sigcrafting:
+    build: 
+        context: sigcrafting
+        dockerfile: Dockerfile
+    restart: on-failure
+    depends_on:
+      - postgres
+      - server
+    ports:
+      - "3001:3001"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    working_dir: /sigcrafting
+    env_file:
+        - ./sigcrafting/.env
+    volumes:
+        - /app/node_modules
+        - ./sigcrafting:/sigcrafting
     logging:
       options:
         max-size: "1m"
