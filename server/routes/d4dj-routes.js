@@ -29,7 +29,7 @@ app.post("/eventsubmit", async function (req, res) {
     req.db.query(
       "insert into " +
       (req.query.en ? "en_" : "") +
-      "eventdata(eventid,rank,date,name,description,points) values($1,$2,$3,$4,$5,$6) returning *;",
+      "eventdata(eventid,rank,date,name,description,points,playerId) values($1,$2,$3,$4,$5,$6,$7) returning *;",
       [
         req.body.eventid,
         req.body.rank,
@@ -41,6 +41,7 @@ app.post("/eventsubmit", async function (req, res) {
         req.body.name,
         req.body.description,
         req.body.points,
+        req.body.playerid
       ]
     )
       .then((data) => {
@@ -114,7 +115,7 @@ app.post("/eventsubmit", async function (req, res) {
 
   //Try to update last scores.
   db.query(
-    "select distinct on (rank) rank,eventid,date,name,description,points,difference from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
+    "select distinct on (rank) rank,eventid,date,name,description,points,difference,playerid from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
     (req.query.en ? "en_" : "") +
     "eventdata where eventid=" +
     EVENTID +
@@ -134,6 +135,9 @@ app.post("/eventsubmit", async function (req, res) {
           ))) /*||(lastscores[req.body.rank]<req.body.points
                         &&(FurtherTierIsOkay(req.body.rank,lastscores,req.body.points))*/
     ) {
+	if (!req.body.playerid) {
+		req.body.playerid=""
+	}
       submit();
     } else {
       res.status(200).send("No update required.");
@@ -158,7 +162,7 @@ app.get("/eventdata", function (req, res) {
       eventinfo = data.rows;
       if (!req.query.event) {
         return db.query(
-          "select distinct on (rank) rank,eventid,date,name,description,points,difference from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
+          "select distinct on (rank) rank,eventid,date,name,description,points,difference,playerid from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
           (req.query.en ? "en_" : "") +
           "eventdata where eventid=$1 order by rank,date desc)t order by rank,date desc;",
           [
@@ -219,7 +223,7 @@ app.get("/eventdata/t50", function (req, res) {
     .then((data) => {
       eventinfo = data.rows;
       return db.query(
-        "select distinct on (rank) rank,eventid,date,name,description,points,difference from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
+        "select distinct on (rank) rank,eventid,date,name,description,points,difference,playerid from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
         (req.query.en ? "en_" : "") +
         "eventdata where rank>20 and eventid=$1 order by rank,date desc)t order by rank,date desc;",
         [
@@ -278,7 +282,7 @@ app.get("/eventdata/t20", async function (req, res) {
       });
   } else if (req.query.all && req.query.event) {
     db.query(
-      "select * from (select lag(points) over (partition by rank order by date asc)-points difference,rank,eventid,date,name,points from " +
+      "select * from (select lag(points) over (partition by rank order by date asc)-points difference,rank,eventid,date,name,points,playerid from " +
       (req.query.en ? "en_" : "") +
       "eventdata where eventid=$1 order by date asc)t",
       [req.query.event]
@@ -291,7 +295,7 @@ app.get("/eventdata/t20", async function (req, res) {
       });
   } else if (req.query.tier && req.query.event) {
     db.query(
-      "select * from (select lag(points) over (partition by rank order by date asc)-points difference,rank,eventid,date,name,points from " +
+      "select * from (select lag(points) over (partition by rank order by date asc)-points difference,rank,eventid,date,name,points,playerid from " +
       (req.query.en ? "en_" : "") +
       "eventdata where eventid=$1 and rank=$2 order by date desc)t",
       [req.query.event, req.query.tier]
@@ -331,7 +335,7 @@ app.get("/eventdata/t20", async function (req, res) {
         .then((data) => {
           eventinfo = data.rows;
           return db.query(
-            "select * from (select lag(points) over (partition by rank order by date asc)-points difference,rank,eventid,date,name,points from " +
+            "select * from (select lag(points) over (partition by rank order by date asc)-points difference,rank,eventid,date,name,points,playerid from " +
             (req.query.en ? "en_" : "") +
             "eventdata where eventid=$1 order by date asc)t",
             [
@@ -516,7 +520,7 @@ app.get("/eventdata/t20", async function (req, res) {
       .then((data) => {
         eventinfo = data.rows;
         return db.query(
-          "select distinct on (rank) rank,eventid,date,name,description,points,difference from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
+          "select distinct on (rank) rank,eventid,date,name,description,points,difference,playerid from (select lead(points) over (partition by rank order by rank,date desc)-points difference,* from " +
           (req.query.en ? "en_" : "") +
           "eventdata where rank<=20 and eventid=$1 order by rank,date desc)t order by rank,date desc;",
           [
